@@ -1,29 +1,22 @@
-import './style.css'; // Import global styles
+import './style.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
-import Hero from './components/Hero';
-import Brands from './components/Brands';
-import ViewMoreButton from './components/ViewMoreButton';
-import TopSelling from './components/TopSelling';
-import StyleSearch from './components/StyleSearch';
-import Testimonials from './components/Testimonials';
-import Newsletter from './components/Newsletter';
 import Footer from './components/Footer';
+import Home from './pages/Home';
 
 function App() {
   return (
-    <>
-      <Header />
-      <main>
-        <Hero />
-        <Brands />
-        <ViewMoreButton />
-        <TopSelling />
-        <StyleSearch />
-        <Testimonials />
-        <Newsletter />
-      </main>
-      <Footer />
-    </>
+    <BrowserRouter>
+      <div className="app">
+        <Header />
+        <main>
+          <Routes>
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </BrowserRouter>
   );
 }
 

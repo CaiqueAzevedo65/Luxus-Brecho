@@ -3,25 +3,25 @@ import React from 'react';
 const styleCategories = [
   {
     title: 'Casual',
-    images: [{ src: '/img-casual.png', alt: 'Estilo Casual' }]
+    images: [{ src: '/casual.png', alt: 'Estilo Casual' }]
   },
   {
     title: 'Formal',
     images: [
-      { src: '/img-formal1.png', alt: 'Estilo Formal 1' },
-      { src: '/img-formal2.png', alt: 'Estilo Formal 2' }
+      { src: '/formal1.png', alt: 'Estilo Formal 1' },
+      { src: '/formal2.png', alt: 'Estilo Formal 2' }
     ]
   },
   {
     title: 'Social',
     images: [
-      { src: '/img-social1.png', alt: 'Estilo Social 1' },
-      { src: '/img-social2.png', alt: 'Estilo Social 2' }
+      { src: '/social1.png', alt: 'Estilo Social 1' },
+      { src: '/social2.png', alt: 'Estilo Social 2' }
     ]
   },
   {
     title: 'Esportiva',
-    images: [{ src: '/img-esportiva.png', alt: 'Estilo Esportivo' }]
+    images: [{ src: '/esportiva.png', alt: 'Estilo Esportiva' }]
   }
 ];
 

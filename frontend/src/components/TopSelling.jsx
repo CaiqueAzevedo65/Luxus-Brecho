@@ -2,9 +2,9 @@ import React from 'react';
 import ProductCard from './ProductCard'; // Assuming ProductCard.jsx is in the same directory
 
 const topSellingData = [
-  { imageSrc: '/Bolsa-guess.png', altText: 'Bolsa Guess', productName: 'Bolsa Guess', rating: '★★★★★', price: '90$' },
+  { imageSrc: '/Bolsa-animal-nannyborges.png', altText: 'Bolsa Animal Nannyborges', productName: 'Bolsa Animal Nannyborges', rating: '★★★★★', price: '90$' },
   { imageSrc: '/Tamanco-vintage-N38.png', altText: 'Tamanco Vintage N°38', productName: 'Tamanco Vintage N°38', rating: '★★★★★', price: '30$' },
-  { imageSrc: '/Bolsa-pequena.png', altText: 'Bolsa Pequena', productName: 'Bolsa Pequena', rating: '★★★★★', price: '20$' },
+  { imageSrc: '/Bolsa-guess.png', altText: 'Bolsa Guess', productName: 'Bolsa Guess', rating: '★★★★★', price: '20$' },
   { imageSrc: '/Moletom-garfield.png', altText: 'Moletom Garfield', productName: 'Moletom Garfield', rating: '★★★★★', price: '65$' },
 ];
 
