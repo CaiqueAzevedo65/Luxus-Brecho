@@ -47,26 +47,25 @@
 }
 
 .hero-content h1 {
-  font-size: 3rem;
+  font-size: var(--font-size-large);
   margin-bottom: 0.5rem;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .hero-content p {
-  font-size: 1.2rem;
+  font-size: var(--font-size-medium);
   text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 /* Common Section Styles */
 section {
-  padding: 4rem 2rem;
-  
+  padding: var(--padding-large) var(--padding-medium);
   margin: 0 auto;
 }
 
 h2 {
   text-align: center;
-  font-size: 2.5rem;
+  font-size: var(--font-size-large);
   margin-bottom: 3rem;
   color: #2c3e50;
   position: relative;
@@ -94,10 +93,10 @@ h2::after {
 
 .product-card {
   background: white;
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-duration) ease;
 }
 
 .product-card:hover {
@@ -112,29 +111,34 @@ h2::after {
 }
 
 .product-card h3 {
-  padding: 1rem 1rem 0.5rem;
-  font-size: 1.2rem;
+  padding: var(--padding-medium) var(--padding-medium) var(--padding-small);
+  font-size: var(--font-size-medium);
 }
 
 .product-card p {
-  padding: 0 1rem 1rem;
+  padding: 0 var(--padding-medium) var(--padding-small);
   font-weight: bold;
   color: #e74c3c;
 }
 
-.product-card button {
-  display: block;
-  width: 100%;
-  padding: 0.8rem;
-  background-color: #2c3e50;
+.cta-button, .product-card button {
+  padding: var(--padding-small) var(--padding-medium);
+  font-size: var(--font-size-medium);
+  background-color: var(--red);
   color: white;
   border: none;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all var(--transition-duration) ease;
+  text-transform: uppercase;
+  letter-spacing: 0.0625rem;
+  font-weight: 600;
 }
 
-.product-card button:hover {
-  background-color: #1a252f;
+.cta-button:hover, .product-card button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Categories */
@@ -147,11 +151,11 @@ h2::after {
 
 .category-card {
   background: #f8f9fa;
-  padding: 2rem 1rem;
+  padding: var(--padding-medium) var(--padding-small);
   text-align: center;
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-duration) ease;
   border: 0.0625rem solid #e9ecef;
 }
 
@@ -165,7 +169,7 @@ h2::after {
 .about {
   background-color: #f8f9fa;
   margin: 4rem 0;
-  padding: 4rem 2rem;
+  padding: var(--padding-large) var(--padding-medium);
 }
 
 .features {
@@ -177,11 +181,11 @@ h2::after {
 
 .feature {
   text-align: center;
-  padding: 2rem;
+  padding: var(--padding-medium);
   background: white;
-  border-radius: 0.5rem;
+  border-radius: var(--border-radius);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-duration) ease;
 }
 
 .feature:hover {
@@ -193,27 +197,6 @@ h2::after {
   margin-bottom: 1rem;
 }
 
-/* Buttons */
-.cta-button {
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
-  background-color: var(--red);
-  color: white;
-  border: none;
-  border-radius: 3.125rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.0625rem;
-  font-weight: 600;
-}
-
-.cta-button:hover {
-  background-color: #c0392b;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
 /* Brands Section */
 .brands {
   text-align: center;
@@ -221,7 +204,7 @@ h2::after {
 }
 .brands h2 {
   color: var(--pink);
-  font-size: 2.5rem;
+  font-size: var(--font-size-large);
   margin-bottom: 2rem;
   font-style: italic;
 }
@@ -272,7 +255,7 @@ h2::after {
 }
 .top-selling h2 {
   color: var(--pink);
-  font-size: 2.5rem;
+  font-size: var(--font-size-large);
   margin-bottom: 2rem;
   font-style: italic;
 }
@@ -403,7 +386,7 @@ h2::after {
 }
 .testimonials h2 {
   color: var(--pink);
-  font-size: 2.5rem;
+  font-size: var(--font-size-large);
   margin-bottom: 2rem;
 }
 .testimonials .testimonial-list {
@@ -545,11 +528,11 @@ h2::after {
   }
   
   .hero-content p {
-    font-size: 1.2rem;
+    font-size: var(--font-size-medium);
   }
   
   section {
-    padding: 3rem 1rem;
+    padding: var(--padding-medium) var(--padding-small);
   }
   
   .product-grid {
@@ -563,7 +546,7 @@ h2::after {
   }
   
   .hero-content p {
-    font-size: 1rem;
+    font-size: var(--font-size-small);
   }
   
   h2 {
@@ -573,4 +556,16 @@ h2::after {
   .features, .category-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Variáveis CSS adicionais para tamanhos e espaçamentos */
+:root {
+  --font-size-large: 2.5rem;
+  --font-size-medium: 1.2rem;
+  --font-size-small: 1rem;
+  --padding-large: 4rem;
+  --padding-medium: 2rem;
+  --padding-small: 1rem;
+  --border-radius: 0.5rem;
+  --transition-duration: 0.3s;
 }
