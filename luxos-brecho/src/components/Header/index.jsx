@@ -38,23 +38,8 @@ const Header = () => {
             <li className="nav-item">
               <Link to="/sobre" className="nav-link">Sobre</Link>
             </li>
-            <li className="nav-item">
-              <Link to="/contato" className="nav-link">Contato</Link>
-            </li>
           </ul>
         </nav>
-        <div className="header-actions">
-          <button className="icon-button">
-            <span className="material-icons">search</span>
-          </button>
-          <button className="icon-button">
-            <span className="material-icons">person</span>
-          </button>
-          <button className="icon-button cart-button">
-            <span className="material-icons">shopping_cart</span>
-            <span className="cart-count">0</span>
-          </button>
-        </div>
       </div>
     </header>
   );
