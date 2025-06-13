@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&display=swap');
+
 /* Global Reset */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -16,6 +18,8 @@ html, body, #root {
   --dark: #2c3e50;
   --light: #ecf0f1;
   --red: #e74c3c;
+  --font-family-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-family-secondary: 'Karantina', cursive;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -70,6 +74,10 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+.search-style h2 {
+  font-family: var(--font-family-secondary);
 }
 
 @media (prefers-color-scheme: light) {

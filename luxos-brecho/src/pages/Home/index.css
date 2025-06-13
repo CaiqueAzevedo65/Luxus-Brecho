@@ -313,18 +313,22 @@ h2::after {
   background-color: #f0f0f0;
   padding: 3rem 1rem;
   text-align: center;
+  border-radius: var(--border-radius);
 }
 .search-style h2 {
   color: var(--pink);
-  font-size: 2.2rem;
-  margin-bottom: 1.5rem;
+  font-size: 3.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.search-style h2::after {
+  display: none;
 }
 .style-grid {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  
   margin: 0 auto;
 }
 .style-card {
