@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&display=swap');
 
+/*========== Global Styles: Resets & Variables ==========*/
+
 /* Global Reset */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -33,6 +35,8 @@ html, body, #root {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/*========== End of Global Styles ==========*/
 
 a {
   font-weight: 500;
