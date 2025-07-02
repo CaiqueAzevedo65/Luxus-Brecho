@@ -7,6 +7,7 @@
 
 .main-content {
   flex: 1;
+  padding-top: 5rem; /* Ajuste este valor conforme a altura do seu header */
   padding-bottom: 2rem;
 }
 

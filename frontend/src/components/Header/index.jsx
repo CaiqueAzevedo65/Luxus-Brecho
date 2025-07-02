@@ -4,22 +4,12 @@ import { FiMenu, FiX, FiShoppingCart, FiUser, FiSearch, FiHome, FiTag, FiGrid, F
 import './index.css';
 
 const Header = () => {
-  const [showHeader, setShowHeader] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navRef = useRef(null);
   const menuButtonRef = useRef(null);
 
-  // Handle scroll effect
+  // Handle click outside to close menu
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 100) {
-        setShowHeader(true);
-      } else {
-        setShowHeader(false);
-      }
-    };
-
-    // Handle click outside to close menu
     const handleClickOutside = (event) => {
       if (navRef.current && !navRef.current.contains(event.target) && 
           menuButtonRef.current && !menuButtonRef.current.contains(event.target)) {
@@ -28,11 +18,9 @@ const Header = () => {
     };
 
     // Add event listeners
-    window.addEventListener('scroll', handleScroll);
     document.addEventListener('mousedown', handleClickOutside);
     
     return () => {
-      window.removeEventListener('scroll', handleScroll);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
@@ -47,7 +35,7 @@ const Header = () => {
 
   return (
     <>
-      <header className={`header ${showHeader ? 'visible' : 'hidden'}`}>
+      <header className="header">
         <div className="header-container">
           <div className="logo">
             <Link to="/">Luxus <span>Brechó</span></Link>
