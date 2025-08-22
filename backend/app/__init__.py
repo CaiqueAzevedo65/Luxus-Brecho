@@ -12,13 +12,22 @@ def create_app():
     """Função para criar e configurar a aplicação Flask"""
     app = Flask(__name__)
     
+    # Inicializa referências ao Mongo como None; serão preenchidas se conexão for bem-sucedida
+    app.mongo = None
+    app.db = None
+    
     # Configuração do cliente MongoDB usando variáveis de ambiente
-    # Se existir usuário e senha configurados, usa autenticação
-    if os.getenv("MONGODB_USERNAME") and os.getenv("MONGODB_PASSWORD"):
-        uri = f"mongodb://{os.getenv('MONGODB_USERNAME')}:{os.getenv('MONGODB_PASSWORD')}@{os.getenv('MONGODB_HOST')}/?retryWrites=true&w=majority&appName=Cluster0"
-    else:
-        # Caso contrário, usa conexão sem autenticação
-        uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
+    # Preferir MONGODB_URI; caso contrário, montar URI apenas se USER/PASS/HOST estiverem presentes
+    uri = os.getenv("MONGODB_URI")
+    if not uri:
+        username = os.getenv("MONGODB_USERNAME")
+        password = os.getenv("MONGODB_PASSWORD")
+        host = os.getenv("MONGODB_HOST")
+        if username and password and host:
+            uri = f"mongodb://{username}:{password}@{host}/?retryWrites=true&w=majority&appName=Cluster0"
+        else:
+            # Fallback local
+            uri = "mongodb://localhost:27017"
     
     # Cria o cliente MongoDB com timeout para evitar bloqueio prolongado
     client = MongoClient(uri, serverSelectionTimeoutMS=5000)
@@ -33,7 +42,7 @@ def create_app():
     except (ConnectionFailure, ServerSelectionTimeoutError) as e:
         print(f"Erro ao conectar ao MongoDB: {e}")
         print("Verifique as configurações no arquivo .env e se o servidor MongoDB está em execução.")
-        sys.exit(1)  # Encerra a aplicação com código de erro
+        # Não encerra a aplicação: mantém app.mongo/app.db como None para que /api/health reporte DOWN
 
     # Configurações do Flask a partir de variáveis de ambiente
     app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "False").lower() == "true"

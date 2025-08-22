@@ -30,7 +30,6 @@ __pycache__
 # Virtual environment
 venv
 .env
-.env.example
 
 # MongoDB
 mongo.db

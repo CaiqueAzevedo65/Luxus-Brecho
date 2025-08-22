@@ -11,12 +11,17 @@ def check_health():
     status_code = 200
     
     # Verifica conexão com o MongoDB
-    try:
-        # Usa o cliente MongoDB para executar um comando de ping no servidor
-        current_app.mongo.admin.command('ping')
-    except (ConnectionFailure, ServerSelectionTimeoutError):
+    if current_app.mongo is None:
+        # Conexão não estabelecida na inicialização
         mongo_status = "DOWN"
         status_code = 503  # Service Unavailable
+    else:
+        try:
+            # Usa o cliente MongoDB para executar um comando de ping no servidor
+            current_app.mongo.admin.command('ping')
+        except (ConnectionFailure, ServerSelectionTimeoutError):
+            mongo_status = "DOWN"
+            status_code = 503  # Service Unavailable
     
     return jsonify(
         api_status='UP',
