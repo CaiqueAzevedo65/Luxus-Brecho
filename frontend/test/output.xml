@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.0.2 (Python 3.13.7 on win32)" generated="20250815 21:48:30.718" rpa="false" schemaversion="3">
+<suite id="s1" name="Test" source="C:\Users\jmfrt\Downloads\LUXUS\Luxus-Brecho\frontend\test">
+<suite id="s1-s1" name="Test Botao" source="C:\Users\jmfrt\Downloads\LUXUS\Luxus-Brecho\frontend\test\test_botao.robot">
+<test id="s1-s1-t1" name="Validar Link &quot;Sobre Nós&quot;" line="8">
+<kw name="Open Browser" library="SeleniumLibrary">
+<arg>${URL}</arg>
+<arg>chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<msg timestamp="20250815 21:48:31.158" level="INFO">Opening browser 'chrome' to base url 'http://localhost:5173/'.</msg>
+<status status="PASS" starttime="20250815 21:48:31.157" endtime="20250815 21:48:33.126"/>
+</kw>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>xpath=//a[contains(text(), 'Sobre Nós')]</arg>
+<arg>timeout=10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<status status="PASS" starttime="20250815 21:48:33.127" endtime="20250815 21:48:33.168"/>
+</kw>
+<kw name="Element Should Be Enabled" library="SeleniumLibrary">
+<arg>xpath=//a[contains(text(), 'Sobre Nós')]</arg>
+<doc>Verifies that element identified by ``locator`` is enabled.</doc>
+<status status="PASS" starttime="20250815 21:48:33.169" endtime="20250815 21:48:33.213"/>
+</kw>
+<kw name="Click Element" library="SeleniumLibrary">
+<arg>xpath=//a[contains(text(), 'Sobre Nós')]</arg>
+<doc>Click the element identified by ``locator``.</doc>
+<msg timestamp="20250815 21:48:33.214" level="INFO">Clicking element 'xpath=//a[contains(text(), 'Sobre Nós')]'.</msg>
+<status status="PASS" starttime="20250815 21:48:33.213" endtime="20250815 21:48:33.343"/>
+</kw>
+<kw name="Wait Until Element Is Visible" library="SeleniumLibrary">
+<arg>xpath=//h1[contains(text(), 'Nossa Missão')]</arg>
+<arg>timeout=10s</arg>
+<doc>Waits until the element ``locator`` is visible.</doc>
+<msg timestamp="20250815 21:48:43.543" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-4.png"&gt;&lt;img src="selenium-screenshot-4.png" width="800px"&gt;&lt;/a&gt;</msg>
+<msg timestamp="20250815 21:48:43.543" level="FAIL">Element 'xpath=//h1[contains(text(), 'Nossa Missão')]' not visible after 10 seconds.</msg>
+<status status="FAIL" starttime="20250815 21:48:33.344" endtime="20250815 21:48:43.547"/>
+</kw>
+<kw name="Wait Until Page Contains" library="SeleniumLibrary">
+<arg>Nossa História</arg>
+<arg>timeout=10s</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="NOT RUN" starttime="20250815 21:48:43.549" endtime="20250815 21:48:43.550"/>
+</kw>
+<kw name="Wait Until Page Contains" library="SeleniumLibrary">
+<arg>Nossos Valores</arg>
+<arg>timeout=10s</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="NOT RUN" starttime="20250815 21:48:43.551" endtime="20250815 21:48:43.551"/>
+</kw>
+<kw name="Close Browser" library="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes the current browser.</doc>
+<status status="PASS" starttime="20250815 21:48:43.552" endtime="20250815 21:48:46.241"/>
+</kw>
+<status status="FAIL" starttime="20250815 21:48:31.156" endtime="20250815 21:48:46.242">Element 'xpath=//h1[contains(text(), 'Nossa Missão')]' not visible after 10 seconds.</status>
+</test>
+<status status="FAIL" starttime="20250815 21:48:30.765" endtime="20250815 21:48:46.245"/>
+</suite>
+<suite id="s1-s2" name="Test Homepage" source="C:\Users\jmfrt\Downloads\LUXUS\Luxus-Brecho\frontend\test\test_homepage.robot">
+<test id="s1-s2-t1" name="Abrir página principal e fechar" line="8">
+<kw name="Open Browser" library="SeleniumLibrary">
+<arg>${URL}</arg>
+<arg>chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<msg timestamp="20250815 21:48:46.259" level="INFO">Opening browser 'chrome' to base url 'http://localhost:5173'.</msg>
+<status status="PASS" starttime="20250815 21:48:46.257" endtime="20250815 21:48:48.914"/>
+</kw>
+<kw name="Wait Until Page Contains" library="SeleniumLibrary">
+<arg>Luxus Brechó</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="PASS" starttime="20250815 21:48:48.915" endtime="20250815 21:48:48.956"/>
+</kw>
+<kw name="Close Browser" library="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes the current browser.</doc>
+<status status="PASS" starttime="20250815 21:48:48.958" endtime="20250815 21:48:51.596"/>
+</kw>
+<status status="PASS" starttime="20250815 21:48:46.256" endtime="20250815 21:48:51.597"/>
+</test>
+<status status="PASS" starttime="20250815 21:48:46.249" endtime="20250815 21:48:51.600"/>
+</suite>
+<suite id="s1-s3" name="test Sobrenos" source="C:\Users\jmfrt\Downloads\LUXUS\Luxus-Brecho\frontend\test\test_Sobrenos.robot">
+<test id="s1-s3-t1" name="Abrir página Sobre Nós e verificar título" line="8">
+<kw name="Open Browser" library="SeleniumLibrary">
+<arg>${URL}</arg>
+<arg>chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<msg timestamp="20250815 21:48:51.611" level="INFO">Opening browser 'chrome' to base url 'http://localhost:5173/sobre'.</msg>
+<status status="PASS" starttime="20250815 21:48:51.610" endtime="20250815 21:48:53.675"/>
+</kw>
+<kw name="Wait Until Page Contains" library="SeleniumLibrary">
+<arg>Sobre Nós</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="PASS" starttime="20250815 21:48:53.676" endtime="20250815 21:48:53.707"/>
+</kw>
+<kw name="Close Browser" library="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes the current browser.</doc>
+<status status="PASS" starttime="20250815 21:48:53.708" endtime="20250815 21:48:56.223"/>
+</kw>
+<status status="PASS" starttime="20250815 21:48:51.609" endtime="20250815 21:48:56.225"/>
+</test>
+<status status="PASS" starttime="20250815 21:48:51.603" endtime="20250815 21:48:56.226"/>
+</suite>
+<status status="FAIL" starttime="20250815 21:48:30.720" endtime="20250815 21:48:56.228"/>
+</suite>
+<statistics>
+<total>
+<stat pass="2" fail="1" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="2" fail="1" skip="0" id="s1" name="Test">Test</stat>
+<stat pass="0" fail="1" skip="0" id="s1-s1" name="Test Botao">Test.Test Botao</stat>
+<stat pass="1" fail="0" skip="0" id="s1-s2" name="Test Homepage">Test.Test Homepage</stat>
+<stat pass="1" fail="0" skip="0" id="s1-s3" name="test Sobrenos">Test.test Sobrenos</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
