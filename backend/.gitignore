@@ -30,7 +30,42 @@ __pycache__
 # Virtual environment
 venv
 .env
-.env.example
 
 # MongoDB
 mongo.db
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+
+# Ignore environment files
+.env
+
+# Ignore IDE files
+.idea/
+
+# Ignore database files
+db/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+
+# Ignore API paths file
+api_paths.txt
+
+# Ignore virtual environments
+venv/
+
+# Ignore node_modules
+node_modules/
+
+# Ignore coverage reports
+htmlcov/
+.coverage
+
+# Ignore pytest cache
+.pytest_cache/
