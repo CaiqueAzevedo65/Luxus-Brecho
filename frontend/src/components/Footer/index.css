@@ -66,6 +66,11 @@
   color: var(--light-gray, #ccc); /* Use uma variável ou cor fallback */
 }
 
+.footer-brand-container {
+  display: flex;
+  gap: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .footer-content {
     flex-direction: column;

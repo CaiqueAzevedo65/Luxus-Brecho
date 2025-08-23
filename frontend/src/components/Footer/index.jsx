@@ -11,8 +11,10 @@ const Footer = () => (
   <footer className="footer" role="contentinfo">
     <div className="footer-content">
       <div className="footer-left">
-        <img src={instagramIcon} alt="Instagram" className="footer-instagram" />
-        <a href="https://www.instagram.com/luxus.brecho_/" target="_blank" rel="noopener noreferrer" className="footer-brand">luxus.brecho_</a>
+        <div className="footer-brand-container">
+          <img src={instagramIcon} alt="Instagram" className="footer-instagram" />
+          <a href="https://www.instagram.com/luxus.brecho_/" target="_blank" rel="noopener noreferrer" className="footer-brand">luxus.brecho_</a>
+        </div>
         <nav className="footer-nav" aria-label="Footer Navigation">
           <ul>
             <li><Link to="/sobre">Sobre Nós</Link></li>

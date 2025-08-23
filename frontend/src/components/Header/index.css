@@ -6,7 +6,7 @@
   left: 0;
   width: 100%;
   z-index: 1000;
-  padding: 0.8rem 0;
+  padding: 1rem 0;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: none;
