@@ -4,6 +4,7 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 import os
 import sys
 from dotenv import load_dotenv
+from flask_cors import CORS
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -11,6 +12,16 @@ load_dotenv()
 def create_app():
     """Função para criar e configurar a aplicação Flask"""
     app = Flask(__name__)
+    # Habilita CORS restrito para as rotas da API
+    allowed_origins_env = os.getenv("FRONTEND_ORIGIN")
+    if allowed_origins_env:
+        allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+    else:
+        allowed_origins = [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ]
+    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
     
     # Inicializa referências ao Mongo como None; serão preenchidas se conexão for bem-sucedida
     app.mongo = None
