@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 import os
 import sys
 from dotenv import load_dotenv
@@ -50,7 +50,7 @@ def create_app():
         print("MongoDB conectado com sucesso!")
         app.mongo = client
         app.db = client[os.getenv("MONGODB_DATABASE", "luxus_brecho_db")]
-    except (ConnectionFailure, ServerSelectionTimeoutError) as e:
+    except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure) as e:
         print(f"Erro ao conectar ao MongoDB: {e}")
         print("Verifique as configurações no arquivo .env e se o servidor MongoDB está em execução.")
         # Não encerra a aplicação: mantém app.mongo/app.db como None para que /api/health reporte DOWN

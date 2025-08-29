@@ -1,5 +1,5 @@
 from flask import jsonify, current_app
-from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 
 def check_health():
     """Função de controle para verificação de saúde da API e do banco de dados
@@ -19,7 +19,7 @@ def check_health():
         try:
             # Usa o cliente MongoDB para executar um comando de ping no servidor
             current_app.mongo.admin.command('ping')
-        except (ConnectionFailure, ServerSelectionTimeoutError):
+        except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure):
             mongo_status = "DOWN"
             status_code = 503  # Service Unavailable
     
