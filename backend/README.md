@@ -67,6 +67,58 @@ Como usar:
 Ambiente de produção (opcional):
 - Crie um novo ambiente no Postman com `baseUrl = https://api.seu-dominio.com` (ou a URL do backend).
 
+### Import rápido (Postman → Import → Raw Text)
+Cole os cURLs abaixo no Postman para criar rapidamente as requisições:
+```bash
+# Health
+curl --request GET \
+  --url http://localhost:5000/api/health
+
+# Listar produtos (com paginação opcional)
+curl --request GET \
+  --url "http://localhost:5000/api/products?page=1&page_size=10"
+
+# Filtrar por categoria
+curl --request GET \
+  --url "http://localhost:5000/api/products?categoria=Casual"
+
+# Buscar por texto (usa índice de texto em título/descrição)
+curl --request GET \
+  --url "http://localhost:5000/api/products?q=floral"
+
+# Criar produto
+curl --request POST \
+  --url http://localhost:5000/api/products \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "titulo": "Camisa Floral Feminina",
+    "preco": 89.90,
+    "descricao": "Camisa leve com estampa floral, tamanho M.",
+    "categoria": "Casual",
+    "imagem": "https://storage.supabase.co/bucket/produtos/camisa-floral.jpg"
+  }'
+
+# Obter produto por id
+curl --request GET \
+  --url http://localhost:5000/api/products/1
+
+# Atualizar produto por id
+curl --request PUT \
+  --url http://localhost:5000/api/products/1 \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "titulo": "Camisa Floral Feminina - Nova Edição",
+    "preco": 95.90,
+    "descricao": "Camisa leve com estampa floral, tamanho M (ajustada).",
+    "categoria": "Casual",
+    "imagem": "https://storage.supabase.co/bucket/produtos/camisa-floral-v2.jpg"
+  }'
+
+# Excluir produto por id
+curl --request DELETE \
+  --url http://localhost:5000/api/products/1
+```
+
 ## Estrutura de pastas (resumo)
 ```
 backend/

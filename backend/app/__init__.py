@@ -5,6 +5,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from flask_cors import CORS
+from app.models.product_model import ensure_products_collection
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -50,6 +51,8 @@ def create_app():
         print("MongoDB conectado com sucesso!")
         app.mongo = client
         app.db = client[os.getenv("MONGODB_DATABASE", "luxus_brecho_db")]
+        # Garante schema/índices da coleção de produtos
+        ensure_products_collection(app.db)
     except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure) as e:
         print(f"Erro ao conectar ao MongoDB: {e}")
         print("Verifique as configurações no arquivo .env e se o servidor MongoDB está em execução.")
@@ -60,6 +63,8 @@ def create_app():
 
     # Registra os blueprints (conjuntos de rotas)
     from app.routes.health_routes import health_bp
+    from app.routes.products_routes import products_bp
     app.register_blueprint(health_bp)
+    app.register_blueprint(products_bp)
 
     return app
