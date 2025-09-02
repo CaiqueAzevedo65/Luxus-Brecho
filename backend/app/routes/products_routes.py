@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.products_controller import (
+from backend.app.controllers.products_controller import (
     list_products,
     get_product,
     create_product,

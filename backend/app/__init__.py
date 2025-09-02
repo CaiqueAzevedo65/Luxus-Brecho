@@ -5,7 +5,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from flask_cors import CORS
-from app.models.product_model import ensure_products_collection
+from backend.app.models.product_model import ensure_products_collection
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()

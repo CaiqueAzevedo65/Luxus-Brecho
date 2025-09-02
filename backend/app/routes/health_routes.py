@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.health_controller import check_health
+from backend.app.controllers.health_controller import check_health
 
 # Cria blueprint para rotas de verificação de saúde
 health_bp = Blueprint('health', __name__, url_prefix='/api')

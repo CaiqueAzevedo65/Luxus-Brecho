@@ -3,7 +3,7 @@ from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 from typing import Any, Dict
 
-from app.models.product_model import (
+from backend.app.models.product_model import (
     get_collection,
     prepare_new_product,
     validate_product,
