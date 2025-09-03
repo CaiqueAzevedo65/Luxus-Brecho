@@ -1,0 +1,46 @@
+# ========================================
+# .gitignore - Mobile (React Native / Expo)
+# ========================================
+
+# Node dependencies
+node_modules/
+
+# Expo
+.expo/
+expo-env.d.ts
+web-build/
+dist/
+.metro-health-check*
+
+# iOS / Android
+.ios/
+.android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Logs / Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+
+# macOS
+.DS_Store
+
+# Temporary / cache
+*.tmp
+*.temp
+*.swp
+*.bak
+
+# VSCode / IDEs
+.vscode/
+.idea/
