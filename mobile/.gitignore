@@ -44,3 +44,5 @@ yarn-error.*
 # VSCode / IDEs
 .vscode/
 .idea/
+
+package.json
