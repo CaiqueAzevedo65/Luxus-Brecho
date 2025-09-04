@@ -45,4 +45,3 @@ yarn-error.*
 .vscode/
 .idea/
 
-package.json
