@@ -37,16 +37,15 @@ jobs:
         run: |
           python -m pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=html
 
-      # 5️⃣ Upload do relatório XML
       - name: Upload coverage XML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
           path: backend/coverage.xml
-
-      # 6️⃣ Upload do relatório HTML
+      
       - name: Upload coverage HTML
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-html
           path: backend/htmlcov
+
