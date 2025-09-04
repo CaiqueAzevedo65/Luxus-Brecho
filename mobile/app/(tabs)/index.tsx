@@ -1,75 +1,176 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import React from 'react';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Header } from '@/components/ecommerce/Header';
+import { PromoBanner } from '@/components/ecommerce/PromoBanner';
+import { ProductCard } from '@/components/ecommerce/ProductCard';
+import { CategoryCard } from '@/components/ecommerce/CategoryCard';
+import { TestimonialCard } from '@/components/ecommerce/TestimonialCard';
 
 export default function HomeScreen() {
+  const featuredProducts = [
+    { id: 1, title: 'Blusa Rosa Estampada', price: '45,00', originalPrice: '60,00', rating: 5 },
+    { id: 2, title: 'Vestido Amarelo Floral', price: '75,00', originalPrice: '90,00', rating: 4 },
+    { id: 3, title: 'Camiseta Vintage', price: '35,00', originalPrice: '50,00', rating: 5 },
+    { id: 4, title: 'Saia Vermelha Plissada', price: '55,00', originalPrice: '70,00', rating: 4 }
+  ];
+
+  const topSellingProducts = [
+    { id: 1, title: 'Óculos Vintage Retrô', price: '89,00', rating: 5 },
+    { id: 2, title: 'Bolsa Couro Marrom', price: '120,00', rating: 4 },
+    { id: 3, title: 'Relógio Clássico', price: '200,00', rating: 5 },
+    { id: 4, title: 'Chapéu de Palha', price: '45,00', rating: 4 }
+  ];
+
+  const categories = [
+    { title: 'Casual', backgroundColor: '#FF6B9D' },
+    { title: 'Formal', backgroundColor: '#9C5AFF' },
+    { title: 'Social', backgroundColor: '#FF8C42' },
+    { title: 'Esportivo', backgroundColor: '#4ECDC4' }
+  ];
+
+  const testimonials = [
+    {
+      rating: 5,
+      comment: 'Excelente qualidade das roupas! Amei minha compra e chegou super rápido. Recomendo muito!',
+      author: 'Maria Silva'
+    },
+    {
+      rating: 5,
+      comment: 'Ótima variedade de produtos e preços justos. Atendimento nota 10, voltarei a comprar!',
+      author: 'João Santos'
+    },
+    {
+      rating: 4,
+      comment: 'Produtos de qualidade e entrega rápida. Só faltou mais opções de tamanhos grandes.',
+      author: 'Ana Costa'
+    }
+  ];
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+      <Header />
+      
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Promotional Banner */}
+        <PromoBanner />
+
+        {/* Featured Products */}
+        <View className="mb-6">
+          <View className="flex-row justify-between items-center px-4 mb-3">
+            <Text className="text-lg font-bold text-gray-800">Produtos em Destaque</Text>
+            <TouchableOpacity>
+              <Text className="text-pink-600 font-medium">Ver mais</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
+            {featuredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                title={product.title}
+                price={product.price}
+                originalPrice={product.originalPrice}
+                rating={product.rating}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Top Selling */}
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-gray-800 px-4 mb-3 text-center">
+            TOP SELLING
+          </Text>
+          
+          <View className="px-4">
+            {topSellingProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                title={product.title}
+                price={product.price}
+                rating={product.rating}
+                isHorizontal={true}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Categories */}
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-gray-800 px-4 mb-3 text-center">
+            PESQUISE POR ESTILO
+          </Text>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
+            {categories.map((category, index) => (
+              <CategoryCard
+                key={index}
+                title={category.title}
+                backgroundColor={category.backgroundColor}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Customer Testimonials */}
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-gray-800 px-4 mb-3 text-center">
+            CLIENTES SATISFEITOS
+          </Text>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
+            {testimonials.map((testimonial, index) => (
+              <TestimonialCard
+                key={index}
+                rating={testimonial.rating}
+                comment={testimonial.comment}
+                author={testimonial.author}
+              />
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Chat Section */}
+        <View className="mx-4 mb-6 bg-white rounded-xl p-4 shadow-sm">
+          <Text className="text-gray-600 text-sm mb-3">
+            Para tirar suas mais dúvidas
+          </Text>
+          <View className="flex-row justify-end space-x-2">
+            <TouchableOpacity className="bg-pink-100 px-4 py-2 rounded-full">
+              <Text className="text-pink-600 text-sm">Oi</Text>
+            </TouchableOpacity>
+            <TouchableOpacity className="bg-pink-600 px-4 py-2 rounded-full">
+              <Text className="text-white text-sm">Preciso de ajuda</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View className="bg-pink-600 mx-4 mb-6 rounded-xl p-4">
+          <Text className="text-white font-bold text-lg mb-2">luxus.brecho...</Text>
+          <View className="flex-row justify-between items-center">
+            <View>
+              <Text className="text-white text-sm">Termos</Text>
+              <Text className="text-white text-sm">Suporte</Text>
+              <Text className="text-white text-sm">Contato</Text>
+            </View>
+            <View className="flex-row space-x-2">
+              <View className="bg-white rounded p-1">
+                <Text className="text-xs">💳</Text>
+              </View>
+              <View className="bg-white rounded p-1">
+                <Text className="text-xs">💳</Text>
+              </View>
+              <View className="bg-white rounded p-1">
+                <Text className="text-xs">💳</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
