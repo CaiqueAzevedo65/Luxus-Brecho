@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "name": "mobile",
     "version": "1.0.0",
     "private": true,
@@ -53,3 +54,9 @@
     }
   }
   
+=======
+  "name": "mobile",
+  "version": "1.0.0",
+  "dependencies": {}
+}
+>>>>>>> 6cf064074068cdb3712a54b11f879b16daeb7088
