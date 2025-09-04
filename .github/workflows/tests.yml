@@ -1,5 +1,6 @@
 name: Backend Tests
 
+# Dispara sempre que houver push ou PR na branch main
 on:
   push:
     branches:
@@ -15,37 +16,22 @@ jobs:
       run:
         working-directory: backend
     steps:
-      # 1️⃣ Clonar o repositório
+      # 1️⃣ Clona o repositório
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Configurar Python
+      # 2️⃣ Configura o Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      # 3️⃣ Instalar dependências
+      # 3️⃣ Instala dependências
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Rodar testes com cobertura
-      - name: Run backend tests with coverage
-        run: |
-          pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=html
-
-      # 5️⃣ Upload do relatório XML (opcional)
-      - name: Upload coverage XML
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-xml
-          path: backend/coverage.xml
-
-      # 6️⃣ Upload do relatório HTML
-      - name: Upload coverage HTML
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-html
-          path: backend/htmlcov
+      # 4️⃣ Roda os testes do backend
+      - name: Run backend tests
+        run: pytest --maxfail=1 --disable-warnings -q
