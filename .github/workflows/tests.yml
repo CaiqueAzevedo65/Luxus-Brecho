@@ -1,4 +1,4 @@
-name: Run Tests
+name: Backend Tests
 
 on:
   push:
@@ -15,7 +15,8 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -27,5 +28,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run pytest
+      - name: Run backend tests
         run: pytest --maxfail=1 --disable-warnings -q
