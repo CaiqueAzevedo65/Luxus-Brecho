@@ -14,17 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: backend  # Importante: roda dentro da pasta backend
     steps:
       # 1️⃣ Clona o repositório
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ Configura o Python
+      # 2️⃣ Configura Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       # 3️⃣ Instala dependências
       - name: Install dependencies
@@ -32,6 +32,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4️⃣ Roda os testes do backend
-      - name: Run backend tests
-        run: pytest --maxfail=1 --disable-warnings -q
+      # 4️⃣ Roda os testes com cobertura
+      - name: Run backend tests with coverage
+        run: |
+          python -m pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=html
+
+      # 5️⃣ Upload do relatório XML
+      - name: Upload coverage XML
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-xml
+          path: backend/coverage.xml
+
+      # 6️⃣ Upload do relatório HTML
+      - name: Upload coverage HTML
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-html
+          path: backend/htmlcov
