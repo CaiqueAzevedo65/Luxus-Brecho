@@ -1,6 +1,10 @@
 {
   "name": "mobile",
   "version": "1.0.0",
+<<<<<<< HEAD
+  "dependencies": {
+    "expo": "^53.0.22"
+=======
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -51,5 +55,6 @@
     "nativewind": "2.0.11",
     "tailwindcss": "3.3.2",
     "typescript": "~5.8.3"
+>>>>>>> bc24330193490d04e561d64607a12d0e277ffc8b
   }
 }
