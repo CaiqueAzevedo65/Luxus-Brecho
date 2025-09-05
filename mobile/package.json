@@ -1,5 +1,7 @@
 {
   "name": "mobile",
   "version": "1.0.0",
-  "dependencies": {}
+  "dependencies": {
+    "expo": "^53.0.22"
+  }
 }
