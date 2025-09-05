@@ -1,12 +1,12 @@
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import { Text } from "react-native";
+import "../global.css";
 
 export default function Layout() {
-  // Carregar fonte padrão do sistema (sem arquivo extra)
+  // Carregar fonte Inter do Google Fonts
   const [loaded] = useFonts({
-    // Usa a fonte padrão "System"
-    SpaceMono: require("react-native/Libraries/Fonts/Roboto.ttf"),
+    Inter: require("@expo-google-fonts/inter"),
   });
 
   if (!loaded) {
