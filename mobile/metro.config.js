@@ -1,6 +1,10 @@
-const { getDefaultConfig } = require("expo/metro-config");
-const { withNativeWind } = require('nativewind/metro');
+// metro.config.js (para NativeWind v2)
+const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-module.exports = withNativeWind(config, { input: './global.css' });
+// Se usar Reanimated, essas linhas ajudam:
+config.transformer.minifierPath = 'metro-minify-terser';
+config.resolver.sourceExts.push('cjs');
+
+module.exports = config;
