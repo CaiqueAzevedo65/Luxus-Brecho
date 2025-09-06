@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useFeaturedProducts, useTopSellingProducts } from '../../hooks/useProducts';
+import { useCartStore } from '../../store/cartStore';
 import type { Product } from '../../types/product';
 
 const { width } = Dimensions.get('window');
@@ -20,6 +21,9 @@ export default function HomeScreen() {
     loading: loadingTopSelling, 
     error: errorTopSelling 
   } = useTopSellingProducts();
+
+  const { addToCart, getTotalItems } = useCartStore();
+  const cartItemCount = getTotalItems();
 
   interface StyleCategory {
     title: string;
@@ -80,19 +84,23 @@ export default function HomeScreen() {
             onPress={() => router.push('/cart')}
           >
             <MaterialIcons name="shopping-cart" size={28} color="white" />
-            <View style={{ 
-              position: 'absolute', 
-              top: -5, 
-              right: -5, 
-              backgroundColor: '#fff', 
-              borderRadius: 10, 
-              minWidth: 18, 
-              height: 18, 
-              justifyContent: 'center', 
-              alignItems: 'center' 
-            }}>
-              <Text style={{ color: '#E91E63', fontSize: 12, fontWeight: 'bold' }}>2</Text>
-            </View>
+            {cartItemCount > 0 && (
+              <View style={{ 
+                position: 'absolute', 
+                top: -5, 
+                right: -5, 
+                backgroundColor: '#fff', 
+                borderRadius: 10, 
+                minWidth: 18, 
+                height: 18, 
+                justifyContent: 'center', 
+                alignItems: 'center' 
+              }}>
+                <Text style={{ color: '#E91E63', fontSize: 12, fontWeight: 'bold' }}>
+                  {cartItemCount > 99 ? '99+' : cartItemCount}
+                </Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -184,9 +192,23 @@ export default function HomeScreen() {
                   <Text style={{ fontSize: 12, color: '#333', marginBottom: 4 }} numberOfLines={2}>
                     {product.name}
                   </Text>
-                  <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63' }}>
+                  <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63', marginBottom: 8 }}>
                     R$ {product.price.toFixed(2).replace('.', ',')}
                   </Text>
+                  <TouchableOpacity 
+                    style={{
+                      backgroundColor: '#E91E63',
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      borderRadius: 6,
+                      alignItems: 'center'
+                    }}
+                    onPress={() => addToCart(product)}
+                  >
+                    <Text style={{ color: 'white', fontSize: 11, fontWeight: 'bold' }}>
+                      + Carrinho
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               ))}
             </ScrollView>
@@ -255,10 +277,23 @@ export default function HomeScreen() {
                     <Text style={{ fontSize: 14, color: '#333', marginBottom: 4 }}>
                       {product.name}
                     </Text>
-                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63' }}>
+                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63', marginBottom: 8 }}>
                       R$ {product.price.toFixed(2).replace('.', ',')}
                     </Text>
                   </View>
+                  
+                  <TouchableOpacity 
+                    style={{
+                      backgroundColor: '#E91E63',
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                      borderRadius: 6,
+                      marginLeft: 8
+                    }}
+                    onPress={() => addToCart(product)}
+                  >
+                    <Ionicons name="add" size={16} color="white" />
+                  </TouchableOpacity>
                 </View>
               ))}
             </View>

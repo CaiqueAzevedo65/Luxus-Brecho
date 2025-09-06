@@ -1,19 +1,59 @@
-import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useEffect } from 'react';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Image, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useCartStore } from '../store/cartStore';
 
 export default function CartScreen() {
-  const cartItems = [
-    { id: 1, name: 'Produto x', price: 150.00, quantity: 1 },
-    { id: 2, name: 'Produto y', price: 200.00, quantity: 1 },
-    { id: 3, name: 'Produto z', price: 100.00, quantity: 1 }
-  ];
+  const {
+    cart,
+    loading,
+    getTotalItems,
+    getSubtotal,
+    getShippingCost,
+    getTotal,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    loadCart
+  } = useCartStore();
 
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const frete = 15.00;
-  const total = subtotal + frete;
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const handleQuantityChange = async (productId: string, currentQuantity: number, increment: boolean) => {
+    const newQuantity = increment ? currentQuantity + 1 : currentQuantity - 1;
+    await updateQuantity(productId, newQuantity);
+  };
+
+  const handleRemoveItem = (productId: string, productName: string) => {
+    Alert.alert(
+      'Remover item',
+      `Tem certeza que deseja remover "${productName}" do carrinho?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Remover', style: 'destructive', onPress: () => removeFromCart(productId) }
+      ]
+    );
+  };
+
+  const handleClearCart = () => {
+    Alert.alert(
+      'Limpar carrinho',
+      'Tem certeza que deseja remover todos os itens do carrinho?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Limpar', style: 'destructive', onPress: clearCart }
+      ]
+    );
+  };
+
+  const subtotal = getSubtotal();
+  const shippingCost = getShippingCost();
+  const total = getTotal();
+  const totalItems = getTotalItems();
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
@@ -49,25 +89,67 @@ export default function CartScreen() {
         }}>
           <Ionicons name="location-outline" size={16} color="white" />
           <Text style={{ color: 'white', fontSize: 14, marginLeft: 4 }}>
-            %Text %
+            {totalItems} {totalItems === 1 ? 'item' : 'itens'} no carrinho
           </Text>
         </View>
+        
+        {/* Botão limpar carrinho */}
+        {cart.length > 0 && (
+          <View style={{ alignItems: 'flex-end', paddingHorizontal: 16, paddingVertical: 8 }}>
+            <TouchableOpacity onPress={handleClearCart}>
+              <Text style={{ color: 'white', fontSize: 14, textDecorationLine: 'underline' }}>
+                Limpar carrinho
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
       
       <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-        {/* Seção Produtos */}
-        <View style={{ padding: 16 }}>
-          <Text style={{ 
-            fontSize: 18, 
-            fontWeight: 'bold', 
-            color: '#FF8C00', 
-            marginBottom: 16 
-          }}>
-            Produtos
-          </Text>
-          
-          {cartItems.map((item, index) => (
-            <View key={item.id}>
+        {loading ? (
+          <View style={{ padding: 40, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#E91E63" />
+            <Text style={{ color: '#666', marginTop: 8 }}>Carregando carrinho...</Text>
+          </View>
+        ) : cart.length === 0 ? (
+          <View style={{ padding: 40, alignItems: 'center' }}>
+            <Ionicons name="cart-outline" size={64} color="#ccc" />
+            <Text style={{ fontSize: 18, color: '#666', marginTop: 16, textAlign: 'center' }}>
+              Seu carrinho está vazio
+            </Text>
+            <Text style={{ fontSize: 14, color: '#999', marginTop: 8, textAlign: 'center' }}>
+              Adicione produtos para começar suas compras
+            </Text>
+            <TouchableOpacity 
+              style={{ 
+                backgroundColor: '#E91E63',
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                borderRadius: 8,
+                marginTop: 24
+              }}
+              onPress={() => router.back()}
+            >
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                Continuar comprando
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {/* Seção Produtos */}
+            <View style={{ padding: 16 }}>
+              <Text style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                color: '#FF8C00', 
+                marginBottom: 16 
+              }}>
+                Produtos ({totalItems} {totalItems === 1 ? 'item' : 'itens'})
+              </Text>
+              
+              {cart.map((item, index) => (
+                <View key={item._id}>
               <View style={{ 
                 flexDirection: 'row', 
                 alignItems: 'center',
@@ -79,8 +161,21 @@ export default function CartScreen() {
                   height: 80, 
                   backgroundColor: '#D0D0D0', 
                   borderRadius: 8,
-                  marginRight: 16
-                }} />
+                  marginRight: 16,
+                  overflow: 'hidden'
+                }}>
+                  {item.images && item.images[0] ? (
+                    <Image 
+                      source={{ uri: item.images[0] }} 
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                      <Ionicons name="image-outline" size={24} color="#999" />
+                    </View>
+                  )}
+                </View>
                 
                 {/* Informações do produto */}
                 <View style={{ flex: 1 }}>
@@ -89,16 +184,18 @@ export default function CartScreen() {
                     fontWeight: '600', 
                     color: '#333',
                     marginBottom: 4
-                  }}>
+                  }} numberOfLines={2}>
                     {item.name}
                   </Text>
-                  <Text style={{ 
-                    fontSize: 14, 
-                    color: '#666',
-                    marginBottom: 8
-                  }}>
-                    Quantidade: {item.quantity}
-                  </Text>
+                  {item.brand && (
+                    <Text style={{ 
+                      fontSize: 12, 
+                      color: '#999',
+                      marginBottom: 4
+                    }}>
+                      {item.brand}
+                    </Text>
+                  )}
                   <Text style={{ 
                     fontSize: 16, 
                     fontWeight: 'bold', 
@@ -106,45 +203,73 @@ export default function CartScreen() {
                   }}>
                     R$ {item.price.toFixed(2).replace('.', ',')}
                   </Text>
+                  <Text style={{ 
+                    fontSize: 12, 
+                    color: '#666',
+                    marginTop: 4
+                  }}>
+                    Subtotal: R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}
+                  </Text>
                 </View>
                 
-                {/* Botões de quantidade */}
+                {/* Botões de quantidade e remover */}
                 <View style={{ alignItems: 'center' }}>
-                  <TouchableOpacity style={{ 
-                    width: 32, 
-                    height: 32, 
-                    backgroundColor: '#E91E63', 
-                    borderRadius: 16,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginBottom: 8
-                  }}>
+                  <TouchableOpacity 
+                    style={{ 
+                      width: 32, 
+                      height: 32, 
+                      backgroundColor: '#E91E63', 
+                      borderRadius: 16,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginBottom: 8
+                    }}
+                    onPress={() => handleQuantityChange(item._id, item.quantity, true)}
+                    disabled={loading}
+                  >
                     <Ionicons name="add" size={16} color="white" />
                   </TouchableOpacity>
                   
                   <Text style={{ 
                     fontSize: 16, 
                     fontWeight: 'bold',
-                    marginBottom: 8
+                    marginBottom: 8,
+                    minWidth: 24,
+                    textAlign: 'center'
                   }}>
                     {item.quantity}
                   </Text>
                   
-                  <TouchableOpacity style={{ 
-                    width: 32, 
-                    height: 32, 
-                    backgroundColor: '#E91E63', 
-                    borderRadius: 16,
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }}>
+                  <TouchableOpacity 
+                    style={{ 
+                      width: 32, 
+                      height: 32, 
+                      backgroundColor: '#E91E63', 
+                      borderRadius: 16,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginBottom: 8
+                    }}
+                    onPress={() => handleQuantityChange(item._id, item.quantity, false)}
+                    disabled={loading}
+                  >
                     <Ionicons name="remove" size={16} color="white" />
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={{ 
+                      padding: 4
+                    }}
+                    onPress={() => handleRemoveItem(item._id, item.name)}
+                    disabled={loading}
+                  >
+                    <Ionicons name="trash-outline" size={16} color="#E91E63" />
                   </TouchableOpacity>
                 </View>
               </View>
               
               {/* Linha divisória */}
-              {index < cartItems.length - 1 && (
+              {index < cart.length - 1 && (
                 <View style={{ 
                   height: 1, 
                   backgroundColor: '#E91E63', 
@@ -154,91 +279,144 @@ export default function CartScreen() {
               )}
             </View>
           ))}
-        </View>
-        
-        {/* Seção Total */}
-        <View style={{ 
-          paddingHorizontal: 16,
-          paddingVertical: 20
-        }}>
-          <View style={{ 
-            flexDirection: 'row', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            borderTopWidth: 2,
-            borderTopColor: '#E91E63',
-            paddingTop: 16
-          }}>
-            <Text style={{ 
-              fontSize: 18, 
-              fontWeight: 'bold', 
-              color: '#E91E63'
+            </View>
+            
+            {/* Seção Resumo de Valores */}
+            <View style={{ 
+              paddingHorizontal: 16,
+              paddingVertical: 20,
+              backgroundColor: 'white',
+              marginHorizontal: 16,
+              borderRadius: 12,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2
             }}>
-              Total:
-            </Text>
-            <Text style={{ 
-              fontSize: 20, 
-              fontWeight: 'bold', 
-              color: '#E91E63'
-            }}>
-              R$ {total.toFixed(2).replace('.', ',')}
-            </Text>
-          </View>
-        </View>
-        
-        {/* Seção Frete */}
-        <View style={{ 
-          paddingHorizontal: 16,
-          paddingBottom: 32
-        }}>
-          <Text style={{ 
-            fontSize: 18, 
-            fontWeight: 'bold', 
-            color: '#E91E63',
-            marginBottom: 8
-          }}>
-            Frete
-          </Text>
-          <Text style={{ 
-            fontSize: 14, 
-            color: '#333',
-            marginBottom: 4
-          }}>
-            A Entrega ficou em: R$ {frete.toFixed(2).replace('.', ',')}
-          </Text>
-          <TouchableOpacity>
-            <Text style={{ 
-              fontSize: 14, 
-              color: '#00CED1',
-              textDecorationLine: 'underline'
-            }}>
-              Ver mais produtos →
-            </Text>
-          </TouchableOpacity>
-        </View>
-        
-        {/* Botão Finalizar Compra */}
-        <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
-          <TouchableOpacity style={{ 
-            backgroundColor: '#E91E63',
-            borderRadius: 12,
-            paddingVertical: 16,
-            alignItems: 'center',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
-            elevation: 3
-          }}>
-            <Text style={{ 
-              color: 'white', 
-              fontSize: 16, 
-              fontWeight: 'bold'
-            }}>
-              Finalizar Compra
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Text style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                color: '#333',
+                marginBottom: 16
+              }}>
+                Resumo do Pedido
+              </Text>
+              
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, color: '#666' }}>Subtotal:</Text>
+                <Text style={{ fontSize: 14, color: '#666' }}>
+                  R$ {subtotal.toFixed(2).replace('.', ',')}
+                </Text>
+              </View>
+              
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+                <Text style={{ fontSize: 14, color: '#666' }}>
+                  Frete:
+                  {shippingCost === 0 && (
+                    <Text style={{ color: '#4CAF50', fontSize: 12 }}> (Grátis)</Text>
+                  )}
+                </Text>
+                <Text style={{ fontSize: 14, color: shippingCost === 0 ? '#4CAF50' : '#666' }}>
+                  {shippingCost === 0 ? 'GRÁTIS' : `R$ ${shippingCost.toFixed(2).replace('.', ',')}`}
+                </Text>
+              </View>
+              
+              {shippingCost > 0 && (
+                <Text style={{ 
+                  fontSize: 12, 
+                  color: '#4CAF50',
+                  textAlign: 'center',
+                  marginBottom: 16
+                }}>
+                  Frete grátis para compras acima de R$ 150,00
+                </Text>
+              )}
+              
+              <View style={{ 
+                height: 1, 
+                backgroundColor: '#E91E63', 
+                opacity: 0.3,
+                marginBottom: 16
+              }} />
+              
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Text style={{ 
+                  fontSize: 18, 
+                  fontWeight: 'bold', 
+                  color: '#E91E63'
+                }}>
+                  Total:
+                </Text>
+                <Text style={{ 
+                  fontSize: 20, 
+                  fontWeight: 'bold', 
+                  color: '#E91E63'
+                }}>
+                  R$ {total.toFixed(2).replace('.', ',')}
+                </Text>
+              </View>
+            </View>
+            
+            {/* Botão Finalizar Compra */}
+            <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
+              <TouchableOpacity 
+                style={{ 
+                  backgroundColor: '#E91E63',
+                  borderRadius: 12,
+                  paddingVertical: 16,
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                  opacity: loading ? 0.7 : 1
+                }}
+                disabled={loading || cart.length === 0}
+                onPress={() => {
+                  Alert.alert(
+                    'Finalizar Compra',
+                    `Total: R$ ${total.toFixed(2).replace('.', ',')}\n\nDeseja prosseguir com a compra?`,
+                    [
+                      { text: 'Cancelar', style: 'cancel' },
+                      { 
+                        text: 'Confirmar', 
+                        onPress: () => {
+                          Alert.alert('Sucesso!', 'Pedido realizado com sucesso!');
+                          clearCart();
+                          router.back();
+                        }
+                      }
+                    ]
+                  );
+                }}
+              >
+                <Text style={{ 
+                  color: 'white', 
+                  fontSize: 16, 
+                  fontWeight: 'bold'
+                }}>
+                  {loading ? 'Processando...' : 'Finalizar Compra'}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={{ marginTop: 12, alignItems: 'center' }}
+                onPress={() => router.back()}
+              >
+                <Text style={{ 
+                  fontSize: 14, 
+                  color: '#E91E63',
+                  textDecorationLine: 'underline'
+                }}>
+                  Continuar comprando
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
