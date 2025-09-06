@@ -1,171 +1,415 @@
 import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Image, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Header } from '@/components/ecommerce/Header';
-import { PromoBanner } from '@/components/ecommerce/PromoBanner';
-import { ProductCard } from '@/components/ecommerce/ProductCard';
-import { CategoryCard } from '@/components/ecommerce/CategoryCard';
-import { TestimonialCard } from '@/components/ecommerce/TestimonialCard';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+import { useFeaturedProducts, useTopSellingProducts } from '../../hooks/useProducts';
+import type { Product } from '../../types/product';
+
+const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const featuredProducts = [
-    { id: 1, title: 'Blusa Rosa Estampada', price: '45,00', originalPrice: '60,00', rating: 5 },
-    { id: 2, title: 'Vestido Amarelo Floral', price: '75,00', originalPrice: '90,00', rating: 4 },
-    { id: 3, title: 'Camiseta Vintage', price: '35,00', originalPrice: '50,00', rating: 5 },
-    { id: 4, title: 'Saia Vermelha Plissada', price: '55,00', originalPrice: '70,00', rating: 4 }
+  const { 
+    featuredProducts, 
+    loading: loadingFeatured, 
+    error: errorFeatured 
+  } = useFeaturedProducts();
+  
+  const { 
+    topSellingProducts, 
+    loading: loadingTopSelling, 
+    error: errorTopSelling 
+  } = useTopSellingProducts();
+
+  interface StyleCategory {
+    title: string;
+    color: string;
+  }
+
+  interface Testimonial {
+    rating: number;
+    text: string;
+  }
+
+  const styleCategories: StyleCategory[] = [
+    { title: 'Casual', color: '#FF6B9D' },
+    { title: 'Formal', color: '#9C5AFF' },
+    { title: 'Social', color: '#FF8C42' },
+    { title: 'Esportivo', color: '#4ECDC4' }
   ];
 
-  const topSellingProducts = [
-    { id: 1, title: 'Óculos Vintage Retrô', price: '89,00', rating: 5 },
-    { id: 2, title: 'Bolsa Couro Marrom', price: '120,00', rating: 4 },
-    { id: 3, title: 'Relógio Clássico', price: '200,00', rating: 5 },
-    { id: 4, title: 'Chapéu de Palha', price: '45,00', rating: 4 }
+  const testimonials: Testimonial[] = [
+    { rating: 5, text: 'Excelente qualidade e ótimo atendimento!' },
+    { rating: 5, text: 'Peças lindas e bem conservadas.' },
+    { rating: 5, text: 'Recomendo muito! Preços justos.' }
   ];
 
-  const categories = [
-    { title: 'Casual', backgroundColor: '#FF6B9D' },
-    { title: 'Formal', backgroundColor: '#9C5AFF' },
-    { title: 'Social', backgroundColor: '#FF8C42' },
-    { title: 'Esportivo', backgroundColor: '#4ECDC4' }
-  ];
-
-  const testimonials = [
-    {
-      rating: 5,
-      comment: 'Excelente qualidade das roupas! Amei minha compra e chegou super rápido. Recomendo muito!',
-      author: 'Maria Silva'
-    },
-    {
-      rating: 5,
-      comment: 'Ótima variedade de produtos e preços justos. Atendimento nota 10, voltarei a comprar!',
-      author: 'João Santos'
-    },
-    {
-      rating: 4,
-      comment: 'Produtos de qualidade e entrega rápida. Só faltou mais opções de tamanhos grandes.',
-      author: 'Ana Costa'
-    }
-  ];
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, index) => (
+      <Ionicons
+        key={index}
+        name={index < rating ? "star" : "star-outline"}
+        size={12}
+        color="#FFD700"
+      />
+    ));
+  };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <Header />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+      <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
+      
+      {/* Header */}
+      <View style={{ backgroundColor: '#E91E63', paddingHorizontal: 16, paddingVertical: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View style={{ flex: 1, marginRight: 12 }}>
+            <View style={{ 
+              backgroundColor: 'rgba(255,255,255,0.9)', 
+              borderRadius: 20, 
+              flexDirection: 'row', 
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 8
+            }}>
+              <Ionicons name="search" size={20} color="#666" />
+              <Text style={{ marginLeft: 8, color: '#666', fontSize: 14 }}>Search</Text>
+            </View>
+          </View>
+          <TouchableOpacity 
+            style={{ position: 'relative' }}
+            onPress={() => router.push('/cart')}
+          >
+            <MaterialIcons name="shopping-cart" size={28} color="white" />
+            <View style={{ 
+              position: 'absolute', 
+              top: -5, 
+              right: -5, 
+              backgroundColor: '#fff', 
+              borderRadius: 10, 
+              minWidth: 18, 
+              height: 18, 
+              justifyContent: 'center', 
+              alignItems: 'center' 
+            }}>
+              <Text style={{ color: '#E91E63', fontSize: 12, fontWeight: 'bold' }}>2</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
       
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Promotional Banner */}
-        <PromoBanner />
+        {/* Banner Principal */}
+        <View style={{ backgroundColor: '#E91E63', margin: 16, borderRadius: 16, padding: 20 }}>
+          <View style={{ alignItems: 'center', marginBottom: 16 }}>
+            <View style={{ flexDirection: 'row', marginBottom: 12 }}>
+              {[1, 2, 3].map((_, index: number) => (
+                <View 
+                  key={index}
+                  style={{ 
+                    width: 80, 
+                    height: 80, 
+                    backgroundColor: 'rgba(255,255,255,0.3)', 
+                    borderRadius: 8, 
+                    marginHorizontal: 4 
+                  }} 
+                />
+              ))}
+            </View>
+          </View>
+          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>
+            Encontre Roupas que Encaixem com
+          </Text>
+          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', textAlign: 'center', marginBottom: 8 }}>
+            seu estilo
+          </Text>
+          <Text style={{ color: 'white', fontSize: 14, textAlign: 'center', marginBottom: 16 }}>
+            Diversas marcas em bom estado!
+          </Text>
+        </View>
 
-        {/* Featured Products */}
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center px-4 mb-3">
-            <Text className="text-lg font-bold text-gray-800">Produtos em Destaque</Text>
+        {/* Produtos em Destaque */}
+        <View style={{ marginBottom: 24 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 12 }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#333' }}>Produtos em Destaque</Text>
             <TouchableOpacity>
-              <Text className="text-pink-600 font-medium">Ver mais</Text>
+              <Text style={{ color: '#E91E63', fontSize: 14 }}>Ver Mais</Text>
             </TouchableOpacity>
           </View>
           
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
-            {featuredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                title={product.title}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                rating={product.rating}
-              />
-            ))}
-          </ScrollView>
+          {loadingFeatured ? (
+            <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#E91E63" />
+              <Text style={{ color: '#666', marginTop: 8 }}>Carregando produtos...</Text>
+            </View>
+          ) : errorFeatured ? (
+            <View style={{ paddingVertical: 20, alignItems: 'center', paddingHorizontal: 16 }}>
+              <Text style={{ color: '#E91E63', textAlign: 'center' }}>
+                {errorFeatured}
+              </Text>
+            </View>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
+              {featuredProducts.map((product: Product) => (
+                <View key={product._id} style={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: 12, 
+                  padding: 12, 
+                  marginRight: 12, 
+                  width: 130,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 2,
+                  elevation: 2
+                }}>
+                  <View style={{ 
+                    width: '100%', 
+                    height: 80, 
+                    backgroundColor: '#f0f0f0', 
+                    borderRadius: 8, 
+                    marginBottom: 8,
+                    overflow: 'hidden'
+                  }}>
+                    {product.images && product.images[0] ? (
+                      <Image 
+                        source={{ uri: product.images[0] }} 
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                      />
+                    ) : null}
+                  </View>
+                  <View style={{ flexDirection: 'row', marginBottom: 4 }}>
+                    {renderStars(product.rating || 5)}
+                  </View>
+                  <Text style={{ fontSize: 12, color: '#333', marginBottom: 4 }} numberOfLines={2}>
+                    {product.name}
+                  </Text>
+                  <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63' }}>
+                    R$ {product.price.toFixed(2).replace('.', ',')}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
-        {/* Top Selling */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-gray-800 px-4 mb-3 text-center">
+        {/* TOP SELLING */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: 'bold', 
+            color: '#E91E63', 
+            textAlign: 'center', 
+            marginBottom: 16 
+          }}>
             TOP SELLING
           </Text>
           
-          <View className="px-4">
-            {topSellingProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                title={product.title}
-                price={product.price}
-                rating={product.rating}
-                isHorizontal={true}
-              />
+          {loadingTopSelling ? (
+            <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#E91E63" />
+              <Text style={{ color: '#666', marginTop: 8 }}>Carregando mais vendidos...</Text>
+            </View>
+          ) : errorTopSelling ? (
+            <View style={{ paddingVertical: 20, alignItems: 'center', paddingHorizontal: 16 }}>
+              <Text style={{ color: '#E91E63', textAlign: 'center' }}>
+                {errorTopSelling}
+              </Text>
+            </View>
+          ) : (
+            <View style={{ paddingHorizontal: 16 }}>
+              {topSellingProducts.map((product: Product) => (
+                <View key={product._id} style={{ 
+                  backgroundColor: 'white', 
+                  borderRadius: 12, 
+                  padding: 12, 
+                  marginBottom: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 2,
+                  elevation: 2
+                }}>
+                  <View style={{ 
+                    width: 60, 
+                    height: 60, 
+                    backgroundColor: '#f0f0f0', 
+                    borderRadius: 8, 
+                    marginRight: 12,
+                    overflow: 'hidden'
+                  }}>
+                    {product.images && product.images[0] ? (
+                      <Image 
+                        source={{ uri: product.images[0] }} 
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode="cover"
+                      />
+                    ) : null}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', marginBottom: 4 }}>
+                      {renderStars(product.rating || 5)}
+                    </View>
+                    <Text style={{ fontSize: 14, color: '#333', marginBottom: 4 }}>
+                      {product.name}
+                    </Text>
+                    <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63' }}>
+                      R$ {product.price.toFixed(2).replace('.', ',')}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* PESQUISE POR ESTILO */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: 'bold', 
+            color: '#E91E63', 
+            textAlign: 'center', 
+            marginBottom: 16 
+          }}>
+            PESQUISE POR ESTILO
+          </Text>
+          
+          <View style={{ 
+            paddingHorizontal: 16, 
+            flexDirection: 'row', 
+            flexWrap: 'wrap', 
+            justifyContent: 'space-between' 
+          }}>
+            {styleCategories.map((category: StyleCategory, index: number) => (
+              <TouchableOpacity 
+                key={index}
+                style={{ 
+                  width: '48%', 
+                  aspectRatio: 1.2,
+                  backgroundColor: category.color, 
+                  borderRadius: 16, 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  marginBottom: 12
+                }}
+              >
+                <View style={{ 
+                  width: 40, 
+                  height: 40, 
+                  backgroundColor: 'rgba(255,255,255,0.3)', 
+                  borderRadius: 8, 
+                  marginBottom: 8 
+                }} />
+                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+                  {category.title}
+                </Text>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* Categories */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-gray-800 px-4 mb-3 text-center">
-            PESQUISE POR ESTILO
-          </Text>
-          
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
-            {categories.map((category, index) => (
-              <CategoryCard
-                key={index}
-                title={category.title}
-                backgroundColor={category.backgroundColor}
-              />
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Customer Testimonials */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-gray-800 px-4 mb-3 text-center">
+        {/* CLIENTES SATISFEITOS */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            fontSize: 18, 
+            fontWeight: 'bold', 
+            color: '#E91E63', 
+            textAlign: 'center', 
+            marginBottom: 16 
+          }}>
             CLIENTES SATISFEITOS
           </Text>
           
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard
-                key={index}
-                rating={testimonial.rating}
-                comment={testimonial.comment}
-                author={testimonial.author}
-              />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
+            {testimonials.map((testimonial: Testimonial, index: number) => (
+              <View key={index} style={{ 
+                backgroundColor: 'white', 
+                borderRadius: 12, 
+                padding: 16, 
+                marginRight: 12, 
+                width: 200,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.1,
+                shadowRadius: 2,
+                elevation: 2
+              }}>
+                <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                  {renderStars(testimonial.rating)}
+                </View>
+                <Text style={{ fontSize: 12, color: '#666', lineHeight: 16 }}>
+                  {testimonial.text}
+                </Text>
+              </View>
             ))}
           </ScrollView>
         </View>
 
         {/* Chat Section */}
-        <View className="mx-4 mb-6 bg-white rounded-xl p-4 shadow-sm">
-          <Text className="text-gray-600 text-sm mb-3">
+        <View style={{ 
+          backgroundColor: 'white', 
+          margin: 16, 
+          borderRadius: 16, 
+          padding: 16,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+          elevation: 2
+        }}>
+          <Text style={{ fontSize: 14, color: '#666', marginBottom: 12 }}>
             Para tirar suas mais dúvidas
           </Text>
-          <View className="flex-row justify-end space-x-2">
-            <TouchableOpacity className="bg-pink-100 px-4 py-2 rounded-full">
-              <Text className="text-pink-600 text-sm">Oi</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+            <TouchableOpacity style={{ 
+              backgroundColor: '#f0f0f0', 
+              paddingHorizontal: 16, 
+              paddingVertical: 8, 
+              borderRadius: 20, 
+              marginRight: 8 
+            }}>
+              <Text style={{ color: '#E91E63', fontSize: 12 }}>Oi</Text>
             </TouchableOpacity>
-            <TouchableOpacity className="bg-pink-600 px-4 py-2 rounded-full">
-              <Text className="text-white text-sm">Preciso de ajuda</Text>
+            <TouchableOpacity style={{ 
+              backgroundColor: '#E91E63', 
+              paddingHorizontal: 16, 
+              paddingVertical: 8, 
+              borderRadius: 20 
+            }}>
+              <Text style={{ color: 'white', fontSize: 12 }}>Preciso de ajuda</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Footer */}
-        <View className="bg-pink-600 mx-4 mb-6 rounded-xl p-4">
-          <Text className="text-white font-bold text-lg mb-2">luxus.brecho...</Text>
-          <View className="flex-row justify-between items-center">
+        <View style={{ 
+          backgroundColor: '#E91E63', 
+          margin: 16, 
+          borderRadius: 16, 
+          padding: 16 
+        }}>
+          <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>
+            luxus.brecho...
+          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View>
-              <Text className="text-white text-sm">Termos</Text>
-              <Text className="text-white text-sm">Suporte</Text>
-              <Text className="text-white text-sm">Contato</Text>
+              <Text style={{ color: 'white', fontSize: 12, marginBottom: 4 }}>Suporte</Text>
+              <Text style={{ color: 'white', fontSize: 12, marginBottom: 4 }}>Contato</Text>
+              <Text style={{ color: 'white', fontSize: 12 }}>Políticas</Text>
             </View>
-            <View className="flex-row space-x-2">
-              <View className="bg-white rounded p-1">
-                <Text className="text-xs">💳</Text>
-              </View>
-              <View className="bg-white rounded p-1">
-                <Text className="text-xs">💳</Text>
-              </View>
-              <View className="bg-white rounded p-1">
-                <Text className="text-xs">💳</Text>
-              </View>
+            <View style={{ flexDirection: 'row' }}>
+              {[1, 2, 3].map((_, index: number) => (
+                <View key={index} style={{ 
+                  width: 24, 
+                  height: 16, 
+                  backgroundColor: 'white', 
+                  borderRadius: 4, 
+                  marginLeft: 4 
+                }} />
+              ))}
             </View>
           </View>
         </View>
@@ -173,4 +417,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
