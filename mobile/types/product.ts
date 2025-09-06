@@ -1,22 +1,28 @@
 export interface Product {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
+  id: number;
+  titulo: string;
+  descricao: string;
+  preco: number;
+  categoria: string;
+  imagem: string;
+  // Campos opcionais para compatibilidade
+  _id?: string;
+  name?: string;
+  description?: string;
+  price?: number;
   originalPrice?: number;
-  category: string;
   brand?: string;
-  size: string[];
-  color: string[];
-  condition: 'novo' | 'seminovo' | 'usado';
-  images: string[];
-  stock: number;
+  size?: string[];
+  color?: string[];
+  condition?: 'novo' | 'seminovo' | 'usado';
+  images?: string[];
+  stock?: number;
   isExclusive?: boolean;
   isNew?: boolean;
   rating?: number;
   reviews?: Review[];
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Review {
@@ -39,8 +45,10 @@ export interface ProductFilters {
 }
 
 export interface ProductResponse {
-  products: Product[];
-  total: number;
-  page: number;
-  totalPages: number;
+  items: Product[];
+  pagination: {
+    page: number;
+    page_size: number;
+    total: number;
+  };
 }

@@ -3,7 +3,7 @@ from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 from typing import Any, Dict
 
-from backend.app.models.product_model import (
+from ..models.product_model import (
     get_collection,
     prepare_new_product,
     validate_product,
@@ -106,7 +106,7 @@ def update_product(id: int):
     merged.update(payload)
     merged = normalize_product(merged)
 
-    ok, errors = validate_product(merged)
+    ok, errors = validate_product(merged, db)  # Passa db para validação dinâmica
     if not ok:
         return jsonify(message="validation error", errors=errors), 400
 
@@ -128,3 +128,36 @@ def delete_product(id: int):
     if res.deleted_count == 0:
         return jsonify(message="not found"), 404
     return jsonify(message="deleted"), 200
+
+
+def get_products_by_category(categoria: str):
+    """Busca produtos por categoria específica."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="database unavailable"), 503
+
+    coll = get_collection(db)
+    
+    page = max(int(request.args.get("page", 1) or 1), 1)
+    page_size = min(max(int(request.args.get("page_size", 20) or 20), 1), 100)
+
+    query = {"categoria": categoria}
+    cursor = coll.find(query).sort("titulo", 1)
+    total = coll.count_documents(query)
+
+    items = [
+        _serialize(doc) for doc in cursor.skip((page - 1) * page_size).limit(page_size)
+    ]
+
+    if not items:
+        return jsonify(message="no products found for this category"), 404
+
+    return jsonify(
+        items=items,
+        categoria=categoria,
+        pagination={
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+        },
+    )

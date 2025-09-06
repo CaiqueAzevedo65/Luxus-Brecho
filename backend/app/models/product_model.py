@@ -1,6 +1,6 @@
 """
 Modelo e utilidades para a coleção de produtos.
-- Define categorias permitidas
+- Define categorias permitidas dinamicamente
 - Valida payloads de produto
 - Garante validator e índices no MongoDB
 """
@@ -12,57 +12,64 @@ COLLECTION_NAME = "products"
 COUNTERS_COLLECTION = "counters"
 COUNTER_KEY_PRODUCTS = "products"
 
-ALLOWED_CATEGORIES = {
-    "Casual",
-    "Social",
-    "Esportivo",
-}
+def get_allowed_categories(db) -> set:
+    """Busca categorias ativas do banco de dados."""
+    if db is None:
+        return {"Casual", "Social", "Esportivo"}  # Fallback
+    
+    try:
+        from .category_model import get_active_categories_list
+        active_cats = get_active_categories_list(db)
+        return set(active_cats) if active_cats else {"Casual", "Social", "Esportivo"}
+    except Exception as e:
+        print(f"Erro ao buscar categorias ativas: {e}")
+        return {"Casual", "Social", "Esportivo"}  # Fallback
 
-_normalize_category = {
-    "casual": "Casual",
-    "social": "Social",
-    "esportivo": "Esportivo",
-}
 
-# Validador JSON Schema para MongoDB (usado em createCollection/collMod)
-MONGO_JSON_SCHEMA: Dict[str, Any] = {
-    "$jsonSchema": {
-        "bsonType": "object",
-        "required": ["id", "titulo", "preco", "descricao", "categoria", "imagem"],
-        "properties": {
-            "id": {
-                "description": "Identificador numérico único do produto",
-                "bsonType": ["int", "long"],
+def create_dynamic_schema(db) -> Dict[str, Any]:
+    """Cria schema dinâmico baseado nas categorias ativas."""
+    allowed_categories = list(get_allowed_categories(db))
+    
+    return {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["id", "titulo", "preco", "descricao", "categoria", "imagem"],
+            "properties": {
+                "id": {
+                    "description": "Identificador numérico único do produto",
+                    "bsonType": ["int", "long"],
+                },
+                "titulo": {
+                    "bsonType": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Título do produto (obrigatório)"
+                },
+                "preco": {
+                    "bsonType": ["double", "int", "long"],
+                    "minimum": 0,
+                    "description": "Preço do produto (obrigatório)"
+                },
+                "descricao": {
+                    "bsonType": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "description": "Descrição do produto (obrigatório)"
+                },
+                "categoria": {
+                    "bsonType": "string",
+                    "enum": allowed_categories,
+                    "description": "Categoria do produto (obrigatório)"
+                },
+                "imagem": {
+                    "bsonType": "string",
+                    "minLength": 1,
+                    "description": "URL da imagem do produto (obrigatório)"
+                },
             },
-            "titulo": {
-                "bsonType": "string",
-                "minLength": 1,
-                "description": "Título do produto"
-            },
-            "preco": {
-                "bsonType": ["double", "int", "long"],
-                "minimum": 0,
-                "description": "Preço do produto"
-            },
-            "descricao": {
-                "bsonType": "string",
-                "minLength": 1,
-                "description": "Descrição do produto"
-            },
-            "categoria": {
-                "bsonType": "string",
-                "enum": list(ALLOWED_CATEGORIES),
-                "description": "Categoria do produto"
-            },
-            "imagem": {
-                "bsonType": "string",
-                "minLength": 1,
-                "description": "URL (ou caminho) da imagem no object storage"
-            },
-        },
-        "additionalProperties": True,
+            "additionalProperties": True,
+        }
     }
-}
 
 
 def normalize_product(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -71,9 +78,8 @@ def normalize_product(payload: Dict[str, Any]) -> Dict[str, Any]:
     data = dict(payload or {})
 
     # Normaliza categoria para capitalização padrão
-    cat = str(data.get("categoria", "")).strip()
-    if cat:
-        data["categoria"] = _normalize_category.get(cat.lower(), cat)
+    if "categoria" in data and data["categoria"]:
+        data["categoria"] = str(data["categoria"]).strip()
 
     # Trim de strings principais
     for key in ("titulo", "descricao", "imagem"):
@@ -83,7 +89,7 @@ def normalize_product(payload: Dict[str, Any]) -> Dict[str, Any]:
     return data
 
 
-def validate_product(payload: Dict[str, Any]) -> Tuple[bool, Dict[str, str]]:
+def validate_product(payload: Dict[str, Any], db=None) -> Tuple[bool, Dict[str, str]]:
     """Valida o payload do produto (validação em app). Retorna (ok, erros).
     Observação: a coleção também terá validator no MongoDB.
     """
@@ -94,20 +100,48 @@ def validate_product(payload: Dict[str, Any]) -> Tuple[bool, Dict[str, str]]:
     if "id" in data and not isinstance(data["id"], (int,)):
         errors["id"] = "deve ser inteiro"
 
-    # Campos obrigatórios
+    # Campos obrigatórios - TODOS são obrigatórios conforme requisito
     required = ["titulo", "preco", "descricao", "categoria", "imagem"]
     for k in required:
         if data.get(k) in (None, ""):
             errors[k] = "obrigatório"
 
+    # Validações específicas de tamanho e formato
+    if "titulo" in data and data["titulo"]:
+        titulo = data["titulo"]
+        if len(titulo) < 2:
+            errors["titulo"] = "deve ter pelo menos 2 caracteres"
+        elif len(titulo) > 100:
+            errors["titulo"] = "deve ter no máximo 100 caracteres"
+
+    if "descricao" in data and data["descricao"]:
+        desc = data["descricao"]
+        if len(desc) < 10:
+            errors["descricao"] = "deve ter pelo menos 10 caracteres"
+        elif len(desc) > 500:
+            errors["descricao"] = "deve ter no máximo 500 caracteres"
+
+    # Validação da imagem obrigatória
+    if "imagem" in data and data["imagem"]:
+        imagem = data["imagem"]
+        if len(imagem) < 5:
+            errors["imagem"] = "URL da imagem deve ter pelo menos 5 caracteres"
+        # Validação básica de URL
+        if not (imagem.startswith("http://") or imagem.startswith("https://") or imagem.startswith("/")):
+            errors["imagem"] = "deve ser uma URL válida"
+
     # Tipos
     if "preco" in data and not isinstance(data.get("preco"), (int, float)):
         errors["preco"] = "deve ser numérico"
+    elif "preco" in data and data["preco"] < 0:
+        errors["preco"] = "deve ser positivo"
 
-    # Categoria permitida
+    # Categoria permitida - busca dinamicamente do banco
     cat = data.get("categoria")
-    if cat and cat not in ALLOWED_CATEGORIES:
-        errors["categoria"] = f"deve ser uma das: {', '.join(sorted(ALLOWED_CATEGORIES))}"
+    if cat:
+        allowed_categories = get_allowed_categories(db)
+        if cat not in allowed_categories:
+            errors["categoria"] = f"deve ser uma das: {', '.join(sorted(allowed_categories))}"
 
     return (len(errors) == 0), errors
 
@@ -125,11 +159,14 @@ def ensure_products_collection(db):
     if db is None:
         return None
 
+    # Cria schema dinâmico baseado nas categorias ativas
+    dynamic_schema = create_dynamic_schema(db)
+
     try:
         if COLLECTION_NAME not in db.list_collection_names():
             db.create_collection(
                 COLLECTION_NAME,
-                validator=MONGO_JSON_SCHEMA,
+                validator=dynamic_schema,
                 validationLevel="moderate",
             )
         else:
@@ -137,7 +174,7 @@ def ensure_products_collection(db):
             db.command(
                 "collMod",
                 COLLECTION_NAME,
-                validator=MONGO_JSON_SCHEMA,
+                validator=dynamic_schema,
                 validationLevel="moderate",
             )
     except Exception as e:
@@ -207,7 +244,7 @@ def prepare_new_product(db, payload: Dict[str, Any]) -> Tuple[bool, Dict[str, st
     Retorna (ok, erros, documento_pronto).
     """
     data = normalize_product(payload)
-    ok, errors = validate_product(data)
+    ok, errors = validate_product(data, db)  # Passa db para validação dinâmica
     if not ok:
         return False, errors, {}
 
