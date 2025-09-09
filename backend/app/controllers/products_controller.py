@@ -2,6 +2,7 @@ from flask import request, jsonify, current_app
 from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 from typing import Any, Dict
+import time
 
 from ..models.product_model import (
     get_collection,
@@ -172,21 +173,36 @@ def create_product_with_image():
         except ValueError:
             return jsonify(message="Preço deve ser um número válido"), 400
         
-        # Prepara produto (sem imagem ainda)
-        coll = get_collection(db)
-        ok, errors, product_doc = prepare_new_product(db, form_data)
-        if not ok:
-            return jsonify(message="validation error", errors=errors), 400
-        
-        # Faz upload da imagem usando o ID que será atribuído
-        product_id = product_doc['id']
-        success, result = storage_service.upload_image(file, product_id)
+        # Primeiro faz upload da imagem para obter URL
+        # Usa um ID temporário para o upload
+        temp_id = int(time.time() * 1000)  # Timestamp como ID temporário
+        success, result = storage_service.upload_image(file, temp_id)
         
         if not success:
             return jsonify(message=f"Erro no upload da imagem: {result}"), 400
         
-        # Adiciona URL da imagem ao produto
-        product_doc['imagem'] = result
+        # Adiciona URL da imagem aos dados do produto
+        form_data['imagem'] = result
+        
+        # Agora prepara produto com todos os dados (incluindo imagem)
+        coll = get_collection(db)
+        ok, errors, product_doc = prepare_new_product(db, form_data)
+        if not ok:
+            # Se falhar na validação, remove a imagem já enviada
+            storage_service.delete_image(result)
+            return jsonify(message="validation error", errors=errors), 400
+        
+        # Renomeia arquivo para usar o ID real do produto
+        product_id = product_doc['id']
+        if temp_id != product_id:
+            # Upload novamente com ID correto
+            file.stream.seek(0)  # Reset do stream do arquivo
+            success_final, final_url = storage_service.upload_image(file, product_id)
+            if success_final:
+                # Remove arquivo temporário e usa novo URL
+                storage_service.delete_image(result)
+                product_doc['imagem'] = final_url
+            # Se falhar o re-upload, mantém o temporário mas funciona
         
         # Insere produto no banco
         try:
