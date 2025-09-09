@@ -9,6 +9,7 @@ from ..models.product_model import (
     validate_product,
     normalize_product,
 )
+from ..services.supabase_storage import storage_service
 
 
 def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
@@ -128,6 +129,138 @@ def delete_product(id: int):
     if res.deleted_count == 0:
         return jsonify(message="not found"), 404
     return jsonify(message="deleted"), 200
+
+
+def create_product_with_image():
+    """
+    Cria produto com upload de imagem
+    POST /api/products/with-image
+    
+    Form Data:
+    - titulo, descricao, preco, categoria: dados do produto
+    - image: arquivo de imagem
+    """
+    db = current_app.db
+    if db is None:
+        return jsonify(message="database unavailable"), 503
+    
+    try:
+        # Valida se há imagem
+        if 'image' not in request.files:
+            return jsonify(message="Imagem é obrigatória"), 400
+        
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify(message="Nenhuma imagem selecionada"), 400
+        
+        # Obtém dados do produto do form
+        form_data = {
+            "titulo": request.form.get('titulo'),
+            "descricao": request.form.get('descricao'),
+            "preco": request.form.get('preco'),
+            "categoria": request.form.get('categoria')
+        }
+        
+        # Validação básica
+        if not all([form_data['titulo'], form_data['descricao'], 
+                   form_data['preco'], form_data['categoria']]):
+            return jsonify(message="Todos os campos são obrigatórios"), 400
+        
+        # Converte preço
+        try:
+            form_data['preco'] = float(form_data['preco'])
+        except ValueError:
+            return jsonify(message="Preço deve ser um número válido"), 400
+        
+        # Prepara produto (sem imagem ainda)
+        coll = get_collection(db)
+        ok, errors, product_doc = prepare_new_product(db, form_data)
+        if not ok:
+            return jsonify(message="validation error", errors=errors), 400
+        
+        # Faz upload da imagem usando o ID que será atribuído
+        product_id = product_doc['id']
+        success, result = storage_service.upload_image(file, product_id)
+        
+        if not success:
+            return jsonify(message=f"Erro no upload da imagem: {result}"), 400
+        
+        # Adiciona URL da imagem ao produto
+        product_doc['imagem'] = result
+        
+        # Insere produto no banco
+        try:
+            coll.insert_one(product_doc)
+        except DuplicateKeyError:
+            # Se falhar, tenta deletar a imagem que foi enviada
+            storage_service.delete_image(result)
+            return jsonify(message="ID já existe"), 409
+        
+        return jsonify({
+            "message": "Produto criado com sucesso",
+            "product": _serialize(product_doc)
+        }), 201
+        
+    except Exception as e:
+        current_app.logger.error(f"Erro ao criar produto com imagem: {e}")
+        return jsonify(message="Erro interno no servidor"), 500
+
+
+def update_product_image(id: int):
+    """
+    Atualiza apenas a imagem de um produto
+    PUT /api/products/<id>/image
+    
+    Form Data:
+    - image: novo arquivo de imagem
+    """
+    db = current_app.db
+    if db is None:
+        return jsonify(message="database unavailable"), 503
+    
+    coll = get_collection(db)
+    
+    # Verifica se produto existe
+    current_product = coll.find_one({"id": int(id)})
+    if not current_product:
+        return jsonify(message="Produto não encontrado"), 404
+    
+    # Valida se há nova imagem
+    if 'image' not in request.files:
+        return jsonify(message="Nova imagem é obrigatória"), 400
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify(message="Nenhuma imagem selecionada"), 400
+    
+    try:
+        # Faz upload da nova imagem
+        success, result = storage_service.upload_image(file, id)
+        
+        if not success:
+            return jsonify(message=f"Erro no upload: {result}"), 400
+        
+        # Deleta imagem antiga se existir
+        old_image_url = current_product.get('imagem')
+        if old_image_url and old_image_url.startswith('http'):
+            storage_service.delete_image(old_image_url)
+        
+        # Atualiza produto com nova URL
+        coll.update_one(
+            {"id": int(id)}, 
+            {"$set": {"imagem": result}}
+        )
+        
+        # Retorna produto atualizado
+        updated_product = coll.find_one({"id": int(id)})
+        return jsonify({
+            "message": "Imagem atualizada com sucesso",
+            "product": _serialize(updated_product)
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Erro ao atualizar imagem: {e}")
+        return jsonify(message="Erro interno no servidor"), 500
 
 
 def get_products_by_category(categoria: str):

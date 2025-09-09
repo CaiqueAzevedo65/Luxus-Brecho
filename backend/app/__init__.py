@@ -99,8 +99,10 @@ def create_app():
     from app.routes.health_routes import health_bp
     from app.routes.products_routes import products_bp
     from app.routes.categories_routes import categories_bp
+    from app.routes.images_routes import images_bp
     app.register_blueprint(health_bp)
-    app.register_blueprint(products_bp, url_prefix="/api")
-    app.register_blueprint(categories_bp, url_prefix="/api")
+    app.register_blueprint(products_bp, url_prefix="/api/products")
+    app.register_blueprint(categories_bp, url_prefix="/api/categories")
+    app.register_blueprint(images_bp, url_prefix="/api/images")
 
     return app

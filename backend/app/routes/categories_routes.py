@@ -10,7 +10,7 @@ from app.controllers.categories_controller import (
     get_categories_summary,
 )
 
-categories_bp = Blueprint("categories", __name__, url_prefix="/categories")
+categories_bp = Blueprint("categories", __name__)
 
 # CRUD básico
 categories_bp.route("/", methods=["GET"])(list_categories)
