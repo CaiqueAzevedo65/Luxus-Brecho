@@ -9,19 +9,89 @@ from io import BytesIO
 from typing import Optional, Tuple, List
 from PIL import Image
 from supabase import create_client, Client
+from supabase.client import ClientOptions
 from werkzeug.datastructures import FileStorage
 
 class SupabaseStorageService:
     def __init__(self):
-        """Inicializa o cliente Supabase"""
+        """Inicializa o cliente Supabase com tratamento de erros"""
         self.supabase_url = os.getenv("SUPABASE_URL")
         self.supabase_key = os.getenv("SUPABASE_KEY") 
         self.bucket_name = os.getenv("SUPABASE_BUCKET", "product-images")
         
-        if not self.supabase_url or not self.supabase_key:
-            raise ValueError("SUPABASE_URL e SUPABASE_KEY devem estar configurados no .env")
+        # Estado da conexão
+        self.client: Optional[Client] = None
+        self.connection_error: Optional[str] = None
+        self.is_connected = False
+        
+        # Inicializa conexão
+        self._initialize_connection()
+        
+    def _initialize_connection(self):
+        """Inicializa conexão com Supabase de forma segura"""
+        try:
+            # Verifica se as variáveis de ambiente estão configuradas
+            if not self.supabase_url or not self.supabase_key:
+                self.connection_error = "SUPABASE_URL e SUPABASE_KEY devem estar configurados no .env"
+                print(f"Erro de configuração Supabase: {self.connection_error}")
+                return
             
-        self.client: Client = create_client(self.supabase_url, self.supabase_key)
+            # Tenta criar cliente
+            options = ClientOptions(
+                auto_refresh_token=True,
+                persist_session=False
+            )
+            
+            self.client = create_client(
+                supabase_url=self.supabase_url,
+                supabase_key=self.supabase_key,
+                options=options
+            )
+            
+            # Testa conexão básica
+            self._test_connection()
+            
+        except Exception as e:
+            self.connection_error = f"Erro ao conectar com Supabase: {str(e)}"
+            print(f"Aviso: {self.connection_error}")
+            print("Verifique SUPABASE_URL, SUPABASE_KEY e conectividade de rede.")
+            
+    def _test_connection(self):
+        """Testa a conexão com Supabase fazendo uma operação simples"""
+        try:
+            if not self.client:
+                raise Exception("Cliente Supabase não inicializado")
+                
+            # Tenta listar buckets para verificar conectividade
+            result = self.client.storage.list_buckets()
+            
+            # Verifica se o bucket específico existe
+            bucket_exists = False
+            if result and not hasattr(result, 'error'):
+                bucket_exists = any(bucket.name == self.bucket_name for bucket in result)
+            
+            if not bucket_exists:
+                print(f"Aviso: Bucket '{self.bucket_name}' não encontrado no Supabase Storage")
+            
+            self.is_connected = True
+            print("Supabase Storage conectado com sucesso!")
+            
+        except Exception as e:
+            self.is_connected = False
+            self.connection_error = f"Falha no teste de conexão: {str(e)}"
+            print(f"Aviso: {self.connection_error}")
+            
+    def is_available(self) -> bool:
+        """Verifica se o serviço Supabase está disponível"""
+        return self.is_connected and self.client is not None
+        
+    def get_connection_status(self) -> dict:
+        """Retorna status da conexão para health check"""
+        return {
+            "status": "UP" if self.is_connected else "DOWN",
+            "error": self.connection_error,
+            "bucket": self.bucket_name if self.is_connected else None
+        }
         
     def _generate_filename(self, original_filename: str) -> str:
         """Gera nome único para o arquivo"""
@@ -93,6 +163,10 @@ class SupabaseStorageService:
         Returns:
             Tuple[bool, str]: (sucesso, url_publica_ou_mensagem_erro)
         """
+        # Verifica se o serviço está disponível
+        if not self.is_available():
+            return False, f"Serviço de storage indisponível: {self.connection_error or 'Conexão não estabelecida'}"
+            
         try:
             # Valida se é uma imagem
             if not self._validate_image(file):
@@ -139,6 +213,10 @@ class SupabaseStorageService:
         Returns:
             Tuple[bool, str]: (sucesso, mensagem)
         """
+        # Verifica se o serviço está disponível
+        if not self.is_available():
+            return False, f"Serviço de storage indisponível: {self.connection_error or 'Conexão não estabelecida'}"
+            
         try:
             # Extrai o path da URL
             # Exemplo: https://project.supabase.co/storage/v1/object/public/bucket/path
@@ -172,6 +250,10 @@ class SupabaseStorageService:
         Returns:
             Tuple[bool, List[str]]: (sucesso, lista_de_urls)
         """
+        # Verifica se o serviço está disponível
+        if not self.is_available():
+            return False, []
+            
         try:
             path_prefix = f"product_{product_id}/"
             
@@ -203,6 +285,10 @@ class SupabaseStorageService:
         Returns:
             dict: Informações da imagem
         """
+        # Verifica se o serviço está disponível
+        if not self.is_available():
+            return {"error": f"Serviço de storage indisponível: {self.connection_error or 'Conexão não estabelecida'}"}
+            
         try:
             # Extrai path da URL
             if '/object/public/' in image_url:
@@ -229,4 +315,12 @@ class SupabaseStorageService:
             return {"error": str(e)}
 
 # Instância global do serviço
-storage_service = SupabaseStorageService()
+# Inicializada de forma segura - não falha se Supabase estiver indisponível
+try:
+    storage_service = SupabaseStorageService()
+except Exception as e:
+    print(f"Erro crítico ao inicializar SupabaseStorageService: {e}")
+    # Cria instância com estado de erro para evitar falhas na aplicação
+    storage_service = SupabaseStorageService()
+    storage_service.is_connected = False
+    storage_service.connection_error = f"Falha na inicialização: {str(e)}"
