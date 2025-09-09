@@ -278,7 +278,7 @@ export default function HomeScreen() {
                       {product.name}
                     </Text>
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63', marginBottom: 8 }}>
-                      R$ {product.price.toFixed(2).replace('.', ',')}
+                      R$ {product. price.toFixed(2).replace('.', ',')}
                     </Text>
                   </View>
                   
