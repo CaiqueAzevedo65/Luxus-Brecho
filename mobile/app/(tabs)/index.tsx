@@ -325,7 +325,7 @@ export default function HomeScreen() {
                   width: '48%', 
                   aspectRatio: 1.2,
                   backgroundColor: category.color, 
-                  borderRadius: 16, 
+                  borderRadius: 10, 
                   justifyContent: 'center', 
                   alignItems: 'center',
                   marginBottom: 12
