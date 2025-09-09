@@ -62,19 +62,36 @@ class SupabaseStorageService:
             if not self.client:
                 raise Exception("Cliente Supabase não inicializado")
                 
-            # Tenta listar buckets para verificar conectividade
-            result = self.client.storage.list_buckets()
-            
-            # Verifica se o bucket específico existe
-            bucket_exists = False
-            if result and not hasattr(result, 'error'):
-                bucket_exists = any(bucket.name == self.bucket_name for bucket in result)
-            
-            if not bucket_exists:
-                print(f"Aviso: Bucket '{self.bucket_name}' não encontrado no Supabase Storage")
-            
-            self.is_connected = True
-            print("Supabase Storage conectado com sucesso!")
+            # Testa conectividade tentando acessar diretamente o bucket
+            try:
+                # Tenta fazer uma operação simples no bucket específico
+                result = self.client.storage.from_(self.bucket_name).list()
+                
+                # Se chegou aqui, o bucket existe e está acessível
+                self.is_connected = True
+                print("Supabase Storage conectado com sucesso!")
+                print(f"Bucket '{self.bucket_name}' confirmado e acessível")
+                
+            except Exception as bucket_error:
+                # Se falhou, tenta listar buckets para diagnóstico
+                try:
+                    buckets = self.client.storage.list_buckets()
+                    if buckets and isinstance(buckets, list):
+                        bucket_names = [b.name if hasattr(b, 'name') else str(b) for b in buckets]
+                        print(f"Buckets disponíveis: {bucket_names}")
+                        if self.bucket_name not in bucket_names:
+                            print(f"Aviso: Bucket '{self.bucket_name}' não encontrado. Verifique o nome no .env")
+                        else:
+                            print(f"Bucket '{self.bucket_name}' existe mas pode ter problemas de acesso")
+                    else:
+                        print(f"Erro ao listar buckets: {buckets}")
+                except Exception as list_error:
+                    print(f"Erro ao verificar buckets: {str(list_error)}")
+                
+                # Mesmo com erro no bucket, mantém conexão se as credenciais estão válidas
+                self.is_connected = True
+                self.connection_error = f"Bucket '{self.bucket_name}' inacessível: {str(bucket_error)}"
+                print(f"Aviso: {self.connection_error}")
             
         except Exception as e:
             self.is_connected = False
