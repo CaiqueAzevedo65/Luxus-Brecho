@@ -1,7 +1,7 @@
 import { Product, ProductResponse, ProductFilters } from '../types/product';
 import { Category, CategoryResponse } from '../types/category';
 
-const API_BASE_URL = 'http://localhost:3000/api'; // Ajuste para sua URL do backend
+const API_BASE_URL = 'http://localhost:5000/api';
 
 class ApiService {
   private async fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
