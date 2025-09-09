@@ -34,6 +34,8 @@ def create_app():
     allowed_origins = [o.strip() for o in allowed_origins_env.split(",")] if allowed_origins_env else [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:19000",  # Expo DevTools
+        "http://localhost:8081",   # Expo Metro
     ]
     CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
@@ -98,7 +100,7 @@ def create_app():
     from app.routes.products_routes import products_bp
     from app.routes.categories_routes import categories_bp
     app.register_blueprint(health_bp)
-    app.register_blueprint(products_bp)
-    app.register_blueprint(categories_bp)
+    app.register_blueprint(products_bp, url_prefix="/api")
+    app.register_blueprint(categories_bp, url_prefix="/api")
 
     return app
