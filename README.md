@@ -1,7 +1,3 @@
-Here’s your README translated to **English** while keeping the same structure, formatting, and emojis:
-
----
-
 # Luxus Brechó 🛍️
 
 Fullstack project for an online thrift store, with **Flask backend**, **React (Vite) frontend**, and a **mobile app in Expo/React Native**.
