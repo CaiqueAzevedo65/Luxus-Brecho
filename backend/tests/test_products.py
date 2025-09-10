@@ -23,6 +23,10 @@ class MockCursor:
     def sort(self, *args, **kwargs):
         return self
 
+    def __iter__(self):
+        start = self._skip
+        end = start + self._limit if self._limit else None
+        return iter(self.docs[start:end])
 
 class MockDB:
     def __init__(self):
