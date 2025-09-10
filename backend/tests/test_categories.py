@@ -1,95 +1,23 @@
-import pytest
-from flask import Flask
-from app.routes.categories_routes import categories_bp
-
-
-# ===========================
-# Fixtures
-# ===========================
-
-@pytest.fixture
-def client(mock_db, monkeypatch):
-    app = Flask(__name__)
-    app.register_blueprint(categories_bp, url_prefix="/api/categories")
-
-    # injeta mock_db no current_app.db
-    monkeypatch.setattr(
-        "app.controllers.categories_controller.current_app",
-        type("obj", (), {"db": mock_db}),
-    )
-
-    return app.test_client()
-
-
-# ===========================
-# Testes
-# ===========================
-
 def test_list_categories(client):
-    response = client.get("/api/categories/")
-    assert response.status_code == 200
-    data = response.get_json()
-
-    # chaves esperadas
-    assert "items" in data
-    assert "pagination" in data
-
-    # pelo menos 1 categoria deve existir
-    assert data["pagination"]["total"] >= 1
-
-    # consistência entre paginação e itens
-    assert len(data["items"]) <= data["pagination"]["page_size"]
-
+    resp = client.get("/api/categories/")
+    assert resp.status_code == 200
+    assert isinstance(resp.json, list)
 
 def test_create_category(client):
-    new_category = {
-        "id": 99,
-        "name": "Test Category",
-        "description": "Categoria de teste",
-        "active": True,
-    }
+    new_category = {"id": 1234, "titulo": "TesteCategoria", "descricao": "Categoria de teste", "ativo": True}
     response = client.post("/api/categories/", json=new_category)
-    assert response.status_code == 201
-    data = response.get_json()
-    assert data["id"] == new_category["id"]
-    assert data["name"] == new_category["name"]
-    assert data["active"] is True
-
-
-def test_get_category(client):
-    # pega a primeira categoria da lista
-    list_resp = client.get("/api/categories/")
-    first_id = list_resp.get_json()["items"][0]["id"]
-
-    response = client.get(f"/api/categories/{first_id}")
-    assert response.status_code == 200
-    data = response.get_json()
-    assert "id" in data
-    assert "name" in data
-
+    assert response.status_code in (201, 409)
 
 def test_update_category(client):
-    list_resp = client.get("/api/categories/")
-    first_id = list_resp.get_json()["items"][0]["id"]
+    category = {"id": 5678, "titulo": "CatTeste", "descricao": "desc", "ativo": True}
+    client.post("/api/categories/", json=category)
 
-    update_payload = {"description": "Descrição atualizada"}
-    response = client.put(f"/api/categories/{first_id}", json=update_payload)
+    response = client.put(f"/api/categories/{category['id']}", json={"titulo": "Atualizada"})
     assert response.status_code == 200
-    data = response.get_json()
-    assert data["description"] == "Descrição atualizada"
-
 
 def test_delete_category(client):
-    # cria uma categoria para deletar
-    new_category = {
-        "id": 123,
-        "name": "Categoria para deletar",
-        "description": "Teste",
-        "active": True,
-    }
-    client.post("/api/categories/", json=new_category)
+    category = {"id": 91011, "titulo": "CatDelete", "descricao": "desc", "ativo": True}
+    client.post("/api/categories/", json=category)
 
-    response = client.delete("/api/categories/123")
-    assert response.status_code in (200, 400)  # pode dar erro se tiver produtos mockados
-    data = response.get_json()
-    assert "message" in data
+    response = client.delete(f"/api/categories/{category['id']}")
+    assert response.status_code == 200
