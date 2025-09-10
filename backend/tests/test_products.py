@@ -89,7 +89,7 @@ def client(app):
 
 # GET /products
 def test_list_products(client):
-    response = client.get("/api/products")
+    response = client.get("/api/products/")
     assert response.status_code == 200
     data = response.get_json()
     assert "items" in data
@@ -117,7 +117,7 @@ def test_create_product(client):
         "categoria": "Esportivo",
         "imagem": "img3.jpg"
     }
-    response = client.post("/api/products", json=new_product)
+    response = client.post("/api/products/", json=new_product)
     assert response.status_code == 201
     data = response.get_json()
     assert data["id"] == 3
@@ -131,7 +131,7 @@ def test_create_product_duplicate(client):
         "categoria": "Casual",
         "imagem": "img1.jpg"
     }
-    response = client.post("/api/products", json=duplicate_product)
+    response = client.post("/api/products/", json=duplicate_product)
     assert response.status_code == 409
 
 # PUT /products/<id>
