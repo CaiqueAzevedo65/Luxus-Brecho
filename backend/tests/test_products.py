@@ -75,7 +75,7 @@ class MockDB:
 def app():
     app = Flask(__name__)
     app.db = MockDB()
-    app.register_blueprint(products_bp)
+    app.register_blueprint(products_bp, url_prefix="/api/products")
     return app
 
 @pytest.fixture
