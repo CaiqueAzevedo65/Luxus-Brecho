@@ -10,6 +10,8 @@ from pymongo.errors import DuplicateKeyError
 class MockCursor:
     def __init__(self, docs):
         self.docs = docs
+        self._skip = 0     # sempre inicializa
+        self._limit = None # sempre inicializa
 
     def skip(self, n):
         self._skip = n
