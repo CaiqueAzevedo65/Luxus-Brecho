@@ -36,7 +36,8 @@ class MockDB:
     def __getitem__(self, name):
         return self
 
-    def find(self, query):
+    def find(self, query=None, projection=None):
+        # Para simplificação, ignora o query e projection
         return MockCursor(self.products)
 
     def count_documents(self, query):
