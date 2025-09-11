@@ -4,16 +4,15 @@
     "slug": "luxus-brecho",
     "scheme": "luxus-brecho",
     "icon": "./assets/images/icon.png",
-
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
     },
-
-    "web": { "favicon": "./assets/images/favicon.png" },
-
+    "web": {
+      "favicon": "./assets/images/favicon.png"
+    },
     "plugins": [
       [
         "expo-splash-screen",
@@ -22,7 +21,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-router"
     ]
   }
 }
