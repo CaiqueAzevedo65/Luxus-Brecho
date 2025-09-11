@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useFeaturedProducts, useTopSellingProducts } from '../../hooks/useProducts';
 import { useCartStore } from '../../store/cartStore';
 import type { Product } from '../../types/product';
+import ConnectionStatus from '@/components/ui/ConnectionStatus';
 
 const { width } = Dimensions.get('window');
 
@@ -278,7 +279,7 @@ export default function HomeScreen() {
                       {product.name}
                     </Text>
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63', marginBottom: 8 }}>
-                      R$ {product. price.toFixed(2).replace('.', ',')}
+                      R$ {product.price.toFixed(2).replace('.', ',')}
                     </Text>
                   </View>
                   
@@ -448,6 +449,7 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
+        <ConnectionStatus />
       </ScrollView>
     </SafeAreaView>
   );

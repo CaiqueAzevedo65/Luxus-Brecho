@@ -1,8 +1,10 @@
 export interface Category {
   id: number;
-  name: string;
-  description: string;
-  active: boolean;
+  nome: string;        
+  descricao: string;   
+  ativa: boolean;      
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface CategoryResponse {
