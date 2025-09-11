@@ -12,25 +12,6 @@ COLLECTION_NAME = "categories"
 COUNTERS_COLLECTION = "counters"
 COUNTER_KEY_CATEGORIES = "categories"
 
-# Categorias padrão do brechó
-DEFAULT_CATEGORIES = [
-    {
-        "name": "Casual",
-        "description": "Roupas para o dia a dia, confortáveis e descontraídas",
-        "active": True
-    },
-    {
-        "name": "Social",
-        "description": "Roupas elegantes para eventos formais e trabalho",
-        "active": True
-    },
-    {
-        "name": "Esportivo",
-        "description": "Roupas para atividades físicas e esportes",
-        "active": True
-    }
-]
-
 # Validador JSON Schema para MongoDB
 MONGO_JSON_SCHEMA: Dict[str, Any] = {
     "$jsonSchema": {
@@ -64,6 +45,10 @@ MONGO_JSON_SCHEMA: Dict[str, Any] = {
 def normalize_category(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Normaliza campos da categoria (strings, boolean)."""
     data = dict(payload or {})
+
+    # Normalização de campos
+    if "nome" in data:
+        data["name"] = data.pop("nome").strip()
 
     # Trim de strings principais
     for key in ("name", "description"):
@@ -147,14 +132,31 @@ def ensure_categories_collection(db):
 
     coll = db[COLLECTION_NAME]
 
-    # Índices
+    # Limpa índices existentes
+    try:
+        indices = coll.list_indexes()
+        for idx in indices:
+            if idx.get('name') not in ['_id_']:
+                try:
+                    coll.drop_index(idx['name'])
+                except Exception as e:
+                    print(f"Aviso: não foi possível remover índice {idx['name']}: {e}")
+    except Exception as e:
+        print(f"Aviso: erro ao listar/remover índices: {e}")
+
+    # Cria novos índices
     try:
         coll.create_index([("id", ASCENDING)], unique=True, name="uniq_id")
     except Exception as e:
         print(f"Aviso: não foi possível criar índice único em 'id': {e}")
 
     try:
-        coll.create_index([("name", ASCENDING)], unique=True, name="uniq_name")
+        coll.create_index(
+            [("name", ASCENDING)], 
+            unique=True, 
+            name="uniq_name",
+            partialFilterExpression={"name": {"$exists": True}}
+        )
     except Exception as e:
         print(f"Aviso: não foi possível criar índice único em 'name': {e}")
 
@@ -237,27 +239,3 @@ def get_active_categories_list(db) -> List[str]:
         print(f"Erro ao buscar categorias ativas: {e}")
         return []
 
-
-def seed_default_categories(db) -> bool:
-    """Insere as categorias padrão se não existirem."""
-    if db is None:
-        return False
-    
-    try:
-        coll = get_collection(db)
-        
-        for category_data in DEFAULT_CATEGORIES:
-            # Verifica se já existe
-            existing = coll.find_one({"name": category_data["name"]})
-            if not existing:
-                ok, errors, doc = prepare_new_category(db, category_data)
-                if ok:
-                    coll.insert_one(doc)
-                    print(f"Categoria '{category_data['name']}' criada com sucesso")
-                else:
-                    print(f"Erro ao criar categoria '{category_data['name']}': {errors}")
-        
-        return True
-    except Exception as e:
-        print(f"Erro ao inserir categorias padrão: {e}")
-        return False

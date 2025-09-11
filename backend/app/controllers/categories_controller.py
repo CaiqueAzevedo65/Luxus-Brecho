@@ -8,7 +8,6 @@ from ..models.category_model import (
     prepare_new_category,
     validate_category,
     normalize_category,
-    seed_default_categories,
 )
 
 
@@ -130,7 +129,7 @@ def update_category(id: int):
 
 
 def delete_category(id: int):
-    """Remove uma categoria (soft delete - marca como inativa)."""
+    """Deleta permanentemente uma categoria se não houver produtos associados."""
     db = current_app.db
     if db is None:
         return jsonify(message="database unavailable"), 503
@@ -138,21 +137,48 @@ def delete_category(id: int):
 
     category = coll.find_one({"id": int(id)})
     if not category:
-        return jsonify(message="category not found"), 404
+        return jsonify(message="categoria não encontrada"), 404
 
-    # Verificar se há produtos usando esta categoria
-    products_coll = db["products"]
-    products_using_category = products_coll.count_documents({"categoria": category["name"]})
+    # Verifica se há produtos usando a categoria
+    category_name = category.get("name", category.get("nome", "")).strip()
+    products_using_category = current_app.db.products.count_documents(
+        {"categoria": category_name}
+    )
     
+    # Se não encontrou com o nome exato, tenta com capitalização padrão
+    if products_using_category == 0:
+        products_using_category = current_app.db.products.count_documents(
+            {"categoria": category_name.title()}
+        )
     if products_using_category > 0:
         return jsonify(
-            message="cannot delete category with associated products",
+            message="não é possível deletar categoria com produtos associados",
             products_count=products_using_category
         ), 400
 
-    # Soft delete - marca como inativa
+    # Delete permanente
+    result = coll.delete_one({"id": int(id)})
+    if result.deleted_count > 0:
+        return jsonify(message="categoria deletada com sucesso"), 200
+    return jsonify(message="erro ao deletar categoria"), 500
+
+
+def deactivate_category(id: int):
+    """Desativa uma categoria (soft delete)."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="database unavailable"), 503
+    coll = get_collection(db)
+
+    category = coll.find_one({"id": int(id)})
+    if not category:
+        return jsonify(message="categoria não encontrada"), 404
+
+    if not category.get("active", True):
+        return jsonify(message="categoria já está desativada"), 400
+
     coll.update_one({"id": int(id)}, {"$set": {"active": False}})
-    return jsonify(message="category deactivated"), 200
+    return jsonify(message="categoria desativada com sucesso"), 200
 
 
 def activate_category(id: int):
@@ -170,18 +196,6 @@ def activate_category(id: int):
     updated = coll.find_one({"id": int(id)})
     return jsonify(_serialize(updated))
 
-
-def seed_categories():
-    """Endpoint para criar as categorias padrão."""
-    db = current_app.db
-    if db is None:
-        return jsonify(message="database unavailable"), 503
-
-    success = seed_default_categories(db)
-    if success:
-        return jsonify(message="default categories seeded successfully"), 201
-    else:
-        return jsonify(message="failed to seed default categories"), 500
 
 
 def get_categories_summary():

@@ -8,7 +8,7 @@ import certifi
 from dotenv import load_dotenv
 from flask_cors import CORS
 from .models.product_model import ensure_products_collection
-from .models.category_model import ensure_categories_collection, seed_default_categories
+from .models.category_model import ensure_categories_collection
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -84,7 +84,6 @@ def create_app():
 
         # Garantia de índices/esquemas
         ensure_categories_collection(app.db)
-        seed_default_categories(app.db)
         ensure_products_collection(app.db)
 
     except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure) as e:

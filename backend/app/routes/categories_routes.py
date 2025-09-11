@@ -6,7 +6,6 @@ from app.controllers.categories_controller import (
     update_category,
     delete_category,
     activate_category,
-    seed_categories,
     get_categories_summary,
 )
 
@@ -21,5 +20,4 @@ categories_bp.route("/<int:id>", methods=["DELETE"])(delete_category)
 
 # Operações especiais
 categories_bp.route("/<int:id>/activate", methods=["PUT"])(activate_category)
-categories_bp.route("/seed", methods=["POST"])(seed_categories)
 categories_bp.route("/summary", methods=["GET"])(get_categories_summary)

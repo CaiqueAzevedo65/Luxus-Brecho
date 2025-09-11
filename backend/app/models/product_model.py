@@ -15,15 +15,15 @@ COUNTER_KEY_PRODUCTS = "products"
 def get_allowed_categories(db) -> set:
     """Busca categorias ativas do banco de dados."""
     if db is None:
-        return {"Casual", "Social", "Esportivo"}  # Fallback
+        return set()
     
     try:
         from .category_model import get_active_categories_list
         active_cats = get_active_categories_list(db)
-        return set(active_cats) if active_cats else {"Casual", "Social", "Esportivo"}
+        return set(active_cats)
     except Exception as e:
         print(f"Erro ao buscar categorias ativas: {e}")
-        return {"Casual", "Social", "Esportivo"}  # Fallback
+        return set()
 
 
 def create_dynamic_schema(db) -> Dict[str, Any]:

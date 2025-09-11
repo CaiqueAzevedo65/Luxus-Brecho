@@ -146,13 +146,32 @@ def create_product_with_image():
         return jsonify(message="banco de dados indisponível"), 503
     
     try:
-        # Valida se há imagem
+        # Validação detalhada da imagem
         if 'image' not in request.files:
-            return jsonify(message="Imagem é obrigatória"), 400
+            return jsonify(message="Imagem é obrigatória", errors={"image": "Nenhum arquivo de imagem enviado"}), 400
         
         file = request.files['image']
         if file.filename == '':
-            return jsonify(message="Nenhuma imagem selecionada"), 400
+            return jsonify(message="Nenhuma imagem selecionada", errors={"image": "Arquivo de imagem vazio"}), 400
+            
+        # Valida extensão do arquivo
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        if file_ext not in allowed_extensions:
+            return jsonify(
+                message="Formato de arquivo inválido",
+                errors={"image": f"Apenas os formatos {', '.join(allowed_extensions)} são permitidos"}
+            ), 400
+            
+        # Valida tamanho do arquivo (máx 5MB)
+        if len(file.read()) > 5 * 1024 * 1024:  # 5MB em bytes
+            file.seek(0)  # Reset do ponteiro do arquivo
+            return jsonify(
+                message="Arquivo muito grande",
+                errors={"image": "O tamanho máximo permitido é 5MB"}
+            ), 400
+            
+        file.seek(0)  # Reset do ponteiro do arquivo após leitura
         
         # Obtém dados do produto do form
         form_data = {
@@ -162,15 +181,27 @@ def create_product_with_image():
             "categoria": request.form.get('categoria')
         }
         
-        # Validação básica
-        if not all([form_data['titulo'], form_data['descricao'], 
-                   form_data['preco'], form_data['categoria']]):
-            return jsonify(message="Todos os campos são obrigatórios"), 400
+        # Validação detalhada de campos obrigatórios
+        errors = {}
+        for field in ['titulo', 'descricao', 'categoria']:
+            if not form_data.get(field):
+                errors[field] = f'O campo {field} é obrigatório'
+            elif isinstance(form_data[field], str) and len(form_data[field].strip()) == 0:
+                errors[field] = f'O campo {field} não pode estar vazio'
+
+        if not form_data.get('preco'):
+            errors['preco'] = 'O campo preço é obrigatório'
         
-        # Converte preço
+        if errors:
+            return jsonify(message="Campos obrigatórios não preenchidos", errors=errors), 400
+        
+        # Validação e conversão do preço
         try:
-            form_data['preco'] = float(form_data['preco'])
-        except ValueError:
+            preco = float(form_data['preco'])
+            if preco <= 0:
+                return jsonify(message="O preço deve ser maior que zero"), 400
+            form_data['preco'] = preco
+        except (ValueError, TypeError):
             return jsonify(message="Preço deve ser um número válido"), 400
         
         # Primeiro faz upload da imagem para obter URL
