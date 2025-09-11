@@ -98,13 +98,13 @@ def validate_product(payload: Dict[str, Any], db=None) -> Tuple[bool, Dict[str, 
 
     # id é opcional neste momento (poderemos auto-gerar depois). Se enviado, deve ser int/long.
     if "id" in data and not isinstance(data["id"], (int,)):
-        errors["id"] = "deve ser inteiro"
+        errors["id"] = "deve ser um número inteiro"
 
     # Campos obrigatórios - TODOS são obrigatórios conforme requisito
     required = ["titulo", "preco", "descricao", "categoria", "imagem"]
     for k in required:
         if data.get(k) in (None, ""):
-            errors[k] = "obrigatório"
+            errors[k] = "campo obrigatório"
 
     # Validações específicas de tamanho e formato
     if "titulo" in data and data["titulo"]:
@@ -132,16 +132,16 @@ def validate_product(payload: Dict[str, Any], db=None) -> Tuple[bool, Dict[str, 
 
     # Tipos
     if "preco" in data and not isinstance(data.get("preco"), (int, float)):
-        errors["preco"] = "deve ser numérico"
+        errors["preco"] = "deve ser um número"
     elif "preco" in data and data["preco"] < 0:
-        errors["preco"] = "deve ser positivo"
+        errors["preco"] = "deve ser um número positivo"
 
     # Categoria permitida - busca dinamicamente do banco
     cat = data.get("categoria")
     if cat:
         allowed_categories = get_allowed_categories(db)
         if cat not in allowed_categories:
-            errors["categoria"] = f"deve ser uma das: {', '.join(sorted(allowed_categories))}"
+            errors["categoria"] = f"deve ser uma das seguintes categorias: {', '.join(sorted(allowed_categories))}"
 
     return (len(errors) == 0), errors
 
@@ -178,13 +178,13 @@ def ensure_products_collection(db):
                 validationLevel="moderate",
             )
     except Exception as e:
-        print(f"Aviso: não foi possível aplicar validator na coleção '{COLLECTION_NAME}': {e}")
+        print(f"Erro ao aplicar validator na coleção '{COLLECTION_NAME}': {e}")
 
     # Garante a coleção de counters e documento inicial para produtos
     try:
         ensure_counters_collection(db)
     except Exception as e:
-        print(f"Aviso: não foi possível preparar counters: {e}")
+        print(f"Erro ao preparar counters: {e}")
 
     coll = db[COLLECTION_NAME]
 
@@ -192,17 +192,17 @@ def ensure_products_collection(db):
     try:
         coll.create_index([("id", ASCENDING)], unique=True, name="uniq_id")
     except Exception as e:
-        print(f"Aviso: não foi possível criar índice único em 'id': {e}")
+        print(f"Erro ao criar índice único em 'id': {e}")
 
     try:
         coll.create_index([("categoria", ASCENDING)], name="idx_categoria")
     except Exception as e:
-        print(f"Aviso: não foi possível criar índice em 'categoria': {e}")
+        print(f"Erro ao criar índice em 'categoria': {e}")
 
     try:
         coll.create_index([("titulo", TEXT), ("descricao", TEXT)], name="txt_titulo_descricao")
     except Exception as e:
-        print(f"Aviso: não foi possível criar índice de texto: {e}")
+        print(f"Erro ao criar índice de texto: {e}")
 
     return coll
 
@@ -215,7 +215,7 @@ def ensure_counters_collection(db):
     try:
         coll.create_index([("name", ASCENDING)], unique=True, name="uniq_name")
     except Exception as e:
-        print(f"Aviso: não foi possível criar índice em counters.name: {e}")
+        print(f"Erro ao criar índice em counters.name: {e}")
     # Garante documento para products
     try:
         coll.update_one(
@@ -224,7 +224,7 @@ def ensure_counters_collection(db):
             upsert=True,
         )
     except Exception as e:
-        print(f"Aviso: não foi possível inicializar contador de produtos: {e}")
+        print(f"Erro ao inicializar contador de produtos: {e}")
     return coll
 
 
