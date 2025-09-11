@@ -170,3 +170,36 @@ def get_active_categories_list(db) -> List[str]:
         return []
     coll = get_collection(db)
     return [cat["titulo"] for cat in coll.find({"ativo": True}, {"titulo": 1, "_id": 0})]
+
+def seed_default_categories(db, default_titles: List[str] = None) -> int:
+    """
+    Popula a coleção de categorias com um conjunto padrão de títulos caso esteja vazia.
+    Retorna o número de documentos inseridos (0 se já existirem categorias ou db for None).
+    """
+    if db is None:
+        return 0
+
+    coll = get_collection(db)
+    # Se já houver documentos, não faz nada
+    if coll.count_documents({}) > 0:
+        return 0
+
+    # Títulos padrão se não fornecidos
+    titles = default_titles or ["Roupas", "Acessórios", "Calçados", "Bolsas", "Decoração"]
+
+    # Garante existência da coleção de contadores antes de gerar ids
+    ensure_counters_collection(db)
+
+    docs = []
+    for titulo in titles:
+        doc = {
+            "id": get_next_sequence(db, COUNTER_KEY_CATEGORIES),
+            "titulo": titulo,
+            "ativo": True
+        }
+        docs.append(doc)
+
+    if docs:
+        coll.insert_many(docs)
+
+    return len(docs)

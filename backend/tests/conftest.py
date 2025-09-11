@@ -6,16 +6,23 @@ ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
-from backend.app import create_app
 import pytest
-
+from backend.app import create_app
 
 @pytest.fixture
-def client():
+def app():
+    """Create test app instance with store."""
     app = create_app()
-    app.config["TESTING"] = True
+    return app
+
+@pytest.fixture
+def client(app):
+    """Create test client and initialize store."""
     with app.test_client() as client:
+        # Ensure we have a fresh store for each test
+        app._categories_store = {}
         yield client
+        
 import pytest
 
 class MockCursor:
