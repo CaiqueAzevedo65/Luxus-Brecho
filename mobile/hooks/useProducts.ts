@@ -10,7 +10,8 @@ export const useProducts = (filters?: ProductFilters) => {
     error, 
     setProducts, 
     setLoading, 
-    setError 
+    setError,
+    setPagination
   } = useProductStore();
 
   const fetchProducts = async (page = 1, limit = 20) => {
@@ -18,7 +19,11 @@ export const useProducts = (filters?: ProductFilters) => {
       setLoading(true);
       setError(null);
       const response = await apiService.getProducts(page, limit, filters);
-      setProducts(response.products);
+      setProducts(response.items.map(item => ({
+        ...item,
+        preco: Number(item.preco) || 0
+      })));
+      setPagination(response.pagination);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar produtos');
     } finally {
@@ -54,7 +59,10 @@ export const useFeaturedProducts = () => {
       setLoading(true);
       setError(null);
       const products = await apiService.getFeaturedProducts();
-      setFeaturedProducts(products);
+      setFeaturedProducts(products.map(item => ({
+        ...item,
+        preco: Number(item.preco) || 0
+      })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar produtos em destaque');
     } finally {
@@ -89,7 +97,10 @@ export const useTopSellingProducts = () => {
       setLoading(true);
       setError(null);
       const products = await apiService.getTopSellingProducts();
-      setTopSellingProducts(products);
+      setTopSellingProducts(products.map(item => ({
+        ...item,
+        preco: Number(item.preco) || 0
+      })));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar mais vendidos');
     } finally {
@@ -116,8 +127,8 @@ export const useProductSearch = () => {
     try {
       setLoading(true);
       setError(null);
-      const products = await apiService.searchProducts(query);
-      return products;
+      const response = await apiService.searchProducts(query);
+      return response.items || [];
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro na busca');
       return [];

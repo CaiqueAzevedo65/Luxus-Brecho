@@ -159,7 +159,7 @@ export default function HomeScreen() {
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingLeft: 16 }}>
               {featuredProducts.map((product: Product) => (
-                <View key={product._id} style={{ 
+                <View key={product.id || Math.random()} style={{ 
                   backgroundColor: 'white', 
                   borderRadius: 12, 
                   padding: 12, 
@@ -179,9 +179,9 @@ export default function HomeScreen() {
                     marginBottom: 8,
                     overflow: 'hidden'
                   }}>
-                    {product.images && product.images[0] ? (
+                    {product.imagem ? (
                       <Image 
-                        source={{ uri: product.images[0] }} 
+                        source={{ uri: product.imagem }} 
                         style={{ width: '100%', height: '100%' }}
                         resizeMode="cover"
                       />
@@ -191,10 +191,10 @@ export default function HomeScreen() {
                     {renderStars(product.rating || 5)}
                   </View>
                   <Text style={{ fontSize: 12, color: '#333', marginBottom: 4 }} numberOfLines={2}>
-                    {product.name}
+                    {product.titulo}
                   </Text>
                   <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63', marginBottom: 8 }}>
-                    R$ {product.price.toFixed(2).replace('.', ',')}
+                    R$ {(product.preco || 0).toFixed(2).replace('.', ',')}
                   </Text>
                   <TouchableOpacity 
                     style={{
@@ -242,7 +242,7 @@ export default function HomeScreen() {
           ) : (
             <View style={{ paddingHorizontal: 16 }}>
               {topSellingProducts.map((product: Product) => (
-                <View key={product._id} style={{ 
+                <View key={product.id || Math.random()} style={{ 
                   backgroundColor: 'white', 
                   borderRadius: 12, 
                   padding: 12, 
@@ -263,9 +263,9 @@ export default function HomeScreen() {
                     marginRight: 12,
                     overflow: 'hidden'
                   }}>
-                    {product.images && product.images[0] ? (
+                    {product.imagem ? (
                       <Image 
-                        source={{ uri: product.images[0] }} 
+                        source={{ uri: product.imagem }} 
                         style={{ width: '100%', height: '100%' }}
                         resizeMode="cover"
                       />
@@ -276,10 +276,10 @@ export default function HomeScreen() {
                       {renderStars(product.rating || 5)}
                     </View>
                     <Text style={{ fontSize: 14, color: '#333', marginBottom: 4 }}>
-                      {product.name}
+                      {product.titulo}
                     </Text>
                     <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#E91E63', marginBottom: 8 }}>
-                      R$ {product.price.toFixed(2).replace('.', ',')}
+                      R$ {(product.preco || 0).toFixed(2).replace('.', ',')}
                     </Text>
                   </View>
                   

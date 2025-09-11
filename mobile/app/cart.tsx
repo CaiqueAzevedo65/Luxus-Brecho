@@ -23,12 +23,12 @@ export default function CartScreen() {
     loadCart();
   }, []);
 
-  const handleQuantityChange = async (productId: string, currentQuantity: number, increment: boolean) => {
+  const handleQuantityChange = async (productId: number, currentQuantity: number, increment: boolean) => {
     const newQuantity = increment ? currentQuantity + 1 : currentQuantity - 1;
     await updateQuantity(productId, newQuantity);
   };
 
-  const handleRemoveItem = (productId: string, productName: string) => {
+  const handleRemoveItem = (productId: number, productName: string) => {
     Alert.alert(
       'Remover item',
       `Tem certeza que deseja remover "${productName}" do carrinho?`,
@@ -149,136 +149,127 @@ export default function CartScreen() {
               </Text>
               
               {cart.map((item, index) => (
-                <View key={item._id}>
-              <View style={{ 
-                flexDirection: 'row', 
-                alignItems: 'center',
-                paddingVertical: 16
-              }}>
-                {/* Imagem do produto */}
-                <View style={{ 
-                  width: 80, 
-                  height: 80, 
-                  backgroundColor: '#D0D0D0', 
-                  borderRadius: 8,
-                  marginRight: 16,
-                  overflow: 'hidden'
-                }}>
-                  {item.images && item.images[0] ? (
-                    <Image 
-                      source={{ uri: item.images[0] }} 
-                      style={{ width: '100%', height: '100%' }}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                      <Ionicons name="image-outline" size={24} color="#999" />
-                    </View>
-                  )}
-                </View>
-                
-                {/* Informações do produto */}
-                <View style={{ flex: 1 }}>
-                  <Text style={{ 
-                    fontSize: 16, 
-                    fontWeight: '600', 
-                    color: '#333',
-                    marginBottom: 4
-                  }} numberOfLines={2}>
-                    {item.name}
-                  </Text>
-                  {item.brand && (
-                    <Text style={{ 
-                      fontSize: 12, 
-                      color: '#999',
-                      marginBottom: 4
+                <View key={item.id}>
+                  <View style={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center',
+                    paddingVertical: 16
+                  }}>
+                    {/* Imagem do produto */}
+                    <View style={{ 
+                      width: 80, 
+                      height: 80, 
+                      backgroundColor: '#D0D0D0', 
+                      borderRadius: 8,
+                      marginRight: 16,
+                      overflow: 'hidden'
                     }}>
-                      {item.brand}
-                    </Text>
+                      {item.imagem ? (
+                        <Image 
+                          source={{ uri: item.imagem }} 
+                          style={{ width: '100%', height: '100%' }}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                          <Ionicons name="image-outline" size={24} color="#999" />
+                        </View>
+                      )}
+                    </View>
+                    
+                    {/* Informações do produto */}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ 
+                        fontSize: 16, 
+                        fontWeight: '600', 
+                        color: '#333',
+                        marginBottom: 4
+                      }} numberOfLines={2}>
+                        {item.titulo}
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 16, 
+                        fontWeight: 'bold', 
+                        color: '#E91E63'
+                      }}>
+                        R$ {(item.preco || 0).toFixed(2).replace('.', ',')}
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 12, 
+                        color: '#666',
+                        marginTop: 4
+                      }}>
+                        Subtotal: R$ {((item.preco || 0) * item.quantity).toFixed(2).replace('.', ',')}
+                      </Text>
+                    </View>
+                    
+                    {/* Botões de quantidade e remover */}
+                    <View style={{ alignItems: 'center' }}>
+                      <TouchableOpacity 
+                        style={{ 
+                          width: 32, 
+                          height: 32, 
+                          backgroundColor: '#E91E63', 
+                          borderRadius: 16,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginBottom: 8
+                        }}
+                        onPress={() => handleQuantityChange(item.id, item.quantity, true)}
+                        disabled={loading}
+                      >
+                        <Ionicons name="add" size={16} color="white" />
+                      </TouchableOpacity>
+                      
+                      <Text style={{ 
+                        fontSize: 16, 
+                        fontWeight: 'bold',
+                        marginBottom: 8,
+                        minWidth: 24,
+                        textAlign: 'center'
+                      }}>
+                        {item.quantity}
+                      </Text>
+                      
+                      <TouchableOpacity 
+                        style={{ 
+                          width: 32, 
+                          height: 32, 
+                          backgroundColor: '#E91E63', 
+                          borderRadius: 16,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          marginBottom: 8
+                        }}
+                        onPress={() => handleQuantityChange(item.id, item.quantity, false)}
+                        disabled={loading}
+                      >
+                        <Ionicons name="remove" size={16} color="white" />
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity 
+                        style={{ 
+                          padding: 4
+                        }}
+                        onPress={() => handleRemoveItem(item.id, item.titulo)}
+                        disabled={loading}
+                      >
+                        <Ionicons name="trash-outline" size={16} color="#E91E63" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  
+                  {/* Linha divisória */}
+                  {index < cart.length - 1 && (
+                    <View style={{ 
+                      height: 1, 
+                      backgroundColor: '#E91E63', 
+                      opacity: 0.3,
+                      marginVertical: 8
+                    }} />
                   )}
-                  <Text style={{ 
-                    fontSize: 16, 
-                    fontWeight: 'bold', 
-                    color: '#E91E63'
-                  }}>
-                    R$ {item.price.toFixed(2).replace('.', ',')}
-                  </Text>
-                  <Text style={{ 
-                    fontSize: 12, 
-                    color: '#666',
-                    marginTop: 4
-                  }}>
-                    Subtotal: R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}
-                  </Text>
                 </View>
-                
-                {/* Botões de quantidade e remover */}
-                <View style={{ alignItems: 'center' }}>
-                  <TouchableOpacity 
-                    style={{ 
-                      width: 32, 
-                      height: 32, 
-                      backgroundColor: '#E91E63', 
-                      borderRadius: 16,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginBottom: 8
-                    }}
-                    onPress={() => handleQuantityChange(item._id, item.quantity, true)}
-                    disabled={loading}
-                  >
-                    <Ionicons name="add" size={16} color="white" />
-                  </TouchableOpacity>
-                  
-                  <Text style={{ 
-                    fontSize: 16, 
-                    fontWeight: 'bold',
-                    marginBottom: 8,
-                    minWidth: 24,
-                    textAlign: 'center'
-                  }}>
-                    {item.quantity}
-                  </Text>
-                  
-                  <TouchableOpacity 
-                    style={{ 
-                      width: 32, 
-                      height: 32, 
-                      backgroundColor: '#E91E63', 
-                      borderRadius: 16,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginBottom: 8
-                    }}
-                    onPress={() => handleQuantityChange(item._id, item.quantity, false)}
-                    disabled={loading}
-                  >
-                    <Ionicons name="remove" size={16} color="white" />
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={{ 
-                      padding: 4
-                    }}
-                    onPress={() => handleRemoveItem(item._id, item.name)}
-                    disabled={loading}
-                  >
-                    <Ionicons name="trash-outline" size={16} color="#E91E63" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              
-              {/* Linha divisória */}
-              {index < cart.length - 1 && (
-                <View style={{ 
-                  height: 1, 
-                  backgroundColor: '#E91E63', 
-                  opacity: 0.3,
-                  marginVertical: 8
-                }} />
-              )}
-            </View>
-          ))}
+              ))}
             </View>
             
             {/* Seção Resumo de Valores */}
