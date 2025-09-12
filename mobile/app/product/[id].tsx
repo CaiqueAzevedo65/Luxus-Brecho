@@ -123,9 +123,16 @@ export default function ProductScreen() {
         <View className="w-full aspect-square bg-gray-100">
           {product.imagem ? (
             <Image
-              source={{ uri: product.imagem }}
+              source={{
+                uri: product.imagem,
+                cache: 'force-cache',
+                headers: {
+                  'Cache-Control': 'max-age=31536000'
+                }
+              }}
               className="w-full h-full"
               resizeMode="cover"
+              onError={() => console.warn('Erro ao carregar imagem:', product.imagem)}
             />
           ) : (
             <View className="flex-1 items-center justify-center">

@@ -10,22 +10,10 @@ import ConnectionStatus from '@/components/ui/ConnectionStatus';
 
 const { width } = Dimensions.get('window');
 
-interface StyleCategory {
-  title: string;
-  color: string;
-}
-
 interface Testimonial {
   rating: number;
   text: string;
 }
-
-const styleCategories: StyleCategory[] = [
-  { title: 'Casual', color: '#FF6B9D' },
-  { title: 'Formal', color: '#9C5AFF' },
-  { title: 'Social', color: '#FF8C42' },
-  { title: 'Esportivo', color: '#4ECDC4' }
-];
 
 const testimonials: Testimonial[] = [
   { rating: 5, text: 'Excelente qualidade e ótimo atendimento!' },
@@ -102,9 +90,16 @@ export default function HomeScreen() {
             <View style={{ width: '100%', height: 160, backgroundColor: '#f0f0f0', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
               {product.imagem ? (
                 <Image
-                  source={{ uri: product.imagem }}
+                  source={{
+                    uri: product.imagem,
+                    cache: 'force-cache',
+                    headers: {
+                      'Cache-Control': 'max-age=31536000'
+                    }
+                  }}
                   className="w-full h-full"
                   resizeMode="cover"
+                  onError={() => console.warn('Erro ao carregar imagem:', product.imagem)}
                 />
               ) : (
                 <View className="flex-1 items-center justify-center">
@@ -154,14 +149,15 @@ export default function HomeScreen() {
     }
 
     return (
-      <View className="px-4">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
         {topSellingProducts.map((product) => (
           <TouchableOpacity
             key={product.id}
             onPress={() => router.push(`/product/${product.id}`)}
-            className="bg-white rounded-xl shadow-sm p-3 mb-2 flex-row items-center"
+            style={{ width: width * 0.35 }}
+            className="bg-white rounded-xl shadow-sm p-2 mr-3"
           >
-            <View className="w-15 h-15 bg-gray-100 rounded-lg overflow-hidden mr-3">
+            <View className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-2">
               {product.imagem ? (
                 <Image
                   source={{ uri: product.imagem }}
@@ -175,27 +171,25 @@ export default function HomeScreen() {
               )}
             </View>
 
-            <View className="flex-1">
-              {renderStars(5)}
+            {renderStars(5)}
 
-              <Text className="text-gray-800 text-sm mb-1" numberOfLines={2}>
-                {product.titulo}
-              </Text>
+            <Text className="text-gray-800 text-xs mt-1 mb-1" numberOfLines={2}>
+              {product.titulo}
+            </Text>
 
-              <Text className="text-pink-600 font-bold text-base">
-                R$ {(product.preco || 0).toFixed(2).replace('.', ',')}
-              </Text>
-            </View>
+            <Text className="text-pink-600 font-bold text-sm">
+              R$ {(product.preco || 0).toFixed(2).replace('.', ',')}
+            </Text>
 
             <TouchableOpacity
-              className="bg-pink-600 p-2 rounded-md ml-2"
+              className="bg-pink-600 py-1.5 rounded-md mt-2 items-center"
               onPress={() => addToCart(product)}
             >
-              <Ionicons name="add" size={16} color="white" />
+              <Text className="text-white text-xs font-bold">+ Carrinho</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     );
   };
 
@@ -238,26 +232,89 @@ export default function HomeScreen() {
       
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Banner Principal */}
-        <View className="bg-pink-600 m-4 rounded-xl p-5">
-          <View className="items-center mb-4">
-            <View className="flex-row mb-3">
+        <View className="px-4 mb-6">
+          <View className="relative rounded-xl overflow-hidden">
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              className="w-full"
+            >
               {[1, 2, 3].map((_, index) => (
-                <View 
+                <View
                   key={index}
-                  className="w-20 h-20 bg-white/30 rounded-lg mx-1" 
+                  style={{ width: width - 32 }}
+                  className="relative aspect-[4/3]"
+                >
+                  <Image
+                    source={{ uri: `https://picsum.photos/800/600?random=${index}` }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                  <View className="absolute inset-0 bg-black/30 justify-center items-center">
+                    <Text className="text-white text-2xl font-bold text-center mb-2">
+                      Encontre Roupas que{"\n"}Encaixem com seu estilo
+                    </Text>
+                    <Text className="text-white text-base text-center">
+                      Diversas marcas em bom estado!
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+            <View className="absolute bottom-4 w-full flex-row justify-center space-x-2">
+              {[0, 1, 2].map((_, index) => (
+                <View
+                  key={index}
+                  className="w-2 h-2 rounded-full bg-white/50"
+                  style={index === 0 ? { backgroundColor: 'white' } : {}}
                 />
               ))}
             </View>
           </View>
-          <Text className="text-white text-lg font-bold text-center mb-1">
-            Encontre Roupas que Encaixem com
-          </Text>
-          <Text className="text-white text-lg font-bold text-center mb-2">
-            seu estilo
-          </Text>
-          <Text className="text-white text-sm text-center mb-4">
-            Diversas marcas em bom estado!
-          </Text>
+        </View>
+
+        {/* Grid Circular de Categorias */}
+        <View className="mb-6">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="pl-4"
+          >
+            {[
+              { title: 'Casual', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=200' },
+              { title: 'Social', image: 'https://images.unsplash.com/photo-1580518337843-f959e992563b?w=200' },
+              { title: 'Esportivo', image: 'https://images.unsplash.com/photo-1539041127713-5e8be5d3fefe?w=200' }
+            ].map((category, index) => (
+              <TouchableOpacity
+                key={index}
+                className="items-center mr-6"
+                onPress={() => router.push(`/category/${category.title.toLowerCase()}`)}
+              >
+                <View className="w-16 h-16 rounded-full overflow-hidden mb-2 bg-gray-100">
+                  <Image
+                    source={{ uri: category.image }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+                </View>
+                <Text className="text-xs text-gray-800 text-center">
+                  {category.title}
+                </Text>
+                <View className="flex-row mt-1">
+                  {[1, 2, 3, 4, 5].map((_, i) => (
+                    <Ionicons
+                      key={i}
+                      name="star"
+                      size={8}
+                      color="#FFD700"
+                      style={{ marginHorizontal: 0.5 }}
+                    />
+                  ))}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Produtos em Destaque */}
@@ -287,23 +344,61 @@ export default function HomeScreen() {
             PESQUISE POR ESTILO
           </Text>
           
-          <View className="px-4 flex-row flex-wrap justify-between">
-            {styleCategories.map((category, index) => (
+          <View className="px-4">
+            <View className="flex-row justify-between mb-4">
+              {/* Categoria Casual */}
               <TouchableOpacity 
-                key={index}
-                style={{ 
-                  width: '48%',
-                  aspectRatio: 1.2,
-                  backgroundColor: category.color
-                }}
-                className="rounded-lg justify-center items-center mb-3"
+                style={{ width: '48%' }}
+                className="rounded-xl shadow-sm overflow-hidden aspect-square"
+                onPress={() => router.push('/category/casual')}
               >
-                <View className="w-10 h-10 bg-white/30 rounded-lg mb-2" />
-                <Text className="text-white text-base font-bold">
-                  {category.title}
-                </Text>
+                <Image
+                  source={{ uri: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400' }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+                <View className="absolute inset-0 bg-black/20 justify-end p-3">
+                  <Text className="text-white text-lg font-bold">
+                    Casual
+                  </Text>
+                </View>
               </TouchableOpacity>
-            ))}
+
+              {/* Categoria Social */}
+              <TouchableOpacity 
+                style={{ width: '48%' }}
+                className="rounded-xl shadow-sm overflow-hidden aspect-square"
+                onPress={() => router.push('/category/social')}
+              >
+                <Image
+                  source={{ uri: 'https://images.unsplash.com/photo-1580518337843-f959e992563b?w=400' }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+                <View className="absolute inset-0 bg-black/20 justify-end p-3">
+                  <Text className="text-white text-lg font-bold">
+                    Social
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* Categoria Esportivo */}
+            <TouchableOpacity 
+              className="rounded-xl shadow-sm overflow-hidden aspect-[2/1] w-full"
+              onPress={() => router.push('/category/esportivo')}
+            >
+              <Image
+                source={{ uri: 'https://images.unsplash.com/photo-1539041127713-5e8be5d3fefe?w=800' }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+              <View className="absolute inset-0 bg-black/20 justify-end p-3">
+                <Text className="text-white text-lg font-bold">
+                  Esportivo
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -315,11 +410,23 @@ export default function HomeScreen() {
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
             {testimonials.map((testimonial, index) => (
-              <View key={index} className="bg-white rounded-xl p-4 mr-3 shadow-sm" style={{ width: 200 }}>
-                {renderStars(testimonial.rating)}
-                <Text className="text-xs text-gray-600 leading-relaxed mt-2">
-                  {testimonial.text}
-                </Text>
+              <View 
+                key={index} 
+                className="bg-white rounded-xl mr-3 shadow-sm overflow-hidden" 
+                style={{ width: width * 0.7 }}
+              >
+                <View className="bg-pink-50 p-4">
+                  <View className="flex-row items-center mb-3">
+                    <View className="w-10 h-10 rounded-full bg-pink-200 mr-3" />
+                    <View>
+                      <Text className="text-gray-800 font-medium">Cliente {index + 1}</Text>
+                      {renderStars(testimonial.rating)}
+                    </View>
+                  </View>
+                  <Text className="text-gray-600 leading-relaxed">
+                    {testimonial.text}
+                  </Text>
+                </View>
               </View>
             ))}
           </ScrollView>

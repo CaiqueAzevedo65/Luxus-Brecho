@@ -1,8 +1,8 @@
 export interface Category {
   id: number;
-  nome: string;        
-  descricao: string;   
-  ativa: boolean;      
+  name: string;        
+  description: string;   
+  active: boolean;      
   created_at?: string;
   updated_at?: string;
 }
@@ -17,3 +17,5 @@ export interface CategoryResponse {
 }
 
 export type CategoryName = 'Casual' | 'Social' | 'Esportivo';
+
+export const ALLOWED_CATEGORIES: CategoryName[] = ['Casual', 'Social', 'Esportivo'];

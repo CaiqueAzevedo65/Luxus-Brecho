@@ -6,7 +6,7 @@ const API_CONFIGS = {
   // Para desenvolvimento local (simulador iOS)
   local: 'http://localhost:5000/api',
   // Para desenvolvimento com dispositivo físico - IP da máquina do backend
-  network: 'http://192.168.57.26:5000/api', // Ajustado para seu IP atual
+  network: 'http://192.168.0.5:5000/api', // IP local para Expo Go
   // Para produção
   production: 'https://sua-api.herokuapp.com/api'
 };
@@ -68,11 +68,12 @@ class ApiService {
       clearTimeout(timeoutId);
       
       // Retry lógica para erros de rede (corrigido)
+      const apiError = error as ApiError;
       if (
         retryCount < this.maxRetries && 
         ((error as any).name === 'AbortError' || 
-        (error as ApiError).status === undefined ||
-        (error as ApiError).status >= 500)
+        apiError.status === undefined ||
+        apiError.status >= 500)
       ) {
         console.warn(`🔄 Retrying request (${retryCount + 1}/${this.maxRetries}): ${endpoint}`);
         await this.delay(1000 * (retryCount + 1)); // Backoff exponencial
@@ -167,7 +168,7 @@ class ApiService {
     }
   }
 
-  async getProductsByCategory(categoria: string, page = 1, page_size = 20): Promise<ProductResponse> {
+  async getProductsByCategory(categoria: 'Casual' | 'Social' | 'Esportivo', page = 1, page_size = 20): Promise<ProductResponse> {
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -238,8 +239,9 @@ class ApiService {
   // Produtos especializados
   async getFeaturedProducts(): Promise<Product[]> {
     try {
-      // Como não temos endpoint específico, busca produtos em destaque via filtro
-      const response = await this.getProducts(1, 20, { category: 'Premium' });
+      // Como não temos endpoint específico, busca produtos em destaque
+      const response = await this.getProducts(1, 20);
+      // Retorna os primeiros produtos como destaque
       return response.items || [];
     } catch (error) {
       console.error('❌ Erro ao carregar produtos em destaque:', error);
@@ -341,16 +343,6 @@ class ApiService {
     }
   }
 
-  async seedCategories(): Promise<{ message: string } | null> {
-    try {
-      return await this.fetchApi<{ message: string }>('/categories/seed', {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('❌ Erro ao criar categorias padrão:', error);
-      return null;
-    }
-  }
 
   // Imagens com tratamento de erro
   async uploadProductImage(formData: FormData): Promise<{ message: string; image_url: string; filename: string; size: number } | null> {

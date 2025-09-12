@@ -3,7 +3,7 @@ export interface Product {
   titulo: string;
   descricao: string;
   preco: number;
-  categoria: string;
+  categoria: 'Casual' | 'Social' | 'Esportivo';
   imagem?: string;
   disponivel?: boolean;
   created_at?: string;
@@ -37,7 +37,7 @@ export interface Review {
 }
 
 export interface ProductFilters {
-  category?: string;
+  category?: 'Casual' | 'Social' | 'Esportivo';
   brand?: string;
   minPrice?: number;
   maxPrice?: number;

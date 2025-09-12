@@ -36,8 +36,17 @@ def create_app():
         "http://127.0.0.1:5173",
         "http://localhost:19000",  # Expo DevTools
         "http://localhost:8081",   # Expo Metro
+        "exp://192.168.0.5:*",     # Expo Go na rede local
+        "http://192.168.0.5:*",    # Expo Go na rede local
+        "https://192.168.0.5:*",   # Expo Go na rede local
     ]
-    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": allowed_origins,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
     # Inicializa refs ao Mongo
     app.mongo = None
