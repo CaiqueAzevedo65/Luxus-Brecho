@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -15,6 +16,7 @@ interface ProductCardProps {
   discount?: number;
   isNew?: boolean;
   isExclusive?: boolean;
+  id: number;
 }
 
 export function ProductCard({ 
@@ -25,6 +27,7 @@ export function ProductCard({
   image,
   brand,
   discount,
+  id,
   isNew = false,
   isExclusive = false,
   isHorizontal = false 
@@ -53,7 +56,9 @@ export function ProductCard({
 
   if (isHorizontal) {
     return (
-      <TouchableOpacity className="flex-row bg-white rounded-2xl shadow-sm mb-3 p-3">
+      <TouchableOpacity 
+        className="flex-row bg-white rounded-2xl shadow-sm mb-3 p-3"
+        onPress={() => router.push(`/product/${id}`)}>
         {/* Imagem do Produto */}
         <View className="relative">
           <View className="w-24 h-24 bg-gray-100 rounded-xl overflow-hidden">
@@ -124,7 +129,10 @@ export function ProductCard({
 
   // Card Vertical (padrão)
   return (
-    <TouchableOpacity className="bg-white rounded-2xl shadow-sm p-3 mr-3" style={{ width: width * 0.42 }}>
+    <TouchableOpacity 
+      className="bg-white rounded-2xl shadow-sm p-3 mr-3" 
+      style={{ width: width * 0.42 }}
+      onPress={() => router.push(`/product/${id}`)}>
       {/* Imagem com Favorito */}
       <View className="relative mb-3">
         <View className="w-full h-40 bg-gray-100 rounded-xl overflow-hidden">
