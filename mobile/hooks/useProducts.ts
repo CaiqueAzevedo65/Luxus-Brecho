@@ -1,18 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { apiService } from '../services/api';
-import useProductStore from '../store/productStore';
-import { ProductFilters } from '../types/product';
+import { Product, ProductFilters, ProductResponse } from '../types/product';
 
 export const useProducts = (filters?: ProductFilters) => {
-  const { 
-    products, 
-    loading, 
-    error, 
-    setProducts, 
-    setLoading, 
-    setError,
-    setPagination
-  } = useProductStore();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<ProductResponse['pagination']>();
 
   const fetchProducts = async (page = 1, limit = 20) => {
     try {
@@ -45,14 +39,9 @@ export const useProducts = (filters?: ProductFilters) => {
 };
 
 export const useFeaturedProducts = () => {
-  const { 
-    featuredProducts, 
-    loading, 
-    error, 
-    setFeaturedProducts, 
-    setLoading, 
-    setError 
-  } = useProductStore();
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchFeaturedProducts = async () => {
     try {
@@ -83,14 +72,9 @@ export const useFeaturedProducts = () => {
 };
 
 export const useTopSellingProducts = () => {
-  const { 
-    topSellingProducts, 
-    loading, 
-    error, 
-    setTopSellingProducts, 
-    setLoading, 
-    setError 
-  } = useProductStore();
+  const [topSellingProducts, setTopSellingProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTopSellingProducts = async () => {
     try {
@@ -121,7 +105,8 @@ export const useTopSellingProducts = () => {
 };
 
 export const useProductSearch = () => {
-  const { setLoading, setError } = useProductStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const searchProducts = async (query: string) => {
     try {
