@@ -37,19 +37,6 @@ export default function HomeScreen() {
   const { addToCart, getTotalItems } = useCartStore();
   const cartItemCount = getTotalItems();
 
-  const renderStars = (rating: number) => (
-    <View style={{ flexDirection: 'row' }}>
-      {Array.from({ length: 5 }, (_, index) => (
-        <Ionicons
-          key={index}
-          name={index < rating ? "star" : "star-outline"}
-          size={12}
-          color="#FFD700"
-        />
-      ))}
-    </View>
-  );
-
   const renderFeaturedProducts = () => {
     if (loadingFeatured) {
       return (
@@ -108,8 +95,6 @@ export default function HomeScreen() {
               )}
             </View>
 
-            {renderStars(5)}
-
             <Text style={{ color: '#333', fontSize: 14, fontWeight: '600', marginTop: 8, marginBottom: 4 }} numberOfLines={2}>
               {product.titulo}
             </Text>
@@ -123,69 +108,6 @@ export default function HomeScreen() {
               onPress={() => addToCart(product)}
             >
               <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>+ Carrinho</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    );
-  };
-
-  const renderTopSellingProducts = () => {
-    if (loadingTopSelling) {
-      return (
-        <View className="py-10 items-center">
-          <ActivityIndicator size="large" color="#E91E63" />
-          <Text className="text-gray-500 mt-2">Carregando mais vendidos...</Text>
-        </View>
-      );
-    }
-
-    if (errorTopSelling) {
-      return (
-        <View className="py-5 items-center px-4">
-          <Text className="text-pink-600 text-center">{errorTopSelling}</Text>
-        </View>
-      );
-    }
-
-    return (
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
-        {topSellingProducts.map((product) => (
-          <TouchableOpacity
-            key={product.id}
-            onPress={() => router.push(`/product/${product.id}`)}
-            style={{ width: width * 0.35 }}
-            className="bg-white rounded-xl shadow-sm p-2 mr-3"
-          >
-            <View className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-2">
-              {product.imagem ? (
-                <Image
-                  source={{ uri: product.imagem }}
-                  className="w-full h-full"
-                  resizeMode="cover"
-                />
-              ) : (
-                <View className="flex-1 items-center justify-center">
-                  <MaterialIcons name="checkroom" size={32} color="#E0E0E0" />
-                </View>
-              )}
-            </View>
-
-            {renderStars(5)}
-
-            <Text className="text-gray-800 text-xs mt-1 mb-1" numberOfLines={2}>
-              {product.titulo}
-            </Text>
-
-            <Text className="text-pink-600 font-bold text-sm">
-              R$ {(product.preco || 0).toFixed(2).replace('.', ',')}
-            </Text>
-
-            <TouchableOpacity
-              className="bg-pink-600 py-1.5 rounded-md mt-2 items-center"
-              onPress={() => addToCart(product)}
-            >
-              <Text className="text-white text-xs font-bold">+ Carrinho</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         ))}
@@ -284,15 +206,15 @@ export default function HomeScreen() {
             {[
               { 
                 title: 'Casual', 
-                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/468452915_17928657050967827_7578668394488839966_n.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy80Njg0NTI5MTVfMTc5Mjg2NTcwNTA5Njc4MjdfNzU3ODY2ODM5NDQ4ODgzOTk2Nl9uLnBuZyIsImlhdCI6MTc1NzcwNDg3MCwiZXhwIjoxNzg5MjQwODcwfQ.J66iL4I5K3b0rQyRrV4u9eekqVx1ekR517RVgoP5bmk'
+                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/casual.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9jYXN1YWwucG5nIiwiaWF0IjoxNzU3NzI2MzQ1LCJleHAiOjE3ODkyNjIzNDV9.yUU6OM5sIsCVnYI2n38iMbP9HW6pzEY0e5ZxSSNAISQ'
               },
               { 
                 title: 'Social', 
-                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/Captura%20de%20tela%202025-06-03%20200924.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9DYXB0dXJhIGRlIHRlbGEgMjAyNS0wNi0wMyAyMDA5MjQucG5nIiwiaWF0IjoxNzU3NzA0ODg0LCJleHAiOjE3ODkyNDA4ODR9.CbhbTjEGk59ONGoDvjxzaaXd8PVHi9M48xF2cOQDTNU'
+                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/social.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9zb2NpYWwucG5nIiwiaWF0IjoxNzU3NzI2Mzc0LCJleHAiOjE3ODkyNjIzNzR9.ZcedMVhkhAMd13QdlFhgH0m9NSLc1NYBJXPjkCYkl_0'
               },
               { 
                 title: 'Esportivo', 
-                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/468403560_17928651893967827_8798510667129991733_n.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy80Njg0MDM1NjBfMTc5Mjg2NTE4OTM5Njc4MjdfODc5ODUxMDY2NzEyOTk5MTczM19uLnBuZyIsImlhdCI6MTc1NzcwNDgyMywiZXhwIjoxNzg5MjQwODIzfQ.hyXpfqqAgGRVW2Ke_XguKDLijxXMlqXX9ibHjkxvwv0'
+                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/esportivo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9lc3BvcnRpdm8ucG5nIiwiaWF0IjoxNzU3NzI2NDE4LCJleHAiOjE3ODkyNjI0MTh9.HRlKvfz-VsWIQqgcWReP0cvtwpDGoDeWqZKCX8xPVCA'
               }
             ].map((category, index) => (
               <TouchableOpacity
@@ -310,17 +232,6 @@ export default function HomeScreen() {
                 <Text className="text-xs text-gray-800 text-center">
                   {category.title}
                 </Text>
-                <View className="flex-row mt-1">
-                  {[1, 2, 3, 4, 5].map((_, i) => (
-                    <Ionicons
-                      key={i}
-                      name="star"
-                      size={8}
-                      color="#FFD700"
-                      style={{ marginHorizontal: 0.5 }}
-                    />
-                  ))}
-                </View>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -336,15 +247,6 @@ export default function HomeScreen() {
           </View>
           
           {renderFeaturedProducts()}
-        </View>
-
-        {/* TOP SELLING */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-pink-600 text-center mb-4">
-            TOP SELLING
-          </Text>
-          
-          {renderTopSellingProducts()}
         </View>
 
         {/* PESQUISE POR ESTILO */}
@@ -363,7 +265,7 @@ export default function HomeScreen() {
               >
                 <Image
                   source={{
-                    uri: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/468452915_17928657050967827_7578668394488839966_n.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy80Njg0NTI5MTVfMTc5Mjg2NTcwNTA5Njc4MjdfNzU3ODY2ODM5NDQ4ODgzOTk2Nl9uLnBuZyIsImlhdCI6MTc1NzcwNDg3MCwiZXhwIjoxNzg5MjQwODcwfQ.J66iL4I5K3b0rQyRrV4u9eekqVx1ekR517RVgoP5bmk',
+                    uri: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/casual.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9jYXN1YWwucG5nIiwiaWF0IjoxNzU3NzI2MTIyLCJleHAiOjE3ODkyNjIxMjJ9.UKmBAgjtEYZ4hQpP17Lh4la2osOuaj6Q8EeSz8NL1Eo',
                     cache: 'force-cache'
                   }}
                   className="w-full h-full"
@@ -384,7 +286,7 @@ export default function HomeScreen() {
               >
                 <Image
                   source={{
-                    uri: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/Captura%20de%20tela%202025-06-03%20200924.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9DYXB0dXJhIGRlIHRlbGEgMjAyNS0wNi0wMyAyMDA5MjQucG5nIiwiaWF0IjoxNzU3NzA0ODg0LCJleHAiOjE3ODkyNDA4ODR9.CbhbTjEGk59ONGoDvjxzaaXd8PVHi9M48xF2cOQDTNU',
+                    uri: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/social.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9zb2NpYWwucG5nIiwiaWF0IjoxNzU3NzI2MTYwLCJleHAiOjE3ODkyNjIxNjB9.tmafoLASIGCieYzM-rRv-cQxp26suWzMGW1_cK_5ZJc',
                     cache: 'force-cache'
                   }}
                   className="w-full h-full"
@@ -405,7 +307,7 @@ export default function HomeScreen() {
             >
               <Image
                 source={{
-                  uri: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/468403560_17928651893967827_8798510667129991733_n.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy80Njg0MDM1NjBfMTc5Mjg2NTE4OTM5Njc4MjdfODc5ODUxMDY2NzEyOTk5MTczM19uLnBuZyIsImlhdCI6MTc1NzcwNDgyMywiZXhwIjoxNzg5MjQwODIzfQ.hyXpfqqAgGRVW2Ke_XguKDLijxXMlqXX9ibHjkxvwv0',
+                  uri: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/esportivo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9lc3BvcnRpdm8ucG5nIiwiaWF0IjoxNzU3NzI2MTQxLCJleHAiOjE3ODkyNjIxNDF9.F6XpbxRgaQZIsQL7wGKQjY9lObD1f6TjlRW2EESZcks',
                   cache: 'force-cache'
                 }}
                 className="w-full h-full"
@@ -438,7 +340,6 @@ export default function HomeScreen() {
                     <View className="w-10 h-10 rounded-full bg-pink-200 mr-3" />
                     <View>
                       <Text className="text-gray-800 font-medium">Cliente {index + 1}</Text>
-                      {renderStars(testimonial.rating)}
                     </View>
                   </View>
                   <Text className="text-gray-600 leading-relaxed">
