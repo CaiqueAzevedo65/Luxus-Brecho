@@ -3,16 +3,15 @@ import { Category, CategoryResponse } from '../types/category';
 
 // Configuração de ambiente
 const API_CONFIGS = {
-  // Para desenvolvimento local (simulador iOS)
-  local: 'http://localhost:5000/api',
-  // Para desenvolvimento com dispositivo físico - IP da máquina do backend
-  network: 'http://192.168.0.5:5000/api', // IP local para Expo Go
+  // Para Expo Go - IP da máquina local
+  local: 'http://192.168.57.230:5000/api',
+  network: 'http://192.168.57.230:5000/api',
   // Para produção
   production: 'https://sua-api.herokuapp.com/api'
 };
 
-// Detecta se está em dispositivo físico ou simulador
-const isPhysicalDevice = !__DEV__ || typeof window !== 'undefined';
+// Detecta se está em dispositivo físico
+const isPhysicalDevice = !__DEV__;
 const API_BASE_URL = __DEV__ 
   ? (isPhysicalDevice ? API_CONFIGS.network : API_CONFIGS.local)
   : API_CONFIGS.production;
@@ -24,7 +23,7 @@ interface ApiError extends Error {
 }
 
 class ApiService {
-  private timeout = 10000; // 10 segundos
+  private timeout = 30000; // 30 segundos
   private maxRetries = 3;
 
   private async fetchApi<T>(

@@ -74,24 +74,6 @@ export default function CategoryScreen() {
         <Text style={styles.headerTitle}>{category.title}</Text>
       </View>
 
-      {/* Category Banner */}
-      <View style={styles.banner}>
-        <Image 
-          source={{
-            uri: category.image,
-            cache: 'force-cache',
-            headers: {
-              'Cache-Control': 'max-age=31536000'
-            }
-          }}
-          style={styles.bannerImage}
-          resizeMode="cover"
-        />
-        <View style={styles.bannerOverlay}>
-          <Text style={styles.bannerTitle}>{category.title}</Text>
-        </View>
-      </View>
-
       {/* Products Grid */}
       <ScrollView contentContainerStyle={styles.productsGrid}>
         {loading ? (
