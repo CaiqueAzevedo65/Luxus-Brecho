@@ -1,17 +1,18 @@
 from flask import jsonify, current_app
+from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 
 def check_health():
-    """Endpoint de health check com validação do banco."""
-    try:
-        db_status = "fail"
-        if hasattr(current_app, "db") and current_app.db is not None:
-            try:
-                _ = current_app.db.list_collection_names()
-                db_status = "ok"
-            except Exception:
-                db_status = "fail"
+    mongo_status = "UP"
+    status_code = 200
 
-        status = "ok" if db_status == "ok" else "error"
-        return jsonify({"status": status, "db": db_status}), 200 if status == "ok" else 500
-    except Exception:
-        return jsonify({"status": "error", "db": "fail"}), 500
+    if not hasattr(current_app, "mongo") or current_app.mongo is None:
+        mongo_status = "DOWN"
+        status_code = 503
+    else:
+        try:
+            current_app.mongo.admin.command("ping")
+        except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure):
+            mongo_status = "DOWN"
+            status_code = 503
+
+    return jsonify(api_status="UP", database_status=mongo_status), status_code

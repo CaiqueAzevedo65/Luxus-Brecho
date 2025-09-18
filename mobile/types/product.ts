@@ -3,9 +3,13 @@ export interface Product {
   titulo: string;
   descricao: string;
   preco: number;
-  categoria: string;
-  imagem: string;
-  // Campos opcionais para compatibilidade
+  categoria: 'Casual' | 'Social' | 'Esportivo';
+  imagem?: string;
+  disponivel?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  
+  // Campos extras para UI (não vêm do backend)
   _id?: string;
   name?: string;
   description?: string;
@@ -21,8 +25,6 @@ export interface Product {
   isNew?: boolean;
   rating?: number;
   reviews?: Review[];
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface Review {
@@ -35,7 +37,7 @@ export interface Review {
 }
 
 export interface ProductFilters {
-  category?: string;
+  category?: 'Casual' | 'Social' | 'Esportivo';
   brand?: string;
   minPrice?: number;
   maxPrice?: number;

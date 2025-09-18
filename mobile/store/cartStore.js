@@ -16,7 +16,7 @@ export const useCartStore = create((set, get) => ({
   },
   
   getSubtotal: () => {
-    return get().cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return get().cart.reduce((total, item) => total + (item.preco * item.quantity), 0);
   },
   
   getShippingCost: () => {
@@ -33,7 +33,7 @@ export const useCartStore = create((set, get) => ({
     set({ loading: true });
     try {
       const currentCart = get().cart;
-      const existingItemIndex = currentCart.findIndex(item => item._id === product._id);
+      const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
       
       let updatedCart;
       if (existingItemIndex >= 0) {
@@ -45,7 +45,14 @@ export const useCartStore = create((set, get) => ({
         );
       } else {
         // Se é um produto novo, adiciona com quantidade 1
-        updatedCart = [...currentCart, { ...product, quantity: 1 }];
+        const cartItem = {
+          id: product.id,
+          titulo: product.titulo,
+          preco: Number(product.preco) || 0,
+          imagem: product.imagem,
+          quantity: 1
+        };
+        updatedCart = [...currentCart, cartItem];
       }
       
       set({ cart: updatedCart });
@@ -60,7 +67,7 @@ export const useCartStore = create((set, get) => ({
   removeFromCart: async (productId) => {
     set({ loading: true });
     try {
-      const updatedCart = get().cart.filter(item => item._id !== productId);
+      const updatedCart = get().cart.filter(item => item.id !== productId);
       set({ cart: updatedCart });
       await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
     } catch (error) {
@@ -79,7 +86,7 @@ export const useCartStore = create((set, get) => ({
     set({ loading: true });
     try {
       const updatedCart = get().cart.map(item => 
-        item._id === productId 
+        item.id === productId 
           ? { ...item, quantity: quantity }
           : item
       );

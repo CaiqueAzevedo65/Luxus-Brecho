@@ -202,20 +202,63 @@ class SupabaseStorageService:
             # Detecta tipo MIME
             mime_type = mimetypes.guess_type(filename)[0] or 'image/jpeg'
             
-            # Upload para Supabase
-            result = self.client.storage.from_(self.bucket_name).upload(
-                path=filename,
-                file=resized_image.getvalue(),
-                file_options={"content-type": mime_type}
-            )
+            # Upload para Supabase com tratamento de erro melhorado
+            try:
+                result = self.client.storage.from_(self.bucket_name).upload(
+                    path=filename,
+                    file=resized_image.getvalue(),
+                    file_options={"content-type": mime_type}
+                )
+                
+                if hasattr(result, 'error') and result.error:
+                    error_msg = result.error.message if hasattr(result.error, 'message') else str(result.error)
+                    if 'violates row-level security policy' in str(error_msg).lower():
+                        # Tenta obter novo token e repetir upload
+                        self.client.auth.sign_in_with_password({
+                            'email': os.getenv('SUPABASE_SERVICE_ROLE_EMAIL'),
+                            'password': os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+                        })
+                        # Tenta upload novamente
+                        result = self.client.storage.from_(self.bucket_name).upload(
+                            path=filename,
+                            file=resized_image.getvalue(),
+                            file_options={"content-type": mime_type}
+                        )
+                        if hasattr(result, 'error') and result.error:
+                            return False, f"Erro de autorização persistente: {error_msg}"
+                    else:
+                        return False, f"Erro no upload: {error_msg}"
+            except Exception as e:
+                if 'unauthorized' in str(e).lower() or 'permission' in str(e).lower():
+                    return False, f"Erro de autorização: Verifique as permissões do bucket"
+                return False, f"Erro interno no upload: {str(e)}"
             
-            if hasattr(result, 'error') and result.error:
-                return False, f"Erro no upload: {result.error.message}"
-            
-            # Gera URL pública
-            public_url = self.client.storage.from_(self.bucket_name).get_public_url(filename)
-            
-            return True, public_url
+            # Gera URL pública com token de download
+            try:
+                # Gera URL pública usando o método do SDK
+                result = self.client.storage.from_(self.bucket_name).get_public_url(filename)
+                if not result or not isinstance(result, str):
+                    # Fallback: construir URL manualmente
+                    public_url = f"{self.supabase_url}/storage/v1/object/public/{self.bucket_name}/{filename}"
+                else:
+                    public_url = result
+                
+                # Garante que a URL é absoluta
+                if not public_url.startswith('http'):
+                    public_url = f"{self.supabase_url}{public_url}"
+                
+                # Adiciona token de download
+                download_token = self.client.storage.from_(self.bucket_name).create_signed_url(
+                    path=filename,
+                    expires_in=31536000  # 1 ano em segundos
+                )
+                
+                if download_token and isinstance(download_token, dict) and 'signedURL' in download_token:
+                    return True, download_token['signedURL']
+                
+                return True, public_url
+            except Exception as e:
+                return False, f"Erro ao gerar URL pública: {str(e)}"
             
         except Exception as e:
             return False, f"Erro interno no upload: {str(e)}"

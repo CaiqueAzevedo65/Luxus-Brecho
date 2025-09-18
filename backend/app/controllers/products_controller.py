@@ -24,7 +24,7 @@ def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
 def list_products():
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
 
     coll = get_collection(db)
 
@@ -63,30 +63,30 @@ def list_products():
 def get_product(id: int):
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
     coll = get_collection(db)
 
     doc = coll.find_one({"id": int(id)})
     if not doc:
-        return jsonify(message="not found"), 404
+        return jsonify(message="produto não encontrado"), 404
     return jsonify(_serialize(doc))
 
 
 def create_product():
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
     coll = get_collection(db)
 
     payload = request.get_json(silent=True) or {}
     ok, errors, doc = prepare_new_product(db, payload)
     if not ok:
-        return jsonify(message="validation error", errors=errors), 400
+        return jsonify(message="erro de validação", errors=errors), 400
 
     try:
         coll.insert_one(doc)
     except DuplicateKeyError:
-        return jsonify(message="id already exists"), 409
+        return jsonify(message="ID já existente"), 409
 
     return jsonify(_serialize(doc)), 201
 
@@ -94,12 +94,12 @@ def create_product():
 def update_product(id: int):
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
     coll = get_collection(db)
 
     current = coll.find_one({"id": int(id)})
     if not current:
-        return jsonify(message="not found"), 404
+        return jsonify(message="produto não encontrado"), 404
 
     payload = request.get_json(silent=True) or {}
     # Merge parcial
@@ -110,7 +110,7 @@ def update_product(id: int):
 
     ok, errors = validate_product(merged, db)  # Passa db para validação dinâmica
     if not ok:
-        return jsonify(message="validation error", errors=errors), 400
+        return jsonify(message="erro de validação", errors=errors), 400
 
     # Não permitir troca de id
     merged["id"] = current["id"]
@@ -123,13 +123,13 @@ def update_product(id: int):
 def delete_product(id: int):
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
     coll = get_collection(db)
 
     res = coll.delete_one({"id": int(id)})
     if res.deleted_count == 0:
-        return jsonify(message="not found"), 404
-    return jsonify(message="deleted"), 200
+        return jsonify(message="produto não encontrado"), 404
+    return jsonify(message="produto excluído"), 200
 
 
 def create_product_with_image():
@@ -143,16 +143,35 @@ def create_product_with_image():
     """
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
     
     try:
-        # Valida se há imagem
+        # Validação detalhada da imagem
         if 'image' not in request.files:
-            return jsonify(message="Imagem é obrigatória"), 400
+            return jsonify(message="Imagem é obrigatória", errors={"image": "Nenhum arquivo de imagem enviado"}), 400
         
         file = request.files['image']
         if file.filename == '':
-            return jsonify(message="Nenhuma imagem selecionada"), 400
+            return jsonify(message="Nenhuma imagem selecionada", errors={"image": "Arquivo de imagem vazio"}), 400
+            
+        # Valida extensão do arquivo
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        if file_ext not in allowed_extensions:
+            return jsonify(
+                message="Formato de arquivo inválido",
+                errors={"image": f"Apenas os formatos {', '.join(allowed_extensions)} são permitidos"}
+            ), 400
+            
+        # Valida tamanho do arquivo (máx 5MB)
+        if len(file.read()) > 5 * 1024 * 1024:  # 5MB em bytes
+            file.seek(0)  # Reset do ponteiro do arquivo
+            return jsonify(
+                message="Arquivo muito grande",
+                errors={"image": "O tamanho máximo permitido é 5MB"}
+            ), 400
+            
+        file.seek(0)  # Reset do ponteiro do arquivo após leitura
         
         # Obtém dados do produto do form
         form_data = {
@@ -162,15 +181,27 @@ def create_product_with_image():
             "categoria": request.form.get('categoria')
         }
         
-        # Validação básica
-        if not all([form_data['titulo'], form_data['descricao'], 
-                   form_data['preco'], form_data['categoria']]):
-            return jsonify(message="Todos os campos são obrigatórios"), 400
+        # Validação detalhada de campos obrigatórios
+        errors = {}
+        for field in ['titulo', 'descricao', 'categoria']:
+            if not form_data.get(field):
+                errors[field] = f'O campo {field} é obrigatório'
+            elif isinstance(form_data[field], str) and len(form_data[field].strip()) == 0:
+                errors[field] = f'O campo {field} não pode estar vazio'
+
+        if not form_data.get('preco'):
+            errors['preco'] = 'O campo preço é obrigatório'
         
-        # Converte preço
+        if errors:
+            return jsonify(message="Campos obrigatórios não preenchidos", errors=errors), 400
+        
+        # Validação e conversão do preço
         try:
-            form_data['preco'] = float(form_data['preco'])
-        except ValueError:
+            preco = float(form_data['preco'])
+            if preco <= 0:
+                return jsonify(message="O preço deve ser maior que zero"), 400
+            form_data['preco'] = preco
+        except (ValueError, TypeError):
             return jsonify(message="Preço deve ser um número válido"), 400
         
         # Primeiro faz upload da imagem para obter URL
@@ -190,7 +221,7 @@ def create_product_with_image():
         if not ok:
             # Se falhar na validação, remove a imagem já enviada
             storage_service.delete_image(result)
-            return jsonify(message="validation error", errors=errors), 400
+            return jsonify(message="erro de validação", errors=errors), 400
         
         # Renomeia arquivo para usar o ID real do produto
         product_id = product_doc['id']
@@ -210,7 +241,7 @@ def create_product_with_image():
         except DuplicateKeyError:
             # Se falhar, tenta deletar a imagem que foi enviada
             storage_service.delete_image(result)
-            return jsonify(message="ID já existe"), 409
+            return jsonify(message="ID já existente"), 409
         
         return jsonify({
             "message": "Produto criado com sucesso",
@@ -232,14 +263,14 @@ def update_product_image(id: int):
     """
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
     
     coll = get_collection(db)
     
     # Verifica se produto existe
     current_product = coll.find_one({"id": int(id)})
     if not current_product:
-        return jsonify(message="Produto não encontrado"), 404
+        return jsonify(message="produto não encontrado"), 404
     
     # Valida se há nova imagem
     if 'image' not in request.files:
@@ -283,7 +314,7 @@ def get_products_by_category(categoria: str):
     """Busca produtos por categoria específica."""
     db = current_app.db
     if db is None:
-        return jsonify(message="database unavailable"), 503
+        return jsonify(message="banco de dados indisponível"), 503
 
     coll = get_collection(db)
     
@@ -299,7 +330,7 @@ def get_products_by_category(categoria: str):
     ]
 
     if not items:
-        return jsonify(message="no products found for this category"), 404
+        return jsonify(message="nenhum produto encontrado para essa categoria"), 404
 
     return jsonify(
         items=items,

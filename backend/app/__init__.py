@@ -8,7 +8,7 @@ import certifi
 from dotenv import load_dotenv
 from flask_cors import CORS
 from .models.product_model import ensure_products_collection
-from .models.category_model import ensure_categories_collection, seed_default_categories
+from .models.category_model import ensure_categories_collection
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -36,8 +36,17 @@ def create_app():
         "http://127.0.0.1:5173",
         "http://localhost:19000",  # Expo DevTools
         "http://localhost:8081",   # Expo Metro
+        "exp://192.168.57.230:*",  # Expo Go na rede local
+        "http://192.168.57.230:*", # Expo Go na rede local
+        "https://192.168.57.230:*" # Expo Go na rede local
     ]
-    CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": allowed_origins,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
     # Inicializa refs ao Mongo
     app.mongo = None
@@ -84,7 +93,6 @@ def create_app():
 
         # Garantia de índices/esquemas
         ensure_categories_collection(app.db)
-        seed_default_categories(app.db)
         ensure_products_collection(app.db)
 
     except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure) as e:
