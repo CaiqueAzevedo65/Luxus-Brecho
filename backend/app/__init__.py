@@ -36,9 +36,9 @@ def create_app():
         "http://127.0.0.1:5173",
         "http://localhost:19000",  # Expo DevTools
         "http://localhost:8081",   # Expo Metro
-        "exp://192.168.57.230:*",  # Expo Go na rede local
-        "http://192.168.57.230:*", # Expo Go na rede local
-        "https://192.168.57.230:*" # Expo Go na rede local
+        "exp://192.168.228.72:*",  # Expo Go na rede local
+        "http://192.168.228.72:*", # Expo Go na rede local
+        "https://192.168.228.72:*" # Expo Go na rede local
     ]
     CORS(app, resources={
         r"/api/*": {
