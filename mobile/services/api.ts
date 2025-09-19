@@ -4,8 +4,8 @@ import { Category, CategoryResponse } from '../types/category';
 // Configuração de ambiente
 const API_CONFIGS = {
   // Para Expo Go - IP da máquina local
-  local: 'http://192.168.57.230:5000/api',
-  network: 'http://192.168.57.230:5000/api',
+  local: 'http://192.168.228.72:5000/api',
+  network: 'http://192.168.228.72:5000/api',
   // Para produção
   production: 'https://sua-api.herokuapp.com/api'
 };

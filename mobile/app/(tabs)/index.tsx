@@ -131,6 +131,12 @@ export default function HomeScreen() {
               paddingHorizontal: 16,
               paddingVertical: 8
             }}>
+              <TouchableOpacity
+                onPress={() => router.push('/new-product')}
+                style={{ marginRight: 8 }}
+              >
+                <Ionicons name="add-circle" size={20} color="#E91E63" />
+              </TouchableOpacity>
               <Ionicons name="search" size={20} color="#666" />
               <Text style={{ marginLeft: 8, color: '#666', fontSize: 14 }}>Buscar</Text>
             </View>
