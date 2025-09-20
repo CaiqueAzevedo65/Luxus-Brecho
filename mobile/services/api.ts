@@ -1,20 +1,24 @@
 import { Product, ProductResponse, ProductFilters } from '../types/product';
 import { Category, CategoryResponse } from '../types/category';
+import { cacheManager } from '../utils/cache';
+import { Platform } from 'react-native';
 
 // Configuração de ambiente
 const API_CONFIGS = {
-  // Para Expo Go - IP da máquina local
-  local: 'http://192.168.228.72:5000/api',
-  network: 'http://192.168.228.72:5000/api',
-  // Para produção
+  local: 'http://localhost:5000/api',        // Simulador/Web
+  network: 'http://192.168.0.3:5000/api',   // IP real da rede (Expo Go)
+  emulator: 'http://10.0.2.2:5000/api',     // Android Emulator
   production: 'https://sua-api.herokuapp.com/api'
 };
 
-// Detecta se está em dispositivo físico
-const isPhysicalDevice = !__DEV__;
-const API_BASE_URL = __DEV__ 
-  ? (isPhysicalDevice ? API_CONFIGS.network : API_CONFIGS.local)
+// Detecta ambiente de execução
+// Em desenvolvimento, sempre usa IP da rede para Expo Go
+// Expo Go sempre roda em dispositivo físico, nunca em emulador
+const API_BASE_URL = __DEV__
+  ? API_CONFIGS.network  // Sempre usa 192.168.0.3 em desenvolvimento
   : API_CONFIGS.production;
+
+console.log('🌐 Usando API:', API_BASE_URL);
 
 interface ApiError extends Error {
   status?: number;
@@ -23,23 +27,44 @@ interface ApiError extends Error {
 }
 
 class ApiService {
-  private timeout = 30000; // 30 segundos
-  private maxRetries = 3;
+  private timeout = 10000;  // 10 segundos
+  private maxRetries = 2;
+  private retryDelay = 2000; // 2 segundos
+  private initialDelay = 500; // 500ms antes do primeiro retry
 
   private async fetchApi<T>(
     endpoint: string, 
-    options?: RequestInit,
+    options?: RequestInit & { useCache?: boolean; cacheMinutes?: number },
     retryCount = 0
   ): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
     try {
-      console.log(`🔗 API Request: ${API_BASE_URL}${endpoint}`);
+      // Tenta buscar do cache primeiro
+      if (options?.useCache && options.method?.toUpperCase() === 'GET') {
+        const cached = await cacheManager.get<T>(endpoint, { 
+          expirationMinutes: options.cacheMinutes || 5
+        });
+        if (cached) {
+          console.log(`📦 Cache hit: ${endpoint}`);
+          return cached;
+        }
+      }
+
+      // Adiciona um pequeno delay inicial para dar tempo do emulador responder
+      if (retryCount === 0) {
+        await this.delay(this.initialDelay);
+      }
+
+      console.log(`🔗 API Request: ${API_BASE_URL}${endpoint} (timeout: ${this.timeout}ms)`);
       
+      const startTime = Date.now();
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Content-Type': 'application/json',
+          'Accept-Encoding': 'gzip, deflate',
+          'X-Client-Version': '1.0.0',
           ...options?.headers,
         },
         signal: controller.signal,
@@ -60,7 +85,16 @@ class ApiService {
       }
 
       const data = await response.json();
-      console.log(`✅ API Success: ${endpoint}`);
+      const endTime = Date.now();
+      console.log(`✅ API Success: ${endpoint} (${endTime - startTime}ms)`);
+
+      // Salva no cache se necessário
+      if (options?.useCache && options.method?.toUpperCase() === 'GET') {
+        await cacheManager.set(endpoint, data, { 
+          expirationMinutes: options.cacheMinutes || 5
+        });
+      }
+
       return data;
 
     } catch (error) {
@@ -74,8 +108,9 @@ class ApiService {
         apiError.status === undefined ||
         apiError.status >= 500)
       ) {
-        console.warn(`🔄 Retrying request (${retryCount + 1}/${this.maxRetries}): ${endpoint}`);
-        await this.delay(1000 * (retryCount + 1)); // Backoff exponencial
+        const delay = this.retryDelay * Math.pow(2, retryCount);
+        console.warn(`🔄 Retrying request (${retryCount + 1}/${this.maxRetries}): ${endpoint} in ${delay}ms`);
+        await this.delay(delay); // Backoff exponencial
         return this.fetchApi<T>(endpoint, options, retryCount + 1);
       }
 
@@ -143,17 +178,16 @@ class ApiService {
         ),
       });
 
-      return await this.fetchApi<ProductResponse>(`/products?${params}`);
+      return await this.fetchApi<ProductResponse>(`/products?${params}`, {
+        useCache: true,
+        cacheMinutes: 2
+      });
     } catch (error) {
       console.error('❌ Erro ao carregar produtos:', error);
       // Retorna estrutura vazia em caso de erro
       return {
         items: [],
-        pagination: {
-          page: page,
-          page_size: page_size,
-          total: 0
-        }
+        pagination: { page, page_size, total: 0 }
       };
     }
   }
@@ -237,6 +271,8 @@ class ApiService {
 
   // Produtos especializados
   async getFeaturedProducts(): Promise<Product[]> {
+    const cacheKey = 'featured_products';
+
     try {
       // Como não temos endpoint específico, busca produtos em destaque
       const response = await this.getProducts(1, 20);
@@ -280,13 +316,17 @@ class ApiService {
 
   async getCategoriesSummary(): Promise<Category[]> {
     try {
-      return await this.fetchApi<Category[]>('/categories/summary');
+      return await this.fetchApi<Category[]>('/categories/summary', {
+        useCache: true,
+        cacheMinutes: 5
+      });
     } catch (error) {
       console.error('❌ Erro ao carregar resumo de categorias:', error);
       return [];
     }
   }
 
+// ... (rest of the code remains the same)
   async getCategoryById(id: number): Promise<Category | null> {
     try {
       return await this.fetchApi<Category>(`/categories/${id}`);
