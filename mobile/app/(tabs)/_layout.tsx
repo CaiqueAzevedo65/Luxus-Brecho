@@ -22,10 +22,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="favorites"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <MaterialIcons name="search" size={24} color={color} />,
+          title: 'Favoritos',
+          tabBarIcon: ({ color }) => <MaterialIcons name="favorite" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="cart"
+        options={{
+          title: 'Carrinho',
+          tabBarIcon: ({ color }) => <MaterialIcons name="shopping-cart" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="menu"
+        options={{
+          title: 'Menu',
+          tabBarIcon: ({ color }) => <MaterialIcons name="menu" size={24} color={color} />,
         }}
       />
     </Tabs>

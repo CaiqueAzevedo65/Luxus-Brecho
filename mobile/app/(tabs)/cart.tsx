@@ -3,7 +3,7 @@ import { ScrollView, View, Text, TouchableOpacity, StatusBar, Image, ActivityInd
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useCartStore } from '../store/cartStore';
+import { useCartStore } from '../../store/cartStore';
 
 export default function CartScreen() {
   const {
@@ -61,22 +61,13 @@ export default function CartScreen() {
       
       {/* Header */}
       <View style={{ backgroundColor: '#E91E63', paddingHorizontal: 16, paddingVertical: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity 
-            onPress={() => router.back()}
-            style={{ marginRight: 16 }}
-          >
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ 
             color: 'white', 
             fontSize: 18, 
             fontWeight: 'bold',
-            flex: 1,
-            textAlign: 'center',
-            marginRight: 40 // Para compensar o espaço do botão voltar e centralizar
           }}>
-            Carrinho de compras
+            Carrinho
           </Text>
         </View>
         
@@ -128,7 +119,7 @@ export default function CartScreen() {
                 borderRadius: 8,
                 marginTop: 24
               }}
-              onPress={() => router.back()}
+              onPress={() => router.push('/')}
             >
               <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
                 Continuar comprando
@@ -377,7 +368,7 @@ export default function CartScreen() {
                         onPress: () => {
                           Alert.alert('Sucesso!', 'Pedido realizado com sucesso!');
                           clearCart();
-                          router.back();
+                          router.push('/');
                         }
                       }
                     ]
@@ -395,7 +386,7 @@ export default function CartScreen() {
               
               <TouchableOpacity 
                 style={{ marginTop: 12, alignItems: 'center' }}
-                onPress={() => router.back()}
+                onPress={() => router.push('/')}
               >
                 <Text style={{ 
                   fontSize: 14, 

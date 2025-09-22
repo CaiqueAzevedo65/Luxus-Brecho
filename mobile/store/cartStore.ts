@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const CART_STORAGE_KEY = 'luxus_cart';
-const SHIPPING_FEE = 15.00;
-const FREE_SHIPPING_THRESHOLD = 150.00;
+import { CONFIG } from '../constants/config';
 
 export const useCartStore = create((set, get) => ({
   // Estado
@@ -21,7 +18,7 @@ export const useCartStore = create((set, get) => ({
   
   getShippingCost: () => {
     const subtotal = get().getSubtotal();
-    return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+    return subtotal >= CONFIG.CART.FREE_SHIPPING_THRESHOLD ? 0 : CONFIG.CART.SHIPPING_FEE;
   },
   
   getTotal: () => {
@@ -56,7 +53,7 @@ export const useCartStore = create((set, get) => ({
       }
       
       set({ cart: updatedCart });
-      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
+      await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(updatedCart));
     } catch (error) {
       console.error('Erro ao adicionar produto ao carrinho:', error);
     } finally {
@@ -69,7 +66,7 @@ export const useCartStore = create((set, get) => ({
     try {
       const updatedCart = get().cart.filter(item => item.id !== productId);
       set({ cart: updatedCart });
-      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
+      await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(updatedCart));
     } catch (error) {
       console.error('Erro ao remover produto do carrinho:', error);
     } finally {
@@ -91,7 +88,7 @@ export const useCartStore = create((set, get) => ({
           : item
       );
       set({ cart: updatedCart });
-      await AsyncStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
+      await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(updatedCart));
     } catch (error) {
       console.error('Erro ao atualizar quantidade:', error);
     } finally {
@@ -102,7 +99,7 @@ export const useCartStore = create((set, get) => ({
   loadCart: async () => {
     set({ loading: true });
     try {
-      const savedCart = await AsyncStorage.getItem(CART_STORAGE_KEY);
+      const savedCart = await AsyncStorage.getItem(CONFIG.CART.STORAGE_KEY);
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
         set({ cart: parsedCart });
@@ -118,7 +115,7 @@ export const useCartStore = create((set, get) => ({
     set({ loading: true });
     try {
       set({ cart: [] });
-      await AsyncStorage.removeItem(CART_STORAGE_KEY);
+      await AsyncStorage.removeItem(CONFIG.CART.STORAGE_KEY);
     } catch (error) {
       console.error('Erro ao limpar carrinho:', error);
     } finally {

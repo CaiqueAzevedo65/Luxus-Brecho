@@ -141,20 +141,6 @@ export default function HomeScreen() {
               <Text style={{ marginLeft: 8, color: '#666', fontSize: 14 }}>Buscar</Text>
             </View>
           </View>
-          
-          <TouchableOpacity 
-            className="relative flex items-center justify-center"
-            onPress={() => router.push('/cart')}
-          >
-            <MaterialIcons name="shopping-cart" size={28} color="white" />
-            {cartItemCount > 0 && (
-              <View className="absolute -top-1 -right-1 bg-white rounded-full min-w-[18px] h-[18px] items-center justify-center">
-                <Text className="text-pink-600 text-xs font-bold">
-                  {cartItemCount > 99 ? '99+' : cartItemCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
         </View>
       </View>
       
@@ -200,47 +186,6 @@ export default function HomeScreen() {
               ))}
             </View>
           </View>
-        </View>
-
-        {/* Grid Circular de Categorias */}
-        <View className="mb-6">
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="pl-4"
-          >
-            {[
-              { 
-                title: 'Casual', 
-                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/casual.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9jYXN1YWwucG5nIiwiaWF0IjoxNzU3NzI2MzQ1LCJleHAiOjE3ODkyNjIzNDV9.yUU6OM5sIsCVnYI2n38iMbP9HW6pzEY0e5ZxSSNAISQ'
-              },
-              { 
-                title: 'Social', 
-                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/social.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9zb2NpYWwucG5nIiwiaWF0IjoxNzU3NzI2Mzc0LCJleHAiOjE3ODkyNjIzNzR9.ZcedMVhkhAMd13QdlFhgH0m9NSLc1NYBJXPjkCYkl_0'
-              },
-              { 
-                title: 'Esportivo', 
-                image: 'https://vvdfhyntiiqfzfadzkrp.supabase.co/storage/v1/object/sign/luxus-brecho/categories/esportivo.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hMWJmMzBiMS0yZDhlLTRiY2QtOWQ0Yi1iMDI4MDQxMDc5YzEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJsdXh1cy1icmVjaG8vY2F0ZWdvcmllcy9lc3BvcnRpdm8ucG5nIiwiaWF0IjoxNzU3NzI2NDE4LCJleHAiOjE3ODkyNjI0MTh9.HRlKvfz-VsWIQqgcWReP0cvtwpDGoDeWqZKCX8xPVCA'
-              }
-            ].map((category, index) => (
-              <TouchableOpacity
-                key={index}
-                className="items-center mr-6"
-                onPress={() => router.push(`/category/${category.title.toLowerCase()}`)}
-              >
-                <View className="w-16 h-16 rounded-full overflow-hidden mb-2 bg-gray-100">
-                  <Image
-                    source={{ uri: category.image }}
-                    className="w-full h-full"
-                    resizeMode="cover"
-                  />
-                </View>
-                <Text className="text-xs text-gray-800 text-center">
-                  {category.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
         </View>
 
         {/* Produtos em Destaque */}
@@ -328,35 +273,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* CLIENTES SATISFEITOS */}
-        <View className="mb-6">
-          <Text className="text-lg font-bold text-pink-600 text-center mb-4">
-            CLIENTES SATISFEITOS
-          </Text>
-          
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
-            {testimonials.map((testimonial, index) => (
-              <View 
-                key={index} 
-                className="bg-white rounded-xl mr-3 shadow-sm overflow-hidden" 
-                style={{ width: width * 0.7 }}
-              >
-                <View className="bg-pink-50 p-4">
-                  <View className="flex-row items-center mb-3">
-                    <View className="w-10 h-10 rounded-full bg-pink-200 mr-3" />
-                    <View>
-                      <Text className="text-gray-800 font-medium">Cliente {index + 1}</Text>
-                    </View>
-                  </View>
-                  <Text className="text-gray-600 leading-relaxed">
-                    {testimonial.text}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-
         {/* Chat Section */}
         <View className="bg-white mx-4 rounded-xl p-4 mb-4 shadow-sm">
           <Text className="text-sm text-gray-600 mb-3">
@@ -390,8 +306,6 @@ export default function HomeScreen() {
             </View>
           </View>
         </View>
-
-        <ConnectionStatus />
       </ScrollView>
     </SafeAreaView>
   );
