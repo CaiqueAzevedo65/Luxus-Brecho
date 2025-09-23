@@ -1,23 +1,17 @@
 import { Product, ProductResponse, ProductFilters } from '../types/product';
 import { Category, CategoryResponse } from '../types/category';
 import { cacheManager } from '../utils/cache';
-import { Platform } from 'react-native';
+import { getApiUrl, getNetworkInfo } from '../utils/networkUtils';
 import { CONFIG } from '../constants/config';
 
-// Configuração de ambiente usando constantes
-const API_CONFIGS = {
-  local: CONFIG.NETWORK.LOCAL_URL,
-  network: CONFIG.NETWORK.NETWORK_URL,
-  emulator: CONFIG.NETWORK.EMULATOR_URL,
-  production: CONFIG.NETWORK.PRODUCTION_URL
-};
+// URL da API detectada automaticamente
+const API_BASE_URL = getApiUrl();
 
-// Detecta ambiente de execução
-// Em desenvolvimento, sempre usa IP da rede para Expo Go
-// Expo Go sempre roda em dispositivo físico, nunca em emulador
-const API_BASE_URL = __DEV__
-  ? API_CONFIGS.network  // Sempre usa 192.168.0.3 em desenvolvimento
-  : API_CONFIGS.production;
+// Log das informações de rede para debug
+if (__DEV__) {
+  console.log('🌐 Network Info:', getNetworkInfo());
+  console.log('🔗 Using API URL:', API_BASE_URL);
+}
 
 // Log apenas em desenvolvimento
 if (CONFIG.DEBUG.ENABLE_API_LOGS) {

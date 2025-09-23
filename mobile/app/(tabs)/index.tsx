@@ -7,6 +7,7 @@ import { useFeaturedProducts, useTopSellingProducts } from '../../hooks/useProdu
 import { useCartStore } from '../../store/cartStore';
 import type { Product } from '../../types/product';
 import ConnectionStatus from '@/components/ui/ConnectionStatus';
+import NetworkDiagnostic from '../../components/debug/NetworkDiagnostic';
 
 const { width } = Dimensions.get('window');
 
@@ -307,6 +308,8 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
+      <ConnectionStatus />
+      <NetworkDiagnostic />
     </SafeAreaView>
   );
 }
