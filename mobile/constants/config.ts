@@ -16,7 +16,7 @@ export const CONFIG = {
   // Network Configuration
   NETWORK: {
     LOCAL_URL: 'http://localhost:5000/api',
-    NETWORK_URL: 'http://192.168.228.72:5000/api',
+    NETWORK_URL: 'http://192.168.0.3:5000/api',
     EMULATOR_URL: 'http://10.0.2.2:5000/api',
     PRODUCTION_URL: 'https://sua-api.herokuapp.com/api'
   },

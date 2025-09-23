@@ -1,0 +1,23 @@
+{
+  "name": "luxus-brecho",
+  "version": "1.0.0",
+  "description": "E-commerce de roupas de segunda mão - Luxus Brechó",
+  "scripts": {
+    "dev": "node sync-network.js",
+    "dev:full": "node start-dev.js",
+    "dev:ps": "powershell -ExecutionPolicy Bypass -File start-dev.ps1",
+    "sync-network": "node sync-network.js",
+    "monitor-network": "node monitor-network.js",
+    "backend": "cd backend && python run.py",
+    "mobile": "cd mobile && npx expo start --clear",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "keywords": ["ecommerce", "react-native", "flask", "mongodb", "brechó"],
+  "author": "Caique Azevedo",
+  "license": "MIT",
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.8.0"
+  }
+}

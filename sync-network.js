@@ -9,15 +9,33 @@ function getNetworkIP() {
   try {
     if (process.platform === 'win32') {
       const output = execSync('ipconfig', { encoding: 'utf8' });
-      const match = output.match(/IPv4.*?: (\d+\.\d+\.\d+\.\d+)/g);
+      const lines = output.split('\n');
       
-      if (match) {
-        for (const line of match) {
-          const ip = line.match(/(\d+\.\d+\.\d+\.\d+)/)[1];
-          if (!ip.startsWith('127.') && !ip.startsWith('169.254.')) {
-            return ip;
+      // Procurar por adaptadores Wi-Fi ou Ethernet ativos
+      let currentAdapter = '';
+      const validIPs = [];
+      
+      for (const line of lines) {
+        if (line.includes('Adaptador')) {
+          currentAdapter = line;
+        }
+        
+        if (line.includes('IPv4') && line.includes(':')) {
+          const ip = line.match(/(\d+\.\d+\.\d+\.\d+)/);
+          if (ip && !ip[1].startsWith('127.') && !ip[1].startsWith('169.254.')) {
+            // Priorizar IPs de redes privadas comuns
+            if (ip[1].startsWith('192.168.') || ip[1].startsWith('10.') || ip[1].startsWith('172.')) {
+              validIPs.unshift(ip[1]); // Adicionar no início
+            } else {
+              validIPs.push(ip[1]);
+            }
           }
         }
+      }
+      
+      if (validIPs.length > 0) {
+        console.log(`🔍 IPs encontrados: ${validIPs.join(', ')}`);
+        return validIPs[0]; // Retornar o primeiro (mais provável)
       }
     } else {
       const output = execSync('ifconfig 2>/dev/null || ip addr show', { encoding: 'utf8' });
