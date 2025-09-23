@@ -79,6 +79,38 @@ Fullstack project for an online thrift store, with **Flask backend**, **React (V
 
 ---
 
+## 🌐 Network Configuration (Mobile Development)
+
+### Quick Setup
+```bash
+# Sync network settings automatically
+npm run dev
+
+# Start backend and mobile separately
+npm run backend
+npm run mobile
+```
+
+### Common Issues & Solutions
+
+**Mobile can't connect to backend?**
+1. Run `npm run dev` to sync network IPs
+2. Ensure both devices are on the same Wi-Fi network
+3. Check firewall settings (allow port 5000)
+
+**IP changed (different network/machine)?**
+- The sync script automatically detects and updates IP configurations
+- Backend runs on: `http://YOUR_IP:5000`
+- Mobile connects to: `http://YOUR_IP:5000/api`
+
+### Available Scripts
+- `npm run dev` - Sync network only
+- `npm run dev:full` - Sync network + start all services
+- `npm run sync-network` - Manual network sync
+- `npm run monitor-network` - Monitor IP changes
+
+---
+
 ## 🚀 Running the Project
 
 ### 🔧 1. Clone the repository
@@ -163,17 +195,28 @@ cd mobile
 npm install
 ```
 
+#### Network Setup (Important!)
+
+Before running the mobile app, sync network configuration:
+
+```bash
+# From project root
+npm run dev
+```
+
 #### Run
 
 ```bash
-npx expo start
+npx expo start --clear
 ```
 
 Options:
 
-* Run on **Expo Go** (via QR code)
+* Run on **Expo Go** (via QR code) - **Recommended for physical devices**
 * Android/iOS emulator
 * Web browser
+
+> **Note**: The mobile app automatically detects the correct API URL based on your network. If you experience connection issues, run `npm run dev` to resync network settings.
 
 ---
 
@@ -250,6 +293,48 @@ curl --request PUT \
 curl --request DELETE \
   --url http://localhost:5000/api/products/1
 ```
+
+---
+
+## 🔧 Troubleshooting
+
+### Mobile Connection Issues
+
+**"Network Error" or "Request timeout":**
+1. Run `npm run dev` to sync network configuration
+2. Verify backend is running: `curl http://YOUR_IP:5000/api/health`
+3. Check if both devices are on the same Wi-Fi network
+4. Disable VPN if active
+5. Check firewall settings (allow port 5000)
+
+**"CORS policy" errors:**
+- Backend CORS is pre-configured for mobile development
+- Ensure you're using the correct IP address
+
+**IP keeps changing:**
+- Use `npm run monitor-network` to track changes automatically
+- Consider setting a static IP on your router
+
+### Backend Issues
+
+**MongoDB connection failed:**
+- Ensure MongoDB is running locally or check Atlas connection string
+- Verify `.env` file configuration
+
+**Port 5000 already in use:**
+```bash
+# Kill processes using port 5000
+taskkill /f /im python.exe  # Windows
+pkill -f python             # Linux/Mac
+```
+
+### Development Workflow
+
+**Recommended startup sequence:**
+1. `npm run dev` (sync network)
+2. `npm run backend` (start API)
+3. `npm run mobile` (start Expo)
+4. Scan QR code with Expo Go
 
 ---
 
