@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from .models.product_model import ensure_products_collection
 from .models.category_model import ensure_categories_collection
+from .models.user_model import ensure_users_collection
 
 # Carrega variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -110,6 +111,7 @@ def create_app():
         # Garantia de índices/esquemas
         ensure_categories_collection(app.db)
         ensure_products_collection(app.db)
+        ensure_users_collection(app.db)
 
     except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure) as e:
         # Não encerramos o app: health reportará DOWN
@@ -124,9 +126,11 @@ def create_app():
     from app.routes.products_routes import products_bp
     from app.routes.categories_routes import categories_bp
     from app.routes.images_routes import images_bp
+    from app.routes.users_routes import users_bp
     app.register_blueprint(health_bp)
     app.register_blueprint(products_bp, url_prefix="/api/products")
     app.register_blueprint(categories_bp, url_prefix="/api/categories")
     app.register_blueprint(images_bp, url_prefix="/api/images")
+    app.register_blueprint(users_bp, url_prefix="/api/users")
 
     return app
