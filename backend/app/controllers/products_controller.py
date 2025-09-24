@@ -30,8 +30,17 @@ def list_products():
 
     categoria = request.args.get("categoria")
     q = request.args.get("q")
-    page = max(int(request.args.get("page", 1) or 1), 1)
-    page_size = min(max(int(request.args.get("page_size", 10) or 10), 1), 100)
+    
+    # Tratamento seguro dos parâmetros de paginação
+    try:
+        page = max(int(request.args.get("page", 1) or 1), 1)
+    except (ValueError, TypeError):
+        page = 1
+    
+    try:
+        page_size = min(max(int(request.args.get("page_size", 10) or 10), 1), 100)
+    except (ValueError, TypeError):
+        page_size = 10
 
     query: Dict[str, Any] = {}
     if categoria:

@@ -43,6 +43,7 @@ export interface ProductFilters {
   condition?: string;
   size?: string;
   color?: string;
+  q?: string; // Para busca por texto
 }
 
 export interface ProductResponse {

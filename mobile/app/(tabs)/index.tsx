@@ -7,7 +7,6 @@ import { useFeaturedProducts, useTopSellingProducts } from '../../hooks/useProdu
 import { useCartStore } from '../../store/cartStore';
 import type { Product } from '../../types/product';
 import ConnectionStatus from '@/components/ui/ConnectionStatus';
-import NetworkDiagnostic from '../../components/debug/NetworkDiagnostic';
 
 const { width } = Dimensions.get('window');
 
@@ -35,7 +34,8 @@ export default function HomeScreen() {
     error: errorTopSelling 
   } = useTopSellingProducts();
 
-  const { addToCart, getTotalItems } = useCartStore();
+  const addToCart = useCartStore((state: any) => state.addToCart);
+  const getTotalItems = useCartStore((state: any) => state.getTotalItems);
   const cartItemCount = getTotalItems();
 
   const renderFeaturedProducts = () => {
@@ -124,23 +124,20 @@ export default function HomeScreen() {
       <View style={{ backgroundColor: '#E91E63', paddingHorizontal: 16, paddingVertical: 12 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flex: 1, marginRight: 12 }}>
-            <View style={{ 
-              backgroundColor: 'rgba(255,255,255,0.9)', 
-              borderRadius: 20, 
-              flexDirection: 'row', 
-              alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 8
-            }}>
-              <TouchableOpacity
-                onPress={() => router.push('/new-product')}
-                style={{ marginRight: 8 }}
-              >
-                <Ionicons name="add-circle" size={20} color="#E91E63" />
-              </TouchableOpacity>
+            <TouchableOpacity 
+              style={{ 
+                backgroundColor: 'rgba(255,255,255,0.9)', 
+                borderRadius: 20, 
+                flexDirection: 'row', 
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 8
+              }}
+              onPress={() => router.push('/search')}
+            >
               <Ionicons name="search" size={20} color="#666" />
-              <Text style={{ marginLeft: 8, color: '#666', fontSize: 14 }}>Buscar</Text>
-            </View>
+              <Text style={{ marginLeft: 8, color: '#666', fontSize: 14 }}>Buscar produtos...</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -309,7 +306,6 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
       <ConnectionStatus />
-      <NetworkDiagnostic />
     </SafeAreaView>
   );
 }

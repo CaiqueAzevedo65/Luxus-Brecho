@@ -157,7 +157,47 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Ações */}
+        {/* Ações do Administrador */}
+        {user.tipo === 'Administrador' && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Administração</Text>
+            
+            <TouchableOpacity 
+              style={styles.actionItem}
+              onPress={() => router.push('/admin/create-product')}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name="add-circle-outline" size={20} color="#22C55E" />
+              </View>
+              <Text style={styles.actionText}>Criar Produto</Text>
+              <Ionicons name="chevron-forward" size={16} color="#999" />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionItem}
+              onPress={() => router.push('/admin/manage-products')}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name="create-outline" size={20} color="#3B82F6" />
+              </View>
+              <Text style={styles.actionText}>Gerenciar Produtos</Text>
+              <Ionicons name="chevron-forward" size={16} color="#999" />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionItem}
+              onPress={() => router.push('/admin/debug')}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name="bug-outline" size={20} color="#F59E0B" />
+              </View>
+              <Text style={styles.actionText}>Debug</Text>
+              <Ionicons name="chevron-forward" size={16} color="#999" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Ações Gerais */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ações</Text>
           

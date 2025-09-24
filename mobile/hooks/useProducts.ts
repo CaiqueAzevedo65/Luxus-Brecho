@@ -12,7 +12,7 @@ export const useProducts = (filters?: ProductFilters) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiService.getProducts(page, limit, filters);
+      const response = await apiService.getProducts(Number(page) || 1, Number(limit) || 20, filters);
       setProducts(response.items.map(item => ({
         ...item,
         preco: Number(item.preco) || 0

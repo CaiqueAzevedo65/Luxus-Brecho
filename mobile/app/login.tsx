@@ -14,34 +14,29 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../store/authStore';
+import { LoginSchema, LoginFormData, useZodValidation } from '../schemas/auth.schema';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: '',
+    senha: '',
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; senha?: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { login, isLoading, error, clearError } = useAuthStore();
+  const { validate } = useZodValidation(LoginSchema);
 
   const validateForm = (): boolean => {
-    const newErrors: { email?: string; senha?: string } = {};
-
-    // Validar email
-    if (!email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Email inválido';
+    const result = validate(formData);
+    
+    if (result.success) {
+      setErrors({});
+      return true;
+    } else {
+      setErrors(result.errors || {});
+      return false;
     }
-
-    // Validar senha
-    if (!senha.trim()) {
-      newErrors.senha = 'Senha é obrigatória';
-    } else if (senha.length < 6) {
-      newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleLogin = async () => {
@@ -50,7 +45,7 @@ export default function LoginScreen() {
     }
 
     clearError();
-    const success = await login({ email: email.trim().toLowerCase(), senha });
+    const success = await login(formData);
 
     if (success) {
       Alert.alert('Sucesso', 'Login realizado com sucesso!', [
@@ -61,16 +56,16 @@ export default function LoginScreen() {
     }
   };
 
-  const handleInputChange = (field: 'email' | 'senha', value: string) => {
-    if (field === 'email') {
-      setEmail(value);
-    } else {
-      setSenha(value);
-    }
+  const handleInputChange = (field: keyof LoginFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
 
     // Limpar erro do campo quando usuário começar a digitar
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
@@ -112,7 +107,7 @@ export default function LoginScreen() {
                 <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  value={email}
+                  value={formData.email}
                   onChangeText={(value) => handleInputChange('email', value)}
                   placeholder="Digite seu email"
                   keyboardType="email-address"
@@ -131,7 +126,7 @@ export default function LoginScreen() {
                 <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
-                  value={senha}
+                  value={formData.senha}
                   onChangeText={(value) => handleInputChange('senha', value)}
                   placeholder="Digite sua senha"
                   secureTextEntry={!showPassword}

@@ -14,23 +14,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../store/authStore';
-
-interface FormData {
-  nome: string;
-  email: string;
-  senha: string;
-  confirmarSenha: string;
-}
-
-interface FormErrors {
-  nome?: string;
-  email?: string;
-  senha?: string;
-  confirmarSenha?: string;
-}
+import { RegisterSchema, RegisterFormData, useZodValidation } from '../schemas/auth.schema';
 
 export default function RegisterScreen() {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<RegisterFormData>({
     nome: '',
     email: '',
     senha: '',
@@ -38,45 +25,21 @@ export default function RegisterScreen() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { register, isLoading, error, clearError } = useAuthStore();
+  const { validate } = useZodValidation(RegisterSchema);
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    // Validar nome
-    if (!formData.nome.trim()) {
-      newErrors.nome = 'Nome é obrigatório';
-    } else if (formData.nome.trim().length < 2) {
-      newErrors.nome = 'Nome deve ter pelo menos 2 caracteres';
+    const result = validate(formData);
+    
+    if (result.success) {
+      setErrors({});
+      return true;
+    } else {
+      setErrors(result.errors || {});
+      return false;
     }
-
-    // Validar email
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-
-    // Validar senha
-    if (!formData.senha.trim()) {
-      newErrors.senha = 'Senha é obrigatória';
-    } else if (formData.senha.length < 6) {
-      newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
-    } else if (!/(?=.*[A-Za-z])(?=.*\d)/.test(formData.senha)) {
-      newErrors.senha = 'Senha deve conter pelo menos uma letra e um número';
-    }
-
-    // Validar confirmação de senha
-    if (!formData.confirmarSenha.trim()) {
-      newErrors.confirmarSenha = 'Confirmação de senha é obrigatória';
-    } else if (formData.senha !== formData.confirmarSenha) {
-      newErrors.confirmarSenha = 'As senhas não coincidem';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleRegister = async () => {
@@ -101,12 +64,16 @@ export default function RegisterScreen() {
     }
   };
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (field: keyof RegisterFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     // Limpar erro do campo quando usuário começar a digitar
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 

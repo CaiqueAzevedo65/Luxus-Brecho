@@ -45,6 +45,18 @@ export function Header() {
     }
   };
 
+  const handleSearch = () => {
+    if (searchText.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchText.trim())}`);
+      setSearchText('');
+      setSearchFocused(false);
+    }
+  };
+
+  const handleFavoritesPress = () => {
+    router.push('/favorites');
+  };
+
   return (
     <View className="bg-white shadow-sm">
       {/* Header Principal */}
@@ -88,6 +100,8 @@ export function Header() {
                 onChangeText={setSearchText}
                 onFocus={handleSearchFocus}
                 onBlur={handleSearchBlur}
+                onSubmitEditing={handleSearch}
+                returnKeyType="search"
                 autoFocus
               />
               {searchText.length > 0 && (
@@ -112,7 +126,7 @@ export function Header() {
           )}
 
           {/* Favoritos */}
-          <TouchableOpacity className="p-2 mr-2">
+          <TouchableOpacity className="p-2 mr-2" onPress={handleFavoritesPress}>
             <Ionicons name="heart-outline" size={24} color="#6B7280" />
           </TouchableOpacity>
 
