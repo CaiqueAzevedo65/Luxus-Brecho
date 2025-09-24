@@ -1,24 +1,22 @@
 import { Product, ProductResponse, ProductFilters } from '../types/product';
 import { Category, CategoryResponse } from '../types/category';
 import { cacheManager } from '../utils/cache';
-import { Platform } from 'react-native';
+import { getApiUrl, getNetworkInfo } from '../utils/networkUtils';
+import { CONFIG } from '../constants/config';
 
-// Configuração de ambiente
-const API_CONFIGS = {
-  local: 'http://localhost:5000/api',        // Simulador/Web
-  network: 'http://192.168.0.3:5000/api',   // IP real da rede (Expo Go)
-  emulator: 'http://10.0.2.2:5000/api',     // Android Emulator
-  production: 'https://sua-api.herokuapp.com/api'
-};
+// URL da API detectada automaticamente
+const API_BASE_URL = getApiUrl();
 
-// Detecta ambiente de execução
-// Em desenvolvimento, sempre usa IP da rede para Expo Go
-// Expo Go sempre roda em dispositivo físico, nunca em emulador
-const API_BASE_URL = __DEV__
-  ? API_CONFIGS.network  // Sempre usa 192.168.0.3 em desenvolvimento
-  : API_CONFIGS.production;
+// Log das informações de rede para debug
+if (__DEV__) {
+  console.log('🌐 Network Info:', getNetworkInfo());
+  console.log('🔗 Using API URL:', API_BASE_URL);
+}
 
-console.log('🌐 Usando API:', API_BASE_URL);
+// Log apenas em desenvolvimento
+if (CONFIG.DEBUG.ENABLE_API_LOGS) {
+  console.log('🌐 Usando API:', API_BASE_URL);
+}
 
 interface ApiError extends Error {
   status?: number;
@@ -27,10 +25,10 @@ interface ApiError extends Error {
 }
 
 class ApiService {
-  private timeout = 10000;  // 10 segundos
-  private maxRetries = 2;
-  private retryDelay = 2000; // 2 segundos
-  private initialDelay = 500; // 500ms antes do primeiro retry
+  private timeout = CONFIG.API.TIMEOUT;
+  private maxRetries = CONFIG.API.MAX_RETRIES;
+  private retryDelay = CONFIG.API.RETRY_DELAY;
+  private initialDelay = CONFIG.API.INITIAL_DELAY;
 
   private async fetchApi<T>(
     endpoint: string, 
@@ -44,10 +42,12 @@ class ApiService {
       // Tenta buscar do cache primeiro
       if (options?.useCache && options.method?.toUpperCase() === 'GET') {
         const cached = await cacheManager.get<T>(endpoint, { 
-          expirationMinutes: options.cacheMinutes || 5
+          expirationMinutes: options.cacheMinutes || CONFIG.API.CACHE_MINUTES.DEFAULT
         });
         if (cached) {
-          console.log(`📦 Cache hit: ${endpoint}`);
+          if (CONFIG.DEBUG.ENABLE_CACHE_LOGS) {
+            console.log(`📦 Cache hit: ${endpoint}`);
+          }
           return cached;
         }
       }
@@ -57,7 +57,9 @@ class ApiService {
         await this.delay(this.initialDelay);
       }
 
-      console.log(`🔗 API Request: ${API_BASE_URL}${endpoint} (timeout: ${this.timeout}ms)`);
+      if (CONFIG.DEBUG.ENABLE_API_LOGS) {
+        console.log(`🔗 API Request: ${API_BASE_URL}${endpoint} (timeout: ${this.timeout}ms)`);
+      }
       
       const startTime = Date.now();
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -86,12 +88,15 @@ class ApiService {
 
       const data = await response.json();
       const endTime = Date.now();
-      console.log(`✅ API Success: ${endpoint} (${endTime - startTime}ms)`);
+      
+      if (CONFIG.DEBUG.ENABLE_API_LOGS) {
+        console.log(`✅ API Success: ${endpoint} (${endTime - startTime}ms)`);
+      }
 
       // Salva no cache se necessário
       if (options?.useCache && options.method?.toUpperCase() === 'GET') {
         await cacheManager.set(endpoint, data, { 
-          expirationMinutes: options.cacheMinutes || 5
+          expirationMinutes: options.cacheMinutes || CONFIG.API.CACHE_MINUTES.DEFAULT
         });
       }
 
@@ -109,7 +114,9 @@ class ApiService {
         apiError.status >= 500)
       ) {
         const delay = this.retryDelay * Math.pow(2, retryCount);
-        console.warn(`🔄 Retrying request (${retryCount + 1}/${this.maxRetries}): ${endpoint} in ${delay}ms`);
+        if (CONFIG.DEBUG.ENABLE_API_LOGS) {
+          console.warn(`🔄 Retrying request (${retryCount + 1}/${this.maxRetries}): ${endpoint} in ${delay}ms`);
+        }
         await this.delay(delay); // Backoff exponencial
         return this.fetchApi<T>(endpoint, options, retryCount + 1);
       }
@@ -138,7 +145,9 @@ class ApiService {
   async healthCheck(): Promise<{ status: string; timestamp: string }> {
     try {
       const result = await this.fetchApi<{ status: string; timestamp: string }>('/health');
-      console.log('💚 Backend está online!');
+      if (CONFIG.DEBUG.ENABLE_API_LOGS) {
+        console.log('💚 Backend está online!');
+      }
       return result;
     } catch (error) {
       console.error('💔 Backend não está acessível:', error);
@@ -180,7 +189,7 @@ class ApiService {
 
       return await this.fetchApi<ProductResponse>(`/products?${params}`, {
         useCache: true,
-        cacheMinutes: 2
+        cacheMinutes: CONFIG.API.CACHE_MINUTES.PRODUCTS
       });
     } catch (error) {
       console.error('❌ Erro ao carregar produtos:', error);
@@ -318,7 +327,7 @@ class ApiService {
     try {
       return await this.fetchApi<Category[]>('/categories/summary', {
         useCache: true,
-        cacheMinutes: 5
+        cacheMinutes: CONFIG.API.CACHE_MINUTES.CATEGORIES
       });
     } catch (error) {
       console.error('❌ Erro ao carregar resumo de categorias:', error);

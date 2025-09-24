@@ -20,7 +20,6 @@ export interface Product {
   color?: string[];
   condition?: 'novo' | 'seminovo' | 'usado';
   images?: string[];
-  stock?: number;
   isExclusive?: boolean;
   isNew?: boolean;
   rating?: number;
