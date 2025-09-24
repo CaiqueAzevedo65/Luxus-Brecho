@@ -34,7 +34,7 @@ export const RegisterSchema = z.object({
     .string()
     .min(1, 'Confirmação de senha é obrigatória'),
 }).refine((data) => data.senha === data.confirmarSenha, {
-  message: 'As senhas não coincidem',
+  message: 'Senhas não coincidem',
   path: ['confirmarSenha'],
 });
 
@@ -42,12 +42,9 @@ export const RegisterSchema = z.object({
 export const SearchSchema = z.object({
   query: z
     .string()
-    .min(1, 'Digite algo para pesquisar')
+    .min(2, 'Digite pelo menos 2 caracteres para buscar')
     .max(100, 'Busca deve ter no máximo 100 caracteres')
     .trim(),
-  category: z.string().optional(),
-  minPrice: z.number().positive().optional(),
-  maxPrice: z.number().positive().optional(),
 });
 
 // Tipos inferidos
@@ -55,12 +52,12 @@ export type LoginFormData = z.infer<typeof LoginSchema>;
 export type RegisterFormData = z.infer<typeof RegisterSchema>;
 export type SearchFormData = z.infer<typeof SearchSchema>;
 
-// Hook personalizado para validação Zod
-export function useZodValidation<T extends z.ZodSchema>(schema: T) {
-  const validate = (data: unknown): { success: boolean; data?: z.infer<T>; errors?: Record<string, string> } => {
+// Hook personalizado para validação com Zod
+export const useZodValidation = <T extends z.ZodSchema>(schema: T) => {
+  const validate = (data: unknown) => {
     try {
-      const validatedData = schema.parse(data);
-      return { success: true, data: validatedData };
+      const result = schema.parse(data);
+      return { success: true as const, data: result, errors: null };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors: Record<string, string> = {};
@@ -68,11 +65,11 @@ export function useZodValidation<T extends z.ZodSchema>(schema: T) {
           const path = err.path.join('.');
           errors[path] = err.message;
         });
-        return { success: false, errors };
+        return { success: false as const, data: null, errors };
       }
-      return { success: false, errors: { general: 'Erro de validação' } };
+      return { success: false as const, data: null, errors: { general: 'Erro de validação' } };
     }
   };
 
   return { validate };
-}
+};

@@ -4,6 +4,14 @@ import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'nativewind';
 import { useAuthStore } from '../../store/authStore';
+import { IoniconsName } from '../../types/icons';
+
+interface MenuItem {
+  title: string;
+  icon: IoniconsName;
+  onPress?: () => void;
+  href?: string;
+}
 
 export default function MenuScreen() {
   const { colorScheme } = useColorScheme();
@@ -23,15 +31,15 @@ export default function MenuScreen() {
     }
   };
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       title: 'Categorias',
-      icon: 'grid-outline',
+      icon: 'grid-outline' as IoniconsName,
       onPress: () => router.push('/categories'),
     },
     {
       title: 'Meus Pedidos',
-      icon: 'bag-check-outline',
+      icon: 'bag-outline' as IoniconsName,
       href: '/orders',
     },
     {
@@ -41,17 +49,17 @@ export default function MenuScreen() {
     },
     {
       title: 'Notificações',
-      icon: 'notifications-outline',
+      icon: 'notifications-outline' as IoniconsName,
       href: '/notifications',
     },
     {
       title: 'Ajuda',
-      icon: 'help-circle-outline',
+      icon: 'help-circle-outline' as IoniconsName,
       href: '/help',
     },
     {
       title: 'Sobre',
-      icon: 'information-circle-outline',
+      icon: 'information-outline',
       href: '/about',
     },
   ];
@@ -82,7 +90,7 @@ export default function MenuScreen() {
           ) : (
             <Link key={index} href={item.href!} asChild>
               <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name={item.icon as any} size={24} color="#E91E63" style={styles.icon} />
+                <Ionicons name={item.icon} size={24} color="#E91E63" style={styles.icon} />
                 <Text style={styles.menuText}>{item.title}</Text>
                 <Ionicons 
                   name="chevron-forward-outline" 

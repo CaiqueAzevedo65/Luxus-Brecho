@@ -34,8 +34,8 @@ export default function HomeScreen() {
     error: errorTopSelling 
   } = useTopSellingProducts();
 
-  const addToCart = useCartStore((state: any) => state.addToCart);
-  const getTotalItems = useCartStore((state: any) => state.getTotalItems);
+  const addToCart = useCartStore((state) => state.addToCart);
+  const getTotalItems = useCartStore((state) => state.getTotalItems);
   const cartItemCount = getTotalItems();
 
   const renderFeaturedProducts = () => {

@@ -1,8 +1,34 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CONFIG } from '../constants/config';
+import { Product } from '../types/product';
 
-export const useCartStore = create((set, get) => ({
+export interface CartItem {
+  id: number;
+  titulo: string;
+  preco: number;
+  imagem?: string;
+  quantity: number;
+  categoria?: string;
+}
+
+export interface CartState {
+  cart: CartItem[];
+  loading: boolean;
+  getTotalItems: () => number;
+  getSubtotal: () => number;
+  getShippingCost: () => number;
+  getTotal: () => number;
+  addToCart: (product: Product) => Promise<void>;
+  removeFromCart: (productId: number) => Promise<void>;
+  updateQuantity: (productId: number, quantity: number) => Promise<void>;
+  loadCart: () => Promise<void>;
+  clearCart: () => Promise<void>;
+  getItemQuantity: (productId: number) => number;
+  isInCart: (productId: number) => boolean;
+}
+
+export const useCartStore = create<CartState>((set, get) => ({
   // Estado
   cart: [],
   loading: false,
@@ -26,7 +52,7 @@ export const useCartStore = create((set, get) => ({
   },
   
   // Ações
-  addToCart: async (product) => {
+  addToCart: async (product: Product) => {
     set({ loading: true });
     try {
       const currentCart = get().cart;
@@ -61,7 +87,7 @@ export const useCartStore = create((set, get) => ({
     }
   },
   
-  removeFromCart: async (productId) => {
+  removeFromCart: async (productId: number) => {
     set({ loading: true });
     try {
       const updatedCart = get().cart.filter(item => item.id !== productId);
@@ -74,7 +100,7 @@ export const useCartStore = create((set, get) => ({
     }
   },
   
-  updateQuantity: async (productId, quantity) => {
+  updateQuantity: async (productId: number, quantity: number) => {
     if (quantity <= 0) {
       await get().removeFromCart(productId);
       return;
@@ -121,5 +147,14 @@ export const useCartStore = create((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+
+  getItemQuantity: (productId: number) => {
+    const item = get().cart.find(item => item.id === productId);
+    return item ? item.quantity : 0;
+  },
+
+  isInCart: (productId: number) => {
+    return get().cart.some(item => item.id === productId);
   },
 }));

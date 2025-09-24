@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -19,7 +19,7 @@ interface ProductCardProps {
   id: number;
 }
 
-export function ProductCard({ 
+const ProductCard = memo(function ProductCard({ 
   title, 
   price, 
   originalPrice, 
@@ -208,4 +208,6 @@ export function ProductCard({
       </View>
     </TouchableOpacity>
   );
-}
+});
+
+export { ProductCard };

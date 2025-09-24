@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { apiService } from '../../services/api';
-import { Product } from '../../types/product';
+import { Product, ProductUI } from '../../types/product';
 
 export default function ManageProductsScreen() {
   const { user, isAuthenticated } = useAuthStore();
@@ -42,9 +42,9 @@ export default function ManageProductsScreen() {
     // Filtrar produtos baseado na busca
     if (searchQuery.trim()) {
       const filtered = products.filter(product =>
-        product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(searchQuery.toLowerCase())
+        product.titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.descricao.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.categoria.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredProducts(filtered);
     } else {
@@ -100,8 +100,8 @@ export default function ManageProductsScreen() {
     <View style={styles.productItem}>
       {/* Imagem do produto */}
       <View style={styles.productImageContainer}>
-        {item.images && item.images.length > 0 ? (
-          <Image source={{ uri: item.images[0] }} style={styles.productImage} />
+        {item.imagem ? (
+          <Image source={{ uri: item.imagem }} style={styles.productImage} />
         ) : (
           <View style={styles.placeholderImage}>
             <Ionicons name="image-outline" size={24} color="#999" />
@@ -112,18 +112,16 @@ export default function ManageProductsScreen() {
       {/* Informações do produto */}
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
-          {item.name}
+          {item.titulo}
         </Text>
         <Text style={styles.productDescription} numberOfLines={2}>
-          {item.description}
+          {item.descricao}
         </Text>
         <View style={styles.productMeta}>
           <Text style={styles.productPrice}>
-            R$ {item.price?.toFixed(2).replace('.', ',')}
+            R$ {item.preco.toFixed(2).replace('.', ',')}
           </Text>
-          {item.brand && (
-            <Text style={styles.productBrand}>{item.brand}</Text>
-          )}
+          <Text style={styles.productBrand}>{item.categoria}</Text>
         </View>
         <View style={styles.productStatus}>
           <View style={[

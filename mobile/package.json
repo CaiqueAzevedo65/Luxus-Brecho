@@ -9,7 +9,10 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "build": "expo build"
+    "build": "expo build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.1",
@@ -47,8 +50,18 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "^19.1.0",
+    "@testing-library/react-native": "^12.0.0",
+    "@testing-library/jest-native": "^5.4.3",
+    "@types/jest": "^29.5.0",
+    "jest": "^29.7.0",
+    "jest-expo": "^51.0.0",
+    "react-test-renderer": "19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "nativewind": "2.0.11",
     "tailwindcss": "3.3.2",
     "typescript": "^5.8.3"

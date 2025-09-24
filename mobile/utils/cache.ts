@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from './logger';
 
 interface CacheConfig {
   expirationMinutes: number;
@@ -26,7 +27,7 @@ class CacheManager {
         JSON.stringify(cacheItem)
       );
     } catch (error) {
-      console.error('Erro ao salvar no cache:', error);
+      logger.error('Erro ao salvar no cache', error as Error, 'CACHE');
     }
   }
 
@@ -48,7 +49,7 @@ class CacheManager {
 
       return cacheItem.data;
     } catch (error) {
-      console.error('Erro ao ler do cache:', error);
+      logger.error('Erro ao ler do cache', error as Error, 'CACHE');
       return null;
     }
   }
@@ -57,7 +58,7 @@ class CacheManager {
     try {
       await AsyncStorage.removeItem(`cache_${key}`);
     } catch (error) {
-      console.error('Erro ao remover do cache:', error);
+      logger.error('Erro ao remover do cache', error as Error, 'CACHE');
     }
   }
 
@@ -67,7 +68,7 @@ class CacheManager {
       const cacheKeys = keys.filter(key => key.startsWith('cache_'));
       await AsyncStorage.multiRemove(cacheKeys);
     } catch (error) {
-      console.error('Erro ao limpar cache:', error);
+      logger.error('Erro ao limpar cache', error as Error, 'CACHE');
     }
   }
 }

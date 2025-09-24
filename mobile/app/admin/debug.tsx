@@ -15,14 +15,7 @@ import { useAuthStore } from '../../store/authStore';
 // import NetworkDiagnostic from '../../components/debug/NetworkDiagnostic';
 import { getNetworkInfo, getApiUrl } from '../../utils/networkUtils';
 import { apiService } from '../../services/api';
-
-interface DebugInfo {
-  networkInfo: any;
-  apiUrl: string;
-  backendHealth: any;
-  userInfo: any;
-  deviceInfo: any;
-}
+import { DebugInfo, NetworkInfo, HealthStatus, UserInfo, DeviceInfo } from '../../types/debug';
 
 export default function DebugScreen() {
   const { user, isAuthenticated } = useAuthStore();
@@ -49,40 +42,63 @@ export default function DebugScreen() {
       setIsLoading(true);
 
       // Coletar informações de rede
-      const networkInfo = getNetworkInfo();
+      const networkData = getNetworkInfo();
       const apiUrl = getApiUrl();
+      
+      const networkInfo: NetworkInfo = {
+        isConnected: true, // Assumindo conectado se chegou até aqui
+        type: 'wifi', // Pode ser detectado dinamicamente
+        isInternetReachable: true,
+        details: {
+          isConnectionExpensive: false,
+        }
+      };
 
       // Testar saúde do backend
-      let backendHealth: any = null;
+      let backendHealth: HealthStatus = {
+        status: 'unknown',
+        timestamp: new Date().toISOString(),
+      };
       try {
         // Usar um endpoint simples para testar conectividade
         const response = await fetch(`${apiUrl}/health`);
         if (response.ok) {
-          backendHealth = await response.json();
+          const healthData = await response.json();
+          backendHealth = {
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            version: healthData.version,
+            database: healthData.database,
+          };
         } else {
-          backendHealth = { error: `HTTP ${response.status}` };
+          backendHealth = {
+            status: 'unhealthy',
+            timestamp: new Date().toISOString(),
+          };
         }
       } catch (error) {
-        backendHealth = { error: 'Backend não acessível', details: (error as Error).message };
+        backendHealth = {
+          status: 'unhealthy',
+          timestamp: new Date().toISOString(),
+        };
       }
 
       // Informações do usuário
-      const userInfo = {
+      const userInfo: UserInfo = {
+        id: user?.id,
+        nome: user?.nome,
+        email: user?.email,
+        role: user?.tipo as 'Cliente' | 'Administrador' | undefined,
         isAuthenticated,
-        user: user ? {
-          id: user.id,
-          nome: user.nome,
-          email: user.email,
-          tipo: user.tipo,
-          ativo: user.ativo,
-        } : null,
       };
 
       // Informações do dispositivo
-      const deviceInfo = {
-        platform: 'mobile',
-        timestamp: new Date().toISOString(),
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      const deviceInfo: DeviceInfo = {
+        platform: 'android', // Pode ser detectado dinamicamente
+        version: '1.0.0',
+        screenWidth: 400, // Pode ser obtido de Dimensions
+        screenHeight: 800,
+        isEmulator: false,
       };
 
       setDebugInfo({

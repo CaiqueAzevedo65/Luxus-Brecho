@@ -50,7 +50,7 @@ export default function FavoritesScreen() {
   const handleRemoveFavorite = (product: Product) => {
     Alert.alert(
       'Remover favorito',
-      `Deseja remover "${product.name}" dos seus favoritos?`,
+      `Deseja remover "${product.titulo}" dos seus favoritos?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
