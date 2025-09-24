@@ -1,12 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from 'nativewind';
+import { useAuthStore } from '../../store/authStore';
 
 export default function MenuScreen() {
   const { colorScheme } = useColorScheme();
   const iconColor = colorScheme === 'dark' ? 'white' : 'black';
+  const { isAuthenticated, initialize } = useAuthStore();
+
+  useEffect(() => {
+    // Inicializar estado de autenticação
+    initialize();
+  }, []);
+
+  const handleProfilePress = () => {
+    if (isAuthenticated) {
+      router.push('/profile');
+    } else {
+      router.push('/login');
+    }
+  };
 
   const menuItems = [
     {
@@ -22,7 +37,7 @@ export default function MenuScreen() {
     {
       title: 'Meu Perfil',
       icon: 'person-outline',
-      href: '/profile',
+      onPress: handleProfilePress,
     },
     {
       title: 'Notificações',

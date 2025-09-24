@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Animated } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router';
+import { router } from 'expo-router';
+import { useAuthStore } from '../../store/authStore';
 
 export function Header() {
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const navigation = useNavigation();
+  const { isAuthenticated, initialize } = useAuthStore();
   
   // Animação para o campo de busca
   const searchWidth = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    // Inicializar estado de autenticação
+    initialize();
+  }, []);
 
   const handleSearchFocus = () => {
     setSearchFocused(true);
@@ -31,13 +37,25 @@ export function Header() {
     }
   };
 
+  const handleProfilePress = () => {
+    if (isAuthenticated) {
+      router.push('/profile');
+    } else {
+      router.push('/login');
+    }
+  };
+
   return (
     <View className="bg-white shadow-sm">
       {/* Header Principal */}
       <View className="flex-row items-center justify-between px-4 py-3">
         {/* Menu/Perfil */}
-        <TouchableOpacity className="p-2">
-          <Ionicons name="person-circle-outline" size={28} color="#E91E63" />
+        <TouchableOpacity className="p-2" onPress={handleProfilePress}>
+          <Ionicons 
+            name={isAuthenticated ? "person-circle" : "person-circle-outline"} 
+            size={28} 
+            color="#E91E63" 
+          />
         </TouchableOpacity>
 
         {/* Logo Central - quando não estiver pesquisando */}
