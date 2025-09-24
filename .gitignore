@@ -32,3 +32,5 @@ web-build/
 
 # Logs
 *.log
+mobile/constants/config.ts
+network-config.json
