@@ -5,7 +5,11 @@ Script principal para executar o servidor Flask
 
 import os
 from app import create_app
+
 from flask_cors import CORS
+=======
+from utils.network_utils import print_network_info
+
 
 def main():
     # Carrega variáveis de ambiente
@@ -49,3 +53,15 @@ def main():
 
 if __name__ == '__main__':
     main()
+=======
+# Mostra informações de rede na inicialização
+print_network_info()
+
+if __name__ == "__main__":
+    # Permite conexões de qualquer IP da rede (necessário para mobile)
+    app.run(
+        host="0.0.0.0",  # Aceita conexões de qualquer IP
+        port=5000,       # Porta padrão
+        debug=app.config.get("DEBUG", False)
+    )
+

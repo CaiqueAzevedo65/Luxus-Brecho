@@ -1,0 +1,47 @@
+{
+  "description": "Configuração de rede compartilhada entre backend e mobile",
+  "backend": {
+    "host": "0.0.0.0",
+    "port": 5000,
+    "current_ip": "192.168.0.3",
+    "urls": {
+      "local": "http://127.0.0.1:5000",
+      "network": "http://192.168.0.3:5000"
+    }
+  },
+  "mobile": {
+    "api_urls": {
+      "local": "http://localhost:5000/api",
+      "network": "http://192.168.0.3:5000/api",
+      "emulator": "http://10.0.2.2:5000/api",
+      "production": "https://sua-api.herokuapp.com/api"
+    },
+    "current_environment": "development",
+    "preferred_url": "network"
+  },
+  "cors": {
+    "allowed_origins": [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://localhost:19000",
+      "http://localhost:8081",
+      "http://10.0.2.2:*",
+      "exp://*:*",
+      "http://*:*",
+      "https://*:*"
+    ]
+  },
+  "troubleshooting": {
+    "common_issues": [
+      "Verificar se o backend está rodando na porta 5000",
+      "Confirmar se o IP da rede está correto",
+      "Verificar se o firewall não está bloqueando a porta",
+      "Confirmar se o dispositivo está na mesma rede Wi-Fi"
+    ],
+    "commands": {
+      "check_backend": "curl http://192.168.228.72:5000/api/health",
+      "get_network_ip_windows": "ipconfig | findstr IPv4",
+      "get_network_ip_linux": "ifconfig | grep inet"
+    }
+  }
+}
