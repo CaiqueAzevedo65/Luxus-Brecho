@@ -1,200 +1,383 @@
-from flask import Blueprint, request, jsonify
-from app.controllers.products_controller import ProductsController
-from flask_cors import cross_origin
-import traceback
+from flask import Blueprint, request, jsonify, current_app
+from pymongo.errors import DuplicateKeyError
+from bson import ObjectId
+from typing import Any, Dict
+import time
 
-# Cria o blueprint das rotas de produtos
+from ..models.product_model import (
+    get_collection,
+    prepare_new_product,
+    validate_product,
+    normalize_product,
+)
+from ..services.supabase_storage import storage_service
+
+# Create the Blueprint
 products_bp = Blueprint('products', __name__)
 
-# Configura o controlador
-controller = ProductsController()
+def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
+    """Helper function to serialize MongoDB documents"""
+    if not doc:
+        return {}
+    d = dict(doc)
+    d.pop("_id", None)
+    return d
 
-@products_bp.route('/products', methods=['GET'], strict_slashes=False)
-@cross_origin()
-def get_products():
-    """Lista todos os produtos"""
-    try:
-        print(f"GET /api/products - Requisição recebida")
-        products = controller.get_all_products()
-        return jsonify({
-            'success': True,
-            'data': products,
-            'count': len(products)
-        }), 200
-    except Exception as e:
-        print(f"Erro em GET /api/products: {str(e)}")
-        print(traceback.format_exc())
-        return jsonify({
-            'success': False,
-            'message': 'Erro interno do servidor',
-            'error': str(e)
-        }), 500
+@products_bp.route('/products', methods=['GET'])
+def list_products():
+    """List all products with optional filtering and pagination"""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
 
-@products_bp.route('/products/<int:product_id>', methods=['GET'], strict_slashes=False)
-@cross_origin()
-def get_product(product_id):
-    """Busca um produto específico"""
-    try:
-        print(f"GET /api/products/{product_id} - Requisição recebida")
-        product = controller.get_product_by_id(product_id)
-        if product:
-            return jsonify({
-                'success': True,
-                'data': product
-            }), 200
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Produto não encontrado'
-            }), 404
-    except Exception as e:
-        print(f"Erro em GET /api/products/{product_id}: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': 'Erro interno do servidor',
-            'error': str(e)
-        }), 500
+    coll = get_collection(db)
 
-@products_bp.route('/products', methods=['POST'], strict_slashes=False)
-@cross_origin()
+    categoria = request.args.get("categoria")
+    q = request.args.get("q")
+    page = max(int(request.args.get("page", 1) or 1), 1)
+    page_size = min(max(int(request.args.get("page_size", 10) or 10), 1), 100)
+
+    query: Dict[str, Any] = {}
+    if categoria:
+        query["categoria"] = categoria
+    if q:
+        query["$text"] = {"$search": q}
+
+    cursor = coll.find(query)
+
+    if q:
+        cursor = cursor.sort([("score", {"$meta": "textScore"})])
+    else:
+        cursor = cursor.sort("titulo", 1)
+
+    total = coll.count_documents(query)
+
+    items = [
+        _serialize(doc) for doc in cursor.skip((page - 1) * page_size).limit(page_size)
+    ]
+
+    return jsonify(
+        items=items,
+        pagination={
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+        },
+    )
+
+@products_bp.route('/products/<int:id>', methods=['GET'])
+def get_product(id: int):
+    """Get a single product by ID"""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+    
+    coll = get_collection(db)
+    doc = coll.find_one({"id": int(id)})
+    
+    if not doc:
+        return jsonify(message="produto não encontrado"), 404
+    
+    return jsonify(_serialize(doc))
+
+@products_bp.route('/products', methods=['POST'])
 def create_product():
-    """Cria um novo produto"""
+    """Create a new product"""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+    
+    coll = get_collection(db)
+    payload = request.get_json(silent=True) or {}
+    
+    ok, errors, doc = prepare_new_product(db, payload)
+    if not ok:
+        return jsonify(message="erro de validação", errors=errors), 400
+
     try:
-        print("POST /api/products - Requisição recebida")
+        coll.insert_one(doc)
+    except DuplicateKeyError:
+        return jsonify(message="ID já existente"), 409
+
+    return jsonify(_serialize(doc)), 201
+
+@products_bp.route('/products/<int:id>', methods=['PUT'])
+def update_product(id: int):
+    """Update an existing product"""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+    
+    coll = get_collection(db)
+    current = coll.find_one({"id": int(id)})
+    
+    if not current:
+        return jsonify(message="produto não encontrado"), 404
+
+    payload = request.get_json(silent=True) or {}
+    
+    # Merge parcial
+    merged = dict(current)
+    merged.pop("_id", None)
+    merged.update(payload)
+    merged = normalize_product(merged)
+
+    ok, errors = validate_product(merged, db)
+    if not ok:
+        return jsonify(message="erro de validação", errors=errors), 400
+
+    # Não permitir troca de id
+    merged["id"] = current["id"]
+
+    coll.update_one({"id": int(id)}, {"$set": merged})
+    updated = coll.find_one({"id": int(id)})
+    
+    return jsonify(_serialize(updated))
+
+@products_bp.route('/products/<int:id>', methods=['DELETE'])
+def delete_product(id: int):
+    """Delete a product"""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+    
+    coll = get_collection(db)
+    
+    # Check if product exists first
+    current = coll.find_one({"id": int(id)})
+    if not current:
+        return jsonify(message="produto não encontrado"), 404
+    
+    # Delete associated image if exists
+    if current.get('imagem') and current['imagem'].startswith('http'):
+        try:
+            storage_service.delete_image(current['imagem'])
+        except Exception as e:
+            current_app.logger.warning(f"Erro ao deletar imagem: {e}")
+    
+    # Delete product from database
+    res = coll.delete_one({"id": int(id)})
+    if res.deleted_count == 0:
+        return jsonify(message="erro ao excluir produto"), 500
+    
+    return jsonify(message="produto excluído"), 200
+
+@products_bp.route('/products/with-image', methods=['POST'])
+def create_product_with_image():
+    """
+    Create product with image upload
+    POST /api/products/with-image
+    
+    Form Data:
+    - titulo, descricao, preco, categoria: product data
+    - image: image file
+    """
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+    
+    try:
+        # Detailed image validation
+        if 'image' not in request.files:
+            return jsonify(
+                message="Imagem é obrigatória", 
+                errors={"image": "Nenhum arquivo de imagem enviado"}
+            ), 400
         
-        # Verifica se é JSON
-        if not request.is_json:
-            return jsonify({
-                'success': False,
-                'message': 'Content-Type deve ser application/json'
-            }), 400
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify(
+                message="Nenhuma imagem selecionada", 
+                errors={"image": "Arquivo de imagem vazio"}
+            ), 400
+            
+        # Validate file extension
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        if file_ext not in allowed_extensions:
+            return jsonify(
+                message="Formato de arquivo inválido",
+                errors={"image": f"Apenas os formatos {', '.join(allowed_extensions)} são permitidos"}
+            ), 400
+            
+        # Validate file size (max 5MB)
+        file_content = file.read()
+        if len(file_content) > 5 * 1024 * 1024:  # 5MB in bytes
+            return jsonify(
+                message="Arquivo muito grande",
+                errors={"image": "O tamanho máximo permitido é 5MB"}
+            ), 400
+            
+        file.seek(0)  # Reset file pointer after reading
         
-        data = request.get_json()
-        print(f"Dados recebidos: {data}")
+        # Get product data from form
+        form_data = {
+            "titulo": request.form.get('titulo'),
+            "descricao": request.form.get('descricao'),
+            "preco": request.form.get('preco'),
+            "categoria": request.form.get('categoria')
+        }
         
-        # Validação básica dos campos obrigatórios
-        required_fields = ['titulo', 'preco', 'descricao', 'categoria']
-        for field in required_fields:
-            if not data or field not in data or not data[field]:
-                return jsonify({
-                    'success': False,
-                    'message': f'Campo obrigatório: {field}',
-                    'received_data': data
-                }), 400
+        # Detailed validation of required fields
+        errors = {}
+        for field in ['titulo', 'descricao', 'categoria']:
+            if not form_data.get(field):
+                errors[field] = f'O campo {field} é obrigatório'
+            elif isinstance(form_data[field], str) and len(form_data[field].strip()) == 0:
+                errors[field] = f'O campo {field} não pode estar vazio'
+
+        if not form_data.get('preco'):
+            errors['preco'] = 'O campo preço é obrigatório'
         
-        # Cria o produto usando o controlador
-        product = controller.create_product(data)
+        if errors:
+            return jsonify(
+                message="Campos obrigatórios não preenchidos", 
+                errors=errors
+            ), 400
+        
+        # Price validation and conversion
+        try:
+            preco = float(form_data['preco'])
+            if preco <= 0:
+                return jsonify(message="O preço deve ser maior que zero"), 400
+            form_data['preco'] = preco
+        except (ValueError, TypeError):
+            return jsonify(message="Preço deve ser um número válido"), 400
+        
+        # First upload image to get URL
+        # Use temporary ID for upload
+        temp_id = int(time.time() * 1000)  # Timestamp as temporary ID
+        success, result = storage_service.upload_image(file, temp_id)
+        
+        if not success:
+            return jsonify(message=f"Erro no upload da imagem: {result}"), 400
+        
+        # Add image URL to product data
+        form_data['imagem'] = result
+        
+        # Now prepare product with all data (including image)
+        coll = get_collection(db)
+        ok, errors, product_doc = prepare_new_product(db, form_data)
+        if not ok:
+            # If validation fails, remove already uploaded image
+            storage_service.delete_image(result)
+            return jsonify(message="erro de validação", errors=errors), 400
+        
+        # Rename file to use real product ID
+        product_id = product_doc['id']
+        if temp_id != product_id:
+            # Upload again with correct ID
+            file.stream.seek(0)  # Reset file stream
+            success_final, final_url = storage_service.upload_image(file, product_id)
+            if success_final:
+                # Remove temporary file and use new URL
+                storage_service.delete_image(result)
+                product_doc['imagem'] = final_url
+            # If re-upload fails, keep temporary but it still works
+        
+        # Insert product into database
+        try:
+            coll.insert_one(product_doc)
+        except DuplicateKeyError:
+            # If it fails, try to delete uploaded image
+            storage_service.delete_image(result)
+            return jsonify(message="ID já existente"), 409
         
         return jsonify({
-            'success': True,
-            'message': 'Produto criado com sucesso',
-            'data': product
+            "message": "Produto criado com sucesso",
+            "product": _serialize(product_doc)
         }), 201
         
-    except ValueError as e:
-        print(f"Erro de validação em POST /api/products: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 400
     except Exception as e:
-        print(f"Erro em POST /api/products: {str(e)}")
-        print(traceback.format_exc())
-        return jsonify({
-            'success': False,
-            'message': 'Erro interno do servidor',
-            'error': str(e)
-        }), 500
+        current_app.logger.error(f"Erro ao criar produto com imagem: {e}")
+        return jsonify(message="Erro interno no servidor"), 500
 
-@products_bp.route('/products/<int:product_id>', methods=['PUT'], strict_slashes=False)
-@cross_origin()
-def update_product(product_id):
-    """Atualiza um produto existente"""
+@products_bp.route('/products/<int:id>/image', methods=['PUT'])
+def update_product_image(id: int):
+    """
+    Update only the image of a product
+    PUT /api/products/<id>/image
+    
+    Form Data:
+    - image: new image file
+    """
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+    
+    coll = get_collection(db)
+    
+    # Check if product exists
+    current_product = coll.find_one({"id": int(id)})
+    if not current_product:
+        return jsonify(message="produto não encontrado"), 404
+    
+    # Validate if there's a new image
+    if 'image' not in request.files:
+        return jsonify(message="Nova imagem é obrigatória"), 400
+    
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify(message="Nenhuma imagem selecionada"), 400
+    
     try:
-        print(f"PUT /api/products/{product_id} - Requisição recebida")
+        # Upload new image
+        success, result = storage_service.upload_image(file, id)
         
-        if not request.is_json:
-            return jsonify({
-                'success': False,
-                'message': 'Content-Type deve ser application/json'
-            }), 400
+        if not success:
+            return jsonify(message=f"Erro no upload: {result}"), 400
         
-        data = request.get_json()
-        print(f"Dados recebidos: {data}")
+        # Delete old image if it exists
+        old_image_url = current_product.get('imagem')
+        if old_image_url and old_image_url.startswith('http'):
+            storage_service.delete_image(old_image_url)
         
-        # Validação básica dos campos obrigatórios
-        required_fields = ['titulo', 'preco', 'descricao', 'categoria']
-        for field in required_fields:
-            if not data or field not in data or not data[field]:
-                return jsonify({
-                    'success': False,
-                    'message': f'Campo obrigatório: {field}',
-                    'received_data': data
-                }), 400
+        # Update product with new URL
+        coll.update_one(
+            {"id": int(id)}, 
+            {"$set": {"imagem": result}}
+        )
         
-        # Atualiza o produto
-        product = controller.update_product(product_id, data)
-        
-        if product:
-            return jsonify({
-                'success': True,
-                'message': 'Produto atualizado com sucesso',
-                'data': product
-            }), 200
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Produto não encontrado'
-            }), 404
-            
-    except ValueError as e:
-        print(f"Erro de validação em PUT /api/products/{product_id}: {str(e)}")
+        # Return updated product
+        updated_product = coll.find_one({"id": int(id)})
         return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 400
+            "message": "Imagem atualizada com sucesso",
+            "product": _serialize(updated_product)
+        }), 200
+        
     except Exception as e:
-        print(f"Erro em PUT /api/products/{product_id}: {str(e)}")
-        print(traceback.format_exc())
-        return jsonify({
-            'success': False,
-            'message': 'Erro interno do servidor',
-            'error': str(e)
-        }), 500
+        current_app.logger.error(f"Erro ao atualizar imagem: {e}")
+        return jsonify(message="Erro interno no servidor"), 500
 
-@products_bp.route('/products/<int:product_id>', methods=['DELETE'], strict_slashes=False)
-@cross_origin()
-def delete_product(product_id):
-    """Deleta um produto"""
-    try:
-        print(f"DELETE /api/products/{product_id} - Requisição recebida")
-        
-        success = controller.delete_product(product_id)
-        
-        if success:
-            return jsonify({
-                'success': True,
-                'message': 'Produto deletado com sucesso'
-            }), 200
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Produto não encontrado'
-            }), 404
-            
-    except Exception as e:
-        print(f"Erro em DELETE /api/products/{product_id}: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': 'Erro interno do servidor',
-            'error': str(e)
-        }), 500
+@products_bp.route('/products/category/<string:categoria>', methods=['GET'])
+def get_products_by_category(categoria: str):
+    """Get products by specific category"""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
 
-# Rota adicional para lidar com OPTIONS (preflight CORS)
-@products_bp.route('/products', methods=['OPTIONS'], strict_slashes=False)
-@products_bp.route('/products/<int:product_id>', methods=['OPTIONS'], strict_slashes=False)
-@cross_origin()
-def handle_options(product_id=None):
-    """Lida com requisições OPTIONS para CORS preflight"""
-    print(f"OPTIONS /api/products{('/' + str(product_id)) if product_id else ''} - Preflight CORS")
-    return jsonify({'message': 'OK'}), 200
+    coll = get_collection(db)
+    
+    page = max(int(request.args.get("page", 1) or 1), 1)
+    page_size = min(max(int(request.args.get("page_size", 20) or 20), 1), 100)
+
+    query = {"categoria": categoria}
+    cursor = coll.find(query).sort("titulo", 1)
+    total = coll.count_documents(query)
+
+    items = [
+        _serialize(doc) for doc in cursor.skip((page - 1) * page_size).limit(page_size)
+    ]
+
+    if not items:
+        return jsonify(message="nenhum produto encontrado para essa categoria"), 404
+
+    return jsonify(
+        items=items,
+        categoria=categoria,
+        pagination={
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+        },
+    )
