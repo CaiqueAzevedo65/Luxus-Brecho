@@ -10,3 +10,4 @@ certifi>=2024.6.15
 supabase==2.7.4
 pillow==10.4.0
 bcrypt==4.1.2
+psutil==7.1.0

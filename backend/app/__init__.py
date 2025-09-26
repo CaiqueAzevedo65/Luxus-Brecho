@@ -1,18 +1,11 @@
+import os
 from flask import Flask, jsonify
+from flask_cors import CORS
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 from pymongo.server_api import ServerApi
-import os
-import sys
 import certifi
 from dotenv import load_dotenv
-from flask_cors import CORS
-from .models.product_model import ensure_products_collection
-from .models.category_model import ensure_categories_collection
-from .models.user_model import ensure_users_collection
-
-# Carrega variáveis de ambiente do arquivo .env
-load_dotenv()
 
 def _should_use_tls(uri: str) -> bool:
     """Define se deve usar TLS/CA (Atlas / SRV / URIs com tls=true)."""
@@ -27,110 +20,205 @@ def _should_use_tls(uri: str) -> bool:
     )
 
 def create_app():
-    """Função para criar e configurar a aplicação Flask"""
+    """Factory function para criar a aplicação Flask"""
+    
+    # Carrega variáveis de ambiente
+    load_dotenv()
+    
+    # Cria a instância Flask
     app = Flask(__name__)
-
-    # CORS restrito para as rotas da API
+    
+    # Configurações básicas
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key')
+    app.config['MAX_CONTENT_LENGTH'] = int(os.environ.get('MAX_CONTENT_LENGTH', 16777216))  # 16MB
+    app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.config['PROPAGATE_EXCEPTIONS'] = True  # Melhor tratamento de erros
+    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # Reduz tamanho do JSON
+    
+    # Configuração CORS unificada (web + mobile)
     allowed_origins_env = os.getenv("FRONTEND_ORIGIN")
-    allowed_origins = [o.strip() for o in allowed_origins_env.split(",")] if allowed_origins_env else [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:19000",  # Expo DevTools
-        "http://localhost:8081",   # Expo Metro
-        "http://10.0.2.2:*",      # Android Emulator
-        "exp://*:*",              # Expo Go na rede local
-        "http://*:*",             # Expo Go na rede local
-        "https://*:*"             # Expo Go na rede local
-    ]
-    # Log de origens permitidas
-    print("Origens CORS permitidas:", allowed_origins)
-
+    if allowed_origins_env:
+        allowed_origins = [o.strip() for o in allowed_origins_env.split(",")]
+    else:
+        allowed_origins = [
+            'http://localhost:5173',     # Vite dev server
+            'http://127.0.0.1:5173',     # Vite dev server (IP)
+            'http://localhost:19000',    # Expo DevTools
+            'http://localhost:8081',     # Expo Metro
+            'http://10.0.2.2:*',        # Android Emulator
+            'exp://*:*',                # Expo Go na rede local
+            'http://*:*',               # Desenvolvimento local
+            'https://*:*'               # HTTPS local
+        ]
+    
+    print(f"Origens CORS permitidas: {allowed_origins}")
+    
     CORS(app, resources={
         r"/api/*": {
             "origins": allowed_origins,
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "methods": ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             "allow_headers": [
-                "Content-Type", 
-                "Authorization",
-                "Accept-Encoding",
-                "X-Client-Version"
+                'Content-Type', 
+                'Authorization',
+                'Accept-Encoding',
+                'X-Client-Version'
             ],
-            "expose_headers": ["Content-Length", "Content-Encoding"],
+            "expose_headers": ['Content-Length', 'Content-Encoding'],
             "max_age": 600,  # Cache preflight por 10 minutos
             "supports_credentials": True
         }
     })
-
-    # Performance tweaks
-    app.config['PROPAGATE_EXCEPTIONS'] = True  # Melhor tratamento de erros
-    app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # Reduz tamanho do JSON
-
-    # Inicializa refs ao Mongo
+    
+    # Middleware CORS adicional (backup para desenvolvimento)
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', '*')  # Permissivo para dev
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept-Encoding,X-Client-Version')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    # Inicializa MongoDB
     app.mongo = None
     app.db = None
-
-    # URI e nome do DB
-    uri = os.getenv("MONGODB_URI")  # Ex.: mongodb+srv://user:pass@cluster.mongodb.net/luxus_brecho_db?retryWrites=true&w=majority
-    if not uri:
-        raise ValueError("MONGODB_URI não configurado no arquivo .env")
-    db_name_env = os.getenv("MONGODB_DATABASE")  # opcional; se não vier, usamos o do path no URI
-
-    # Monta kwargs de conexão seguros
-    client_kwargs = dict(
-        serverSelectionTimeoutMS=int(os.getenv("MONGO_SERVER_SELECTION_MS", "15000")),
-        connectTimeoutMS=int(os.getenv("MONGO_CONNECT_TIMEOUT_MS", "20000")),
-        socketTimeoutMS=int(os.getenv("MONGO_SOCKET_TIMEOUT_MS", "20000")),
-        maxPoolSize=int(os.getenv("MONGO_MAX_POOL_SIZE", "50")),
-        retryWrites=True,
-        # Stable API ajuda a evitar surpresas de versão no Atlas:
-        server_api=ServerApi("1"),
-        appname=os.getenv("MONGO_APPNAME", "Luxus-Brecho-Backend"),
-    )
-
-    # Usa CA apenas quando faz sentido (Atlas/SRV/TLS)
-    if _should_use_tls(uri):
-        client_kwargs["tlsCAFile"] = certifi.where()
-
-    # NUNCA desative verificação TLS em produção
-    # (Removemos o tlsInsecure=True)
-    client = MongoClient(uri, **client_kwargs)
-
-    # Verifica conexão
-    try:
-        client.admin.command("ping")
-        print("MongoDB conectado com sucesso!")
-        app.mongo = client
-
-        # Decide o DB:
-        if db_name_env:
-            app.db = client[db_name_env]
-        else:
-            # Se o nome do DB estiver no path do URI, PyMongo usa get_database()
-            app.db = client.get_database()
-
-        # Garantia de índices/esquemas
-        ensure_categories_collection(app.db)
-        ensure_products_collection(app.db)
-        ensure_users_collection(app.db)
-
-    except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure) as e:
-        # Não encerramos o app: health reportará DOWN
-        print(f"Erro ao conectar ao MongoDB: {e}")
-        print("Verifique MONGODB_URI, rede/IP liberado no Atlas e inspeção SSL/antivírus.")
-
-    # Configurações do Flask
-    app.config["DEBUG"] = os.getenv("FLASK_DEBUG", "False").lower() == "true"
-
-    # Blueprints
-    from app.routes.health_routes import health_bp
-    from app.routes.products_routes import products_bp
-    from app.routes.categories_routes import categories_bp
-    from app.routes.images_routes import images_bp
-    from app.routes.users_routes import users_bp
-    app.register_blueprint(health_bp)
-    app.register_blueprint(products_bp, url_prefix="/api/products")
-    app.register_blueprint(categories_bp, url_prefix="/api/categories")
-    app.register_blueprint(images_bp, url_prefix="/api/images")
-    app.register_blueprint(users_bp, url_prefix="/api/users")
-
+    
+    # Configuração do MongoDB
+    uri = os.getenv("MONGODB_URI")
+    if uri:
+        try:
+            db_name_env = os.getenv("MONGODB_DATABASE")
+            
+            # Configurações de conexão
+            client_kwargs = dict(
+                serverSelectionTimeoutMS=int(os.getenv("MONGO_SERVER_SELECTION_MS", "15000")),
+                connectTimeoutMS=int(os.getenv("MONGO_CONNECT_TIMEOUT_MS", "20000")),
+                socketTimeoutMS=int(os.getenv("MONGO_SOCKET_TIMEOUT_MS", "20000")),
+                maxPoolSize=int(os.getenv("MONGO_MAX_POOL_SIZE", "50")),
+                retryWrites=True,
+                server_api=ServerApi("1"),
+                appname=os.getenv("MONGO_APPNAME", "Luxus-Brecho-Backend"),
+            )
+            
+            # Usa CA apenas quando faz sentido (Atlas/SRV/TLS)
+            if _should_use_tls(uri):
+                client_kwargs["tlsCAFile"] = certifi.where()
+            
+            client = MongoClient(uri, **client_kwargs)
+            
+            # Testa conexão
+            client.admin.command("ping")
+            print("✅ MongoDB conectado com sucesso!")
+            app.mongo = client
+            
+            # Define database
+            if db_name_env:
+                app.db = client[db_name_env]
+            else:
+                app.db = client.get_database()
+            
+            # Garantia de índices/esquemas
+            try:
+                from .models.category_model import ensure_categories_collection
+                from .models.product_model import ensure_products_collection
+                from .models.user_model import ensure_users_collection
+                
+                ensure_categories_collection(app.db)
+                ensure_products_collection(app.db)
+                ensure_users_collection(app.db)
+                print("✅ Coleções e índices verificados")
+            except ImportError as e:
+                print(f"⚠️  Alguns modelos não foram encontrados: {e}")
+                
+        except (ConnectionFailure, ServerSelectionTimeoutError, OperationFailure) as e:
+            print(f"❌ Erro ao conectar ao MongoDB: {e}")
+            print("Verifique MONGODB_URI, rede/IP liberado no Atlas")
+        except Exception as e:
+            print(f"❌ Erro inesperado na conexão MongoDB: {e}")
+    else:
+        print("⚠️  MONGODB_URI não configurado - funcionando sem banco")
+    
+    # Rota raiz
+    @app.route('/', methods=['GET'])
+    def index():
+        return jsonify({
+            'message': 'Luxus Brechó API está funcionando!',
+            'version': '1.0.0',
+            'status': 'online',
+            'database': 'connected' if app.db else 'disconnected',
+            'endpoints': {
+                'health': '/api/health',
+                'products': '/api/products',
+                'categories': '/api/categories',
+                'images': '/api/images',
+                'users': '/api/users'
+            }
+        })
+    
+    # Registra os blueprints (rotas) - com tratamento de erro
+    blueprints_to_register = [
+        ('app.routes.health_routes', 'health_bp', '/api'),
+        ('app.routes.products_routes', 'products_bp', '/api'),
+        ('app.routes.categories_routes', 'categories_bp', '/api'),
+        ('app.routes.images_routes', 'images_bp', '/api'),
+        ('app.routes.users_routes', 'users_bp', '/api')
+    ]
+    
+    for module_path, blueprint_name, url_prefix in blueprints_to_register:
+        try:
+            module = __import__(module_path, fromlist=[blueprint_name])
+            blueprint = getattr(module, blueprint_name)
+            app.register_blueprint(blueprint, url_prefix=url_prefix)
+            print(f"✅ {blueprint_name} registrado em {url_prefix}")
+        except ImportError as e:
+            print(f"⚠️  Erro ao importar {module_path}: {e}")
+        except AttributeError as e:
+            print(f"⚠️  Blueprint {blueprint_name} não encontrado em {module_path}: {e}")
+        except Exception as e:
+            print(f"❌ Erro inesperado ao registrar {blueprint_name}: {e}")
+    
+    # Error handlers
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            'success': False,
+            'message': 'Endpoint não encontrado',
+            'available_endpoints': [
+                'GET /',
+                'GET /api/health',
+                'GET /api/products',
+                'POST /api/products',
+                'PUT /api/products/<id>',
+                'DELETE /api/products/<id>',
+                'GET /api/categories',
+                'POST /api/categories',
+                'GET /api/users',
+                'POST /api/users'
+            ]
+        }), 404
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        return jsonify({
+            'success': False,
+            'message': 'Erro interno do servidor',
+            'error': str(error) if app.config['DEBUG'] else 'Erro interno'
+        }), 500
+    
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return jsonify({
+            'success': False,
+            'message': 'Método não permitido para este endpoint'
+        }), 405
+    
+    @app.errorhandler(413)
+    def request_entity_too_large(error):
+        return jsonify({
+            'success': False,
+            'message': 'Arquivo muito grande',
+            'max_size': '16MB'
+        }), 413
+    
+    print("🚀 Aplicação Flask criada com sucesso!")
+    
     return app

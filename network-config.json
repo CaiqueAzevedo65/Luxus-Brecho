@@ -3,16 +3,16 @@
   "backend": {
     "host": "0.0.0.0",
     "port": 5000,
-    "current_ip": "192.168.0.3",
+    "current_ip": "172.25.32.1",
     "urls": {
       "local": "http://127.0.0.1:5000",
-      "network": "http://192.168.0.3:5000"
+      "network": "http://172.25.32.1:5000"
     }
   },
   "mobile": {
     "api_urls": {
       "local": "http://localhost:5000/api",
-      "network": "http://192.168.0.3:5000/api",
+      "network": "http://172.25.32.1:5000/api",
       "emulator": "http://10.0.2.2:5000/api",
       "production": "https://sua-api.herokuapp.com/api"
     },
