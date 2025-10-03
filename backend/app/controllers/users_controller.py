@@ -14,6 +14,7 @@ from ..models.user_model import (
     verify_password,
     USER_TYPES,
 )
+from ..services.email_service import send_confirmation_email, send_welcome_email
 
 
 def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
@@ -133,9 +134,21 @@ def create_user():
         # Busca usuário criado
         created_user = coll.find_one({"_id": result.inserted_id})
         
+        # Envia email de confirmação se for Cliente
+        if user_data["tipo"] == "Cliente" and user_data["token_confirmacao"]:
+            send_confirmation_email(
+                user_data["email"],
+                user_data["nome"],
+                user_data["token_confirmacao"]
+            )
+            message = "Usuário criado com sucesso. Verifique seu email para confirmar a conta."
+        else:
+            message = "Usuário criado com sucesso"
+        
         return jsonify({
-            "message": "Usuário criado com sucesso",
-            "user": _serialize(created_user)
+            "message": message,
+            "user": _serialize(created_user),
+            "email_confirmation_required": user_data["tipo"] == "Cliente"
         }), 201
 
     except DuplicateKeyError as e:
@@ -268,10 +281,7 @@ def authenticate_user():
         coll = get_collection(db)
 
         # Busca usuário por email
-        user = coll.find_one({
-            "email": email.strip().lower(),
-            "ativo": True
-        })
+        user = coll.find_one({"email": email.strip().lower()})
 
         if not user:
             return jsonify(message="Credenciais inválidas"), 401
@@ -279,6 +289,17 @@ def authenticate_user():
         # Verifica senha
         if not verify_password(senha, user["senha_hash"]):
             return jsonify(message="Credenciais inválidas"), 401
+
+        # Verifica se o email foi confirmado
+        if not user.get("email_confirmado", False):
+            return jsonify(
+                message="Email não confirmado. Verifique sua caixa de entrada.",
+                email_not_confirmed=True
+            ), 403
+
+        # Verifica se o usuário está ativo
+        if not user.get("ativo", False):
+            return jsonify(message="Conta desativada. Entre em contato com o suporte."), 403
 
         return jsonify({
             "message": "Autenticação realizada com sucesso",
@@ -390,4 +411,109 @@ def get_users_summary():
 
     except Exception as e:
         print(f"Erro ao obter resumo de usuários: {e}")
+        return jsonify(message="Erro interno do servidor"), 500
+
+
+def confirm_email(token: str):
+    """Confirma email do usuário através do token."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+
+    try:
+        coll = get_collection(db)
+
+        # Busca usuário pelo token
+        user = coll.find_one({
+            "token_confirmacao": token,
+            "email_confirmado": False
+        })
+
+        if not user:
+            return jsonify(message="Token inválido ou já utilizado"), 404
+
+        # Verifica se o token expirou
+        if user.get("token_expiracao") and user["token_expiracao"] < datetime.utcnow():
+            return jsonify(message="Token expirado. Solicite um novo email de confirmação."), 410
+
+        # Atualiza usuário: confirma email, ativa conta e remove token
+        result = coll.update_one(
+            {"id": user["id"]},
+            {
+                "$set": {
+                    "email_confirmado": True,
+                    "ativo": True,
+                    "token_confirmacao": None,
+                    "token_expiracao": None,
+                    "data_atualizacao": datetime.utcnow()
+                }
+            }
+        )
+
+        if result.matched_count == 0:
+            return jsonify(message="Erro ao confirmar email"), 500
+
+        # Envia email de boas-vindas
+        send_welcome_email(user["email"], user["nome"])
+
+        return jsonify(message="Email confirmado com sucesso! Sua conta está ativa.")
+
+    except Exception as e:
+        print(f"Erro ao confirmar email: {e}")
+        return jsonify(message="Erro interno do servidor"), 500
+
+
+def resend_confirmation_email():
+    """Reenvia email de confirmação."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+
+    try:
+        payload = request.get_json()
+        if not payload:
+            return jsonify(message="Payload JSON é obrigatório"), 400
+
+        email = payload.get("email")
+        if not email:
+            return jsonify(message="Email é obrigatório"), 400
+
+        coll = get_collection(db)
+
+        # Busca usuário por email
+        user = coll.find_one({"email": email.strip().lower()})
+
+        if not user:
+            # Não revela se o email existe ou não por segurança
+            return jsonify(message="Se o email existir, um novo link será enviado"), 200
+
+        # Verifica se já está confirmado
+        if user.get("email_confirmado", False):
+            return jsonify(message="Email já confirmado"), 400
+
+        # Gera novo token
+        from ..models.user_model import generate_confirmation_token, get_token_expiration
+        
+        new_token = generate_confirmation_token()
+        new_expiration = get_token_expiration()
+
+        # Atualiza token
+        coll.update_one(
+            {"id": user["id"]},
+            {
+                "$set": {
+                    "token_confirmacao": new_token,
+                    "token_expiracao": new_expiration,
+                    "data_atualizacao": datetime.utcnow()
+                }
+            }
+        )
+
+        # Envia novo email
+        send_confirmation_email(user["email"], user["nome"], new_token)
+
+        return jsonify(message="Email de confirmação reenviado com sucesso")
+
+    except Exception as e:
+        print(f"Erro ao reenviar email de confirmação: {e}")
         return jsonify(message="Erro interno do servidor"), 500

@@ -48,19 +48,29 @@ export default function RegisterScreen() {
     }
 
     clearError();
-    const success = await register({
+    const result = await register({
       nome: formData.nome.trim(),
       email: formData.email.trim().toLowerCase(),
       senha: formData.senha,
       confirmarSenha: formData.confirmarSenha,
     });
 
-    if (success) {
-      Alert.alert('Sucesso', 'Conta criada com sucesso!', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+    if (result.success) {
+      if (result.requiresEmailConfirmation) {
+        Alert.alert(
+          'Confirme seu email',
+          'Conta criada com sucesso! Enviamos um email de confirmação para ' + formData.email + '. Por favor, verifique sua caixa de entrada e confirme seu email para ativar sua conta.',
+          [
+            { text: 'OK', onPress: () => router.back() }
+          ]
+        );
+      } else {
+        Alert.alert('Sucesso', 'Conta criada com sucesso!', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } else {
-      Alert.alert('Erro', error || 'Erro ao criar conta');
+      Alert.alert('Erro', result.error || 'Erro ao criar conta');
     }
   };
 

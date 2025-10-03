@@ -277,9 +277,6 @@ export default function HomeScreen() {
             Para tirar suas dúvidas
           </Text>
           <View className="flex-row justify-end">
-            <TouchableOpacity className="bg-gray-100 px-4 py-2 rounded-full mr-2">
-              <Text className="text-pink-600 text-xs">Oi</Text>
-            </TouchableOpacity>
             <TouchableOpacity className="bg-pink-600 px-4 py-2 rounded-full">
               <Text className="text-white text-xs">Preciso de ajuda</Text>
             </TouchableOpacity>
@@ -296,11 +293,6 @@ export default function HomeScreen() {
               <Text className="text-white text-xs mb-1">Suporte</Text>
               <Text className="text-white text-xs mb-1">Contato</Text>
               <Text className="text-white text-xs">Políticas</Text>
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              {[1, 2, 3].map((_, index) => (
-                <View key={index} className="w-6 h-4 bg-white rounded ml-1" />
-              ))}
             </View>
           </View>
         </View>

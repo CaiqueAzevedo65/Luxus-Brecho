@@ -7,8 +7,9 @@ export interface User {
   email: string;
   tipo: 'Cliente' | 'Administrador';
   ativo: boolean;
-  created_at: string;
-  updated_at: string;
+  email_confirmado: boolean;
+  data_criacao: string;
+  data_atualizacao: string;
 }
 
 export interface LoginCredentials {
@@ -37,7 +38,7 @@ class AuthService {
   /**
    * Faz login do usuário
    */
-  async login(credentials: LoginCredentials): Promise<{ success: boolean; user?: User; error?: string }> {
+  async login(credentials: LoginCredentials): Promise<{ success: boolean; user?: User; error?: string; emailNotConfirmed?: boolean }> {
     try {
       const response = await fetch(`${getApiUrl()}/users/auth`, {
         method: 'POST',
@@ -47,16 +48,25 @@ class AuthService {
         body: JSON.stringify(credentials),
       });
 
-      if (!response.ok) {
-        throw new Error('Credenciais inválidas');
+      const data = await response.json();
+
+      // Verifica se o email não foi confirmado
+      if (response.status === 403 && data.email_not_confirmed) {
+        return { 
+          success: false, 
+          error: data.message || 'Email não confirmado',
+          emailNotConfirmed: true 
+        };
       }
 
-      const data: AuthResponse = await response.json();
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Credenciais inválidas' };
+      }
 
       if (data && data.user) {
         // Salvar dados do usuário no AsyncStorage
         await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(data.user));
-        await AsyncStorage.setItem(AUTH_TOKEN_KEY, 'authenticated'); // Token simples por enquanto
+        await AsyncStorage.setItem(AUTH_TOKEN_KEY, 'authenticated');
         
         this.currentUser = data.user;
         
@@ -73,7 +83,7 @@ class AuthService {
   /**
    * Registra novo usuário
    */
-  async register(data: RegisterData): Promise<{ success: boolean; user?: User; error?: string }> {
+  async register(data: RegisterData): Promise<{ success: boolean; user?: User; error?: string; requiresEmailConfirmation?: boolean }> {
     try {
       // Validar se as senhas coincidem
       if (data.senha !== data.confirmarSenha) {
@@ -96,32 +106,54 @@ class AuthService {
         body: JSON.stringify(payload),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error('Erro ao criar conta');
+        return { 
+          success: false, 
+          error: responseData.message || 'Erro ao criar conta' 
+        };
       }
 
-      const responseData: { message: string; user: User } = await response.json();
-
       if (responseData && responseData.user) {
-        // Após registro, fazer login automaticamente
-        const loginResult = await this.login({
-          email: data.email,
-          senha: data.senha,
-        });
-
-        return loginResult;
+        // Retorna sucesso mas indica que precisa confirmar email
+        return { 
+          success: true, 
+          user: responseData.user,
+          requiresEmailConfirmation: responseData.email_confirmation_required || false
+        };
       }
 
       return { success: false, error: 'Erro ao criar conta' };
     } catch (error: any) {
       console.error('Erro no registro:', error);
-      
-      // Tratar erro de email já existente
-      if (error.message && error.message.includes('já existe')) {
-        return { success: false, error: 'Este email já está cadastrado' };
-      }
-      
       return { success: false, error: 'Erro ao criar conta. Tente novamente.' };
+    }
+  }
+
+  /**
+   * Reenvia email de confirmação
+   */
+  async resendConfirmationEmail(email: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      const response = await fetch(`${getApiUrl()}/users/resend-confirmation`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Erro ao reenviar email' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao reenviar email:', error);
+      return { success: false, error: 'Erro ao reenviar email. Tente novamente.' };
     }
   }
 
