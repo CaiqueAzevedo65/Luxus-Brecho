@@ -148,7 +148,6 @@ def create_app():
             'endpoints': {
                 'health': '/api/health',
                 'products': '/api/products',
-                'categories': '/api/categories',
                 'images': '/api/images',
                 'users': '/api/users'
             }
@@ -157,10 +156,10 @@ def create_app():
     # Registra os blueprints (rotas) - com tratamento de erro
     blueprints_to_register = [
         ('app.routes.health_routes', 'health_bp', '/api'),
-        ('app.routes.products_routes', 'products_bp', '/api'),
-        ('app.routes.categories_routes', 'categories_bp', '/api'),
-        ('app.routes.images_routes', 'images_bp', '/api'),
-        ('app.routes.users_routes', 'users_bp', '/api')
+        ('app.routes.products_routes', 'products_bp', '/api/products'),
+        ('app.routes.categories_routes', 'categories_bp', '/api/categories'),
+        ('app.routes.images_routes', 'images_bp', '/api/images'),
+        ('app.routes.users_routes', 'users_bp', '/api/users')
     ]
     
     for module_path, blueprint_name, url_prefix in blueprints_to_register:

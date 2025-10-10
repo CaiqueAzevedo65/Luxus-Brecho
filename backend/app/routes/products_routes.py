@@ -23,7 +23,7 @@ def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
     d.pop("_id", None)
     return d
 
-@products_bp.route('/products', methods=['GET'])
+@products_bp.route('/', methods=['GET'])
 def list_products():
     """List all products with optional filtering and pagination"""
     db = current_app.db
@@ -65,7 +65,7 @@ def list_products():
         },
     )
 
-@products_bp.route('/products/<int:id>', methods=['GET'])
+@products_bp.route('/<int:id>', methods=['GET'])
 def get_product(id: int):
     """Get a single product by ID"""
     db = current_app.db
@@ -80,7 +80,7 @@ def get_product(id: int):
     
     return jsonify(_serialize(doc))
 
-@products_bp.route('/products', methods=['POST'])
+@products_bp.route('/', methods=['POST'])
 def create_product():
     """Create a new product"""
     db = current_app.db
@@ -101,7 +101,7 @@ def create_product():
 
     return jsonify(_serialize(doc)), 201
 
-@products_bp.route('/products/<int:id>', methods=['PUT'])
+@products_bp.route('/<int:id>', methods=['PUT'])
 def update_product(id: int):
     """Update an existing product"""
     db = current_app.db
@@ -134,7 +134,7 @@ def update_product(id: int):
     
     return jsonify(_serialize(updated))
 
-@products_bp.route('/products/<int:id>', methods=['DELETE'])
+@products_bp.route('/<int:id>', methods=['DELETE'])
 def delete_product(id: int):
     """Delete a product"""
     db = current_app.db
@@ -162,7 +162,7 @@ def delete_product(id: int):
     
     return jsonify(message="produto excluído"), 200
 
-@products_bp.route('/products/with-image', methods=['POST'])
+@products_bp.route('/with-image', methods=['POST'])
 def create_product_with_image():
     """
     Create product with image upload
@@ -292,7 +292,7 @@ def create_product_with_image():
         current_app.logger.error(f"Erro ao criar produto com imagem: {e}")
         return jsonify(message="Erro interno no servidor"), 500
 
-@products_bp.route('/products/<int:id>/image', methods=['PUT'])
+@products_bp.route('/<int:id>/image', methods=['PUT'])
 def update_product_image(id: int):
     """
     Update only the image of a product
@@ -349,7 +349,7 @@ def update_product_image(id: int):
         current_app.logger.error(f"Erro ao atualizar imagem: {e}")
         return jsonify(message="Erro interno no servidor"), 500
 
-@products_bp.route('/products/category/<string:categoria>', methods=['GET'])
+@products_bp.route('/category/<string:categoria>', methods=['GET'])
 def get_products_by_category(categoria: str):
     """Get products by specific category"""
     db = current_app.db

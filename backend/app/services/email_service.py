@@ -4,6 +4,8 @@ Utiliza SMTP para enviar emails de confirmação e outros.
 """
 import smtplib
 import os
+import json
+from pathlib import Path
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
@@ -16,8 +18,41 @@ SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
 FROM_EMAIL = os.getenv('FROM_EMAIL', SMTP_USER)
 FROM_NAME = os.getenv('FROM_NAME', 'Luxus Brechó')
 
-# URL base da aplicação
-APP_URL = os.getenv('APP_URL', 'http://localhost:5000')
+
+def get_app_url() -> str:
+    """
+    Obtém a URL base da aplicação.
+    Prioridade:
+    1. Lê do network-config.json (IP da rede + porta do backend)
+    2. Fallback para variável APP_URL do .env
+    3. Fallback final para localhost:5000
+    """
+    try:
+        # Tenta carregar do network-config.json na raiz do projeto
+        config_path = Path(__file__).parent.parent.parent.parent / 'network-config.json'
+        
+        if config_path.exists():
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+                backend_config = config.get('backend', {})
+                current_ip = backend_config.get('current_ip')
+                port = backend_config.get('port', 5000)
+                
+                if current_ip:
+                    app_url = f"http://{current_ip}:{port}"
+                    print(f"📧 Email Service usando URL do network-config.json: {app_url}")
+                    return app_url
+    except Exception as e:
+        print(f"⚠️  Erro ao ler network-config.json: {e}")
+    
+    # Fallback para variável de ambiente
+    app_url = os.getenv('APP_URL', 'http://localhost:5000')
+    print(f"📧 Email Service usando URL do .env: {app_url}")
+    return app_url
+
+
+# URL base da aplicação (carregada dinamicamente)
+APP_URL = get_app_url()
 
 
 def send_email(to_email: str, subject: str, html_content: str, text_content: Optional[str] = None) -> bool:
