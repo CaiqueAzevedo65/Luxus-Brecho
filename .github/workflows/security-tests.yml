@@ -29,26 +29,26 @@ jobs:
         pip install requests  # Para o script de segurança
     
     - name: 🚀 Iniciar backend Flask
-      run: |
-        cd backend
-        python app.py &
-        echo $! > backend.pid
-        
-        # Aguardar backend inicializar
-        echo "⏳ Aguardando backend..."
-        for i in {1..30}; do
-          if curl -f http://localhost:5000/api/health >/dev/null 2>&1; then
-            echo "✅ Backend iniciado!"
-            break
-          fi
-          if [ $i -eq 30 ]; then
-            echo "❌ Timeout: Backend não inicializou"
-            exit 1
-          fi
-          sleep 2
-        done
-      env:
-        FLASK_ENV: testing
+        run: |
+          cd backend
+          python app.py &
+          echo $! > backend.pid
+          
+          # Aguardar backend inicializar
+          echo "⏳ Aguardando backend..."
+          for i in {1..30}; do
+            if curl -f http://localhost:5000/api/health >/dev/null 2>&1; then
+              echo "✅ Backend iniciado!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "❌ Timeout: Backend não inicializou"
+              exit 1
+            fi
+            sleep 2
+          done
+        env:
+          FLASK_ENV: testing
         MONGODB_URI: ${{ secrets.MONGODB_URI || 'mongodb://localhost:27017/test' }}
     
     - name: 🛡️ Executar análise de segurança
