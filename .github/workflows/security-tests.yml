@@ -6,12 +6,21 @@ on:
   pull_request:
     branches: [ main, dev ]
   schedule:
-    - cron: '0 2 * * *'  # Todo dia às 2h da manhã
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Permite execução manual
 
 jobs:
   security-scan:
     name: Security Analysis
     runs-on: ubuntu-latest
+    
+    # MongoDB como serviço
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'" --health-interval 10s --health-timeout 5s --health-retries 5
     
     steps:
     - name: 📥 Checkout código
@@ -26,7 +35,7 @@ jobs:
       run: |
         cd backend
         pip install -r requirements.txt
-        pip install requests  # Para o script de segurança
+        pip install requests
     
     - name: 🚀 Iniciar backend Flask
       run: |
@@ -34,7 +43,6 @@ jobs:
         python run.py &
         echo $! > backend.pid
         
-        # Aguardar backend inicializar
         echo "⏳ Aguardando backend..."
         for i in {1..30}; do
           if curl -f http://localhost:5000/api/health >/dev/null 2>&1; then
@@ -49,12 +57,12 @@ jobs:
         done
       env:
         FLASK_ENV: testing
-        MONGODB_URI: ${{ secrets.MONGODB_URI || 'mongodb://localhost:27017/test' }}
+        MONGODB_URI: mongodb://localhost:27017/luxus_test
     
     - name: 🛡️ Executar análise de segurança
       run: |
         python security-tests/security-analyzer.py
-      continue-on-error: true  # Não falhar o job se houver vulnerabilidades
+      continue-on-error: true
     
     - name: 📤 Upload dos relatórios
       uses: actions/upload-artifact@v4
@@ -63,6 +71,21 @@ jobs:
         name: security-reports-${{ github.run_number }}
         path: security-reports/
         retention-days: 30
+    
+    # 🔍 DEBUG: Verificar se secrets estão configurados
+    - name: 🔍 Debug - Verificar secrets de email
+      run: |
+        echo "Verificando secrets configurados:"
+        echo "SMTP_SERVER: ${{ secrets.SMTP_SERVER && '*configurado*' || '*VAZIO*' }}"
+        echo "SMTP_PORT: ${{ secrets.SMTP_PORT && '*configurado*' || '*VAZIO*' }}"
+        echo "SMTP_USERNAME: ${{ secrets.SMTP_USERNAME && '*configurado*' || '*VAZIO*' }}"
+        echo "SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD && '*configurado*' || '*VAZIO*' }}"
+        echo "EMAIL_TO: ${{ secrets.EMAIL_TO && '*configurado*' || '*VAZIO*' }}"
+        echo "EMAIL_FROM: ${{ secrets.EMAIL_FROM && '*configurado*' || '*VAZIO*' }}"
+        echo ""
+        echo "Valores (mascarados):"
+        echo "EMAIL_FROM='${{ secrets.EMAIL_FROM }}'"
+        echo "EMAIL_TO='${{ secrets.EMAIL_TO }}'"
     
     - name: 📧 Enviar email com resultado
       uses: dawidd6/action-send-mail@v3
