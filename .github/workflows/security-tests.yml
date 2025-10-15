@@ -7,20 +7,23 @@ on:
     branches: [ main, dev ]
   schedule:
     - cron: '0 2 * * *'
-  workflow_dispatch:  # Permite execução manual
+  workflow_dispatch:
 
 jobs:
   security-scan:
     name: Security Analysis
     runs-on: ubuntu-latest
     
-    # MongoDB como serviço
     services:
       mongodb:
         image: mongo:6.0
         ports:
           - 27017:27017
-        options: --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     
     steps:
     - name: 📥 Checkout código
@@ -72,20 +75,19 @@ jobs:
         path: security-reports/
         retention-days: 30
     
-    # 🔍 DEBUG: Verificar se secrets estão configurados
-    - name: 🔍 Debug - Verificar secrets de email
+    - name: 🔍 Debug secrets de email
       run: |
-        echo "Verificando secrets configurados:"
-        echo "SMTP_SERVER: ${{ secrets.SMTP_SERVER && '*configurado*' || '*VAZIO*' }}"
-        echo "SMTP_PORT: ${{ secrets.SMTP_PORT && '*configurado*' || '*VAZIO*' }}"
-        echo "SMTP_USERNAME: ${{ secrets.SMTP_USERNAME && '*configurado*' || '*VAZIO*' }}"
-        echo "SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD && '*configurado*' || '*VAZIO*' }}"
-        echo "EMAIL_TO: ${{ secrets.EMAIL_TO && '*configurado*' || '*VAZIO*' }}"
-        echo "EMAIL_FROM: ${{ secrets.EMAIL_FROM && '*configurado*' || '*VAZIO*' }}"
-        echo ""
-        echo "Valores (mascarados):"
-        echo "EMAIL_FROM='${{ secrets.EMAIL_FROM }}'"
-        echo "EMAIL_TO='${{ secrets.EMAIL_TO }}'"
+        echo "Verificando secrets:"
+        if [ -z "${{ secrets.EMAIL_FROM }}" ]; then
+          echo "EMAIL_FROM: VAZIO"
+        else
+          echo "EMAIL_FROM: configurado"
+        fi
+        if [ -z "${{ secrets.EMAIL_TO }}" ]; then
+          echo "EMAIL_TO: VAZIO"
+        else
+          echo "EMAIL_TO: configurado"
+        fi
     
     - name: 📧 Enviar email com resultado
       uses: dawidd6/action-send-mail@v3
@@ -100,25 +102,9 @@ jobs:
         from: ${{ secrets.EMAIL_FROM }}
         html_body: |
           <h2>🛡️ Relatório de Segurança - Luxus Brechó</h2>
-          
           <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
-          <p><strong>Commit:</strong> ${{ github.sha }}</p>
           <p><strong>Status:</strong> ${{ job.status }}</p>
-          
-          <p>Os relatórios detalhados estão disponíveis nos artefatos do workflow:</p>
-          <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">
-            Ver detalhes no GitHub Actions
-          </a>
-          
-          <p>Para baixar os relatórios:</p>
-          <ol>
-            <li>Clique no link acima</li>
-            <li>Role até "Artifacts" na página</li>  
-            <li>Baixe "security-reports-${{ github.run_number }}"</li>
-          </ol>
-          
-          <hr>
-          <p><em>Este é um email automático do sistema de CI/CD</em></p>
+          <p>Relatórios disponíveis nos artefatos do workflow.</p>
     
     - name: 🧹 Cleanup
       if: always()
