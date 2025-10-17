@@ -45,12 +45,25 @@ export default function LoginScreen() {
     }
 
     clearError();
-    const success = await login(formData);
+    const result = await login(formData);
 
-    if (success) {
+    if (result.success) {
       Alert.alert('Sucesso', 'Login realizado com sucesso!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
+    } else if (result.emailNotConfirmed) {
+      // Email não confirmado - oferece opção de reenviar
+      Alert.alert(
+        'Email não confirmado',
+        'Sua conta ainda não foi ativada. Verifique sua caixa de entrada ou solicite um novo email de confirmação.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { 
+            text: 'Reenviar Email', 
+            onPress: () => router.push('/resend-confirmation')
+          }
+        ]
+      );
     } else {
       Alert.alert('Erro', error || 'Erro ao fazer login');
     }

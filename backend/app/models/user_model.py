@@ -4,13 +4,15 @@ Modelo e utilidades para a coleção de usuários.
 - Valida payloads de usuário
 - Garante validator e índices no MongoDB
 - Gerencia hash de senhas
+- Gerencia confirmação de email
 """
 from typing import Dict, Any, Tuple, Optional
 from pymongo import ASCENDING, TEXT
 from pymongo.collection import ReturnDocument
 import bcrypt
 import re
-from datetime import datetime
+import secrets
+from datetime import datetime, timedelta
 
 COLLECTION_NAME = "users"
 COUNTERS_COLLECTION = "counters"
@@ -53,6 +55,14 @@ def verify_password(password: str, hashed: str) -> bool:
     """Verifica se a senha corresponde ao hash."""
     return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
 
+def generate_confirmation_token() -> str:
+    """Gera token único para confirmação de email."""
+    return secrets.token_urlsafe(32)
+
+def get_token_expiration() -> datetime:
+    """Retorna data de expiração do token (24 horas)."""
+    return datetime.utcnow() + timedelta(hours=24)
+
 def create_schema() -> Dict[str, Any]:
     """Cria schema de validação para usuários."""
     return {
@@ -88,6 +98,18 @@ def create_schema() -> Dict[str, Any]:
                 "ativo": {
                     "bsonType": "bool",
                     "description": "Status ativo/inativo do usuário"
+                },
+                "email_confirmado": {
+                    "bsonType": "bool",
+                    "description": "Se o email foi confirmado pelo usuário"
+                },
+                "token_confirmacao": {
+                    "bsonType": ["string", "null"],
+                    "description": "Token para confirmação de email"
+                },
+                "token_expiracao": {
+                    "bsonType": ["date", "null"],
+                    "description": "Data de expiração do token de confirmação"
                 },
                 "telefone": {
                     "bsonType": ["string", "null"],
@@ -204,13 +226,19 @@ def prepare_new_user(payload: Dict[str, Any], db) -> Dict[str, Any]:
     """Prepara dados de um novo usuário para inserção."""
     now = datetime.utcnow()
     
+    # Administradores não precisam confirmar email
+    is_admin = payload["tipo"] == "Administrador"
+    
     user_data = {
         "id": get_next_id(db),
         "nome": payload["nome"].strip(),
         "email": payload["email"].strip().lower(),
         "senha_hash": hash_password(payload["senha"]),
         "tipo": payload["tipo"],
-        "ativo": payload.get("ativo", True),
+        "ativo": is_admin,  # Admin ativo imediatamente, Cliente após confirmar email
+        "email_confirmado": is_admin,  # Admin não precisa confirmar
+        "token_confirmacao": None if is_admin else generate_confirmation_token(),
+        "token_expiracao": None if is_admin else get_token_expiration(),
         "data_criacao": now,
         "data_atualizacao": now
     }
@@ -256,13 +284,15 @@ def prepare_user_update(payload: Dict[str, Any]) -> Dict[str, Any]:
     return update_data
 
 def normalize_user(user: Dict[str, Any]) -> Dict[str, Any]:
-    """Normaliza dados do usuário para resposta (remove senha_hash)."""
+    """Normaliza dados do usuário para resposta (remove campos sensíveis)."""
     if not user:
         return {}
     
     normalized = dict(user)
     normalized.pop("_id", None)
     normalized.pop("senha_hash", None)  # Remove hash da senha por segurança
+    normalized.pop("token_confirmacao", None)  # Remove token por segurança
+    normalized.pop("token_expiracao", None)  # Remove expiração do token
     
     # Converte datas para string ISO
     if "data_criacao" in normalized:

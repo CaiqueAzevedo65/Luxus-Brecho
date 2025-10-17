@@ -12,6 +12,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -22,6 +23,7 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "nativewind-env.d.ts"
+    "nativewind-env.d.ts",
+    "network-config.json"
   ]
 }

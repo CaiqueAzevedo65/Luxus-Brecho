@@ -57,6 +57,57 @@ function getNetworkIP() {
   return null;
 }
 
+// Função para criar o arquivo de configuração padrão
+function createDefaultConfig(currentIP) {
+  return {
+    "description": "Configuração de rede compartilhada entre backend e mobile",
+    "backend": {
+      "host": "0.0.0.0",
+      "port": 5000,
+      "current_ip": currentIP,
+      "urls": {
+        "local": "http://127.0.0.1:5000",
+        "network": `http://${currentIP}:5000`
+      }
+    },
+    "mobile": {
+      "api_urls": {
+        "local": "http://localhost:5000/api",
+        "network": `http://${currentIP}:5000/api`,
+        "emulator": "http://10.0.2.2:5000/api",
+        "production": "https://sua-api.herokuapp.com/api"
+      },
+      "current_environment": "development",
+      "preferred_url": "network"
+    },
+    "cors": {
+      "allowed_origins": [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:19000",
+        "http://localhost:8081",
+        "http://10.0.2.2:*",
+        "exp://*:*",
+        "http://*:*",
+        "https://*:*"
+      ]
+    },
+    "troubleshooting": {
+      "common_issues": [
+        "Verificar se o backend está rodando na porta 5000",
+        "Confirmar se o IP da rede está correto",
+        "Verificar se o firewall não está bloqueando a porta",
+        "Confirmar se o dispositivo está na mesma rede Wi-Fi"
+      ],
+      "commands": {
+        "check_backend": `curl http://${currentIP}:5000/api/health`,
+        "get_network_ip_windows": "ipconfig | findstr IPv4",
+        "get_network_ip_linux": "ifconfig | grep inet"
+      }
+    }
+  };
+}
+
 // Função para atualizar configurações
 function updateConfigurations() {
   const currentIP = getNetworkIP();
@@ -68,32 +119,31 @@ function updateConfigurations() {
 
   console.log(`🌐 IP da rede detectado: ${currentIP}`);
 
-  // Atualizar network-config.json
+  // Criar ou atualizar network-config.json
   const configPath = path.join(__dirname, 'network-config.json');
+  let config;
+  
   if (fs.existsSync(configPath)) {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    // Arquivo existe, apenas atualizar
+    config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     config.backend.current_ip = currentIP;
     config.backend.urls.network = `http://${currentIP}:5000`;
     config.mobile.api_urls.network = `http://${currentIP}:5000/api`;
+    config.troubleshooting.commands.check_backend = `curl http://${currentIP}:5000/api/health`;
     
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     console.log('✅ network-config.json atualizado');
+  } else {
+    // Arquivo não existe, criar novo
+    config = createDefaultConfig(currentIP);
+    console.log('🆕 network-config.json criado');
   }
+  
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-  // Atualizar mobile/constants/config.ts
-  const mobileConfigPath = path.join(__dirname, 'mobile', 'constants', 'config.ts');
-  if (fs.existsSync(mobileConfigPath)) {
-    let content = fs.readFileSync(mobileConfigPath, 'utf8');
-    
-    // Substituir o IP na NETWORK_URL
-    content = content.replace(
-      /NETWORK_URL: 'http:\/\/[\d.]+:5000\/api'/,
-      `NETWORK_URL: 'http://${currentIP}:5000/api'`
-    );
-    
-    fs.writeFileSync(mobileConfigPath, content);
-    console.log('✅ mobile/constants/config.ts atualizado');
-  }
+  // Copiar configuração para dentro da pasta mobile
+  const mobileConfigPath = path.join(__dirname, 'mobile', 'network-config.json');
+  fs.writeFileSync(mobileConfigPath, JSON.stringify(config, null, 2));
+  console.log('✅ mobile/network-config.json sincronizado');
 
   console.log('\n🎉 Configurações sincronizadas com sucesso!');
   console.log(`📱 Mobile deve usar: http://${currentIP}:5000/api`);

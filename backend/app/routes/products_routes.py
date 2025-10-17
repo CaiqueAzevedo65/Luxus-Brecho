@@ -2,7 +2,14 @@ from flask import Blueprint, request, jsonify, current_app
 from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 from typing import Any, Dict
+from marshmallow import Schema, fields, ValidationError
 import time
+
+class ProductQuerySchema(Schema):
+    page = fields.Integer(load_default=1, validate=lambda x: 1 <= x <= 1000)
+    page_size = fields.Integer(load_default=20, validate=lambda x: 1 <= x <= 100)
+    categoria = fields.String(load_default=None, allow_none=True, validate=lambda x: len(x) <= 50 if x else True)
+    q = fields.String(load_default=None, allow_none=True, validate=lambda x: len(x) <= 100 if x else True)   
 
 from ..models.product_model import (
     get_collection,
@@ -23,19 +30,29 @@ def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
     d.pop("_id", None)
     return d
 
-@products_bp.route('/products', methods=['GET'])
+@products_bp.route('/', methods=['GET'])
 def list_products():
     """List all products with optional filtering and pagination"""
+    schema = ProductQuerySchema()
+    try:
+        args = schema.load(request.args)
+    except ValidationError as err:
+        return jsonify({
+            'success': False,
+            'message': 'Parâmetros inválidos', 
+            'errors': err.messages
+        }), 400
+    
     db = current_app.db
     if db is None:
         return jsonify(message="banco de dados indisponível"), 503
 
     coll = get_collection(db)
 
-    categoria = request.args.get("categoria")
-    q = request.args.get("q")
-    page = max(int(request.args.get("page", 1) or 1), 1)
-    page_size = min(max(int(request.args.get("page_size", 10) or 10), 1), 100)
+    categoria = args.get("categoria")
+    q = args.get("q")
+    page = args['page']
+    page_size = args['page_size']
 
     query: Dict[str, Any] = {}
     if categoria:
@@ -65,7 +82,7 @@ def list_products():
         },
     )
 
-@products_bp.route('/products/<int:id>', methods=['GET'])
+@products_bp.route('/<int:id>', methods=['GET'])
 def get_product(id: int):
     """Get a single product by ID"""
     db = current_app.db
@@ -80,7 +97,7 @@ def get_product(id: int):
     
     return jsonify(_serialize(doc))
 
-@products_bp.route('/products', methods=['POST'])
+@products_bp.route('/', methods=['POST'])
 def create_product():
     """Create a new product"""
     db = current_app.db
@@ -101,7 +118,7 @@ def create_product():
 
     return jsonify(_serialize(doc)), 201
 
-@products_bp.route('/products/<int:id>', methods=['PUT'])
+@products_bp.route('/<int:id>', methods=['PUT'])
 def update_product(id: int):
     """Update an existing product"""
     db = current_app.db
@@ -134,7 +151,7 @@ def update_product(id: int):
     
     return jsonify(_serialize(updated))
 
-@products_bp.route('/products/<int:id>', methods=['DELETE'])
+@products_bp.route('/<int:id>', methods=['DELETE'])
 def delete_product(id: int):
     """Delete a product"""
     db = current_app.db
@@ -162,7 +179,7 @@ def delete_product(id: int):
     
     return jsonify(message="produto excluído"), 200
 
-@products_bp.route('/products/with-image', methods=['POST'])
+@products_bp.route('/with-image', methods=['POST'])
 def create_product_with_image():
     """
     Create product with image upload
@@ -292,7 +309,7 @@ def create_product_with_image():
         current_app.logger.error(f"Erro ao criar produto com imagem: {e}")
         return jsonify(message="Erro interno no servidor"), 500
 
-@products_bp.route('/products/<int:id>/image', methods=['PUT'])
+@products_bp.route('/<int:id>/image', methods=['PUT'])
 def update_product_image(id: int):
     """
     Update only the image of a product
@@ -349,7 +366,7 @@ def update_product_image(id: int):
         current_app.logger.error(f"Erro ao atualizar imagem: {e}")
         return jsonify(message="Erro interno no servidor"), 500
 
-@products_bp.route('/products/category/<string:categoria>', methods=['GET'])
+@products_bp.route('/category/<string:categoria>', methods=['GET'])
 def get_products_by_category(categoria: str):
     """Get products by specific category"""
     db = current_app.db

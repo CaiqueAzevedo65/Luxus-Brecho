@@ -1,4 +1,7 @@
-// Função para obter valor de env com fallback
+// Importa configuração de rede compartilhada
+import networkConfig from '../network-config.json';
+
+// Função para obter valor de env com fallback (mantida para compatibilidade)
 const getEnvValue = (key: string, fallback: string): string => {
   return process.env[key] || fallback;
 };
@@ -42,12 +45,12 @@ export const CONFIG = {
     }
   },
 
-  // Network Configuration
+  // Network Configuration (usando network-config.json)
   NETWORK: {
-    LOCAL_URL: 'http://localhost:5000/api',
-    NETWORK_URL: getNetworkUrl(),
-    EMULATOR_URL: 'http://10.0.2.2:5000/api',
-    PRODUCTION_URL: getEnvValue('EXPO_PUBLIC_PRODUCTION_API_URL', 'https://sua-api.herokuapp.com/api')
+    LOCAL_URL: networkConfig.mobile.api_urls.local,
+    NETWORK_URL: networkConfig.mobile.api_urls.network,
+    EMULATOR_URL: networkConfig.mobile.api_urls.emulator,
+    PRODUCTION_URL: networkConfig.mobile.api_urls.production
   },
 
   // Cart Configuration

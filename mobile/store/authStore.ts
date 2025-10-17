@@ -9,12 +9,13 @@ interface AuthState {
   error: string | null;
 
   // Ações
-  login: (credentials: LoginCredentials) => Promise<boolean>;
-  register: (data: RegisterData) => Promise<boolean>;
+  login: (credentials: LoginCredentials) => Promise<{ success: boolean; emailNotConfirmed?: boolean }>;
+  register: (data: RegisterData) => Promise<{ success: boolean; requiresEmailConfirmation?: boolean; error?: string }>;
   logout: () => Promise<void>;
   initialize: () => Promise<void>;
   clearError: () => void;
   updateUser: (user: User) => void;
+  resendConfirmation: (email: string) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -38,7 +39,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
           error: null,
         });
-        return true;
+        return { success: true };
       } else {
         set({
           user: null,
@@ -46,7 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
           error: result.error || 'Erro no login',
         });
-        return false;
+        return { success: false, emailNotConfirmed: result.emailNotConfirmed };
       }
     } catch (error) {
       set({
@@ -55,7 +56,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
         error: 'Erro inesperado no login',
       });
-      return false;
+      return { success: false };
     }
   },
 
@@ -68,12 +69,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (result.success && result.user) {
         set({
-          user: result.user,
-          isAuthenticated: true,
+          user: null,  // Não autenticar automaticamente se precisar confirmar email
+          isAuthenticated: false,
           isLoading: false,
           error: null,
         });
-        return true;
+        return { 
+          success: true, 
+          requiresEmailConfirmation: result.requiresEmailConfirmation 
+        };
       } else {
         set({
           user: null,
@@ -81,7 +85,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
           error: result.error || 'Erro no registro',
         });
-        return false;
+        return { success: false, error: result.error || 'Erro no registro' };
       }
     } catch (error) {
       set({
@@ -89,6 +93,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: false,
         isLoading: false,
         error: 'Erro inesperado no registro',
+      });
+      return { success: false, error: 'Erro inesperado no registro' };
+    }
+  },
+
+  // Reenviar email de confirmação
+  resendConfirmation: async (email: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const result = await authService.resendConfirmationEmail(email);
+
+      set({ isLoading: false });
+
+      if (result.success) {
+        return true;
+      } else {
+        set({ error: result.error || 'Erro ao reenviar email' });
+        return false;
+      }
+    } catch (error) {
+      set({ 
+        isLoading: false,
+        error: 'Erro ao reenviar email'
       });
       return false;
     }

@@ -9,6 +9,8 @@ from app.controllers.users_controller import (
     change_password,
     get_user_types,
     get_users_summary,
+    confirm_email,
+    resend_confirmation_email,
 )
 
 users_bp = Blueprint("users", __name__)
@@ -23,6 +25,10 @@ users_bp.route("/<int:id>", methods=["DELETE"])(delete_user)
 # Rotas de autenticação
 users_bp.route("/auth", methods=["POST"])(authenticate_user)
 users_bp.route("/<int:id>/change-password", methods=["PUT"])(change_password)
+
+# Rotas de confirmação de email
+users_bp.route("/confirm-email/<string:token>", methods=["GET"])(confirm_email)
+users_bp.route("/resend-confirmation", methods=["POST"])(resend_confirmation_email)
 
 # Rotas de informações
 users_bp.route("/types", methods=["GET"])(get_user_types)

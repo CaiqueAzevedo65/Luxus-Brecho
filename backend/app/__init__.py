@@ -72,10 +72,14 @@ def create_app():
     # Middleware CORS adicional (backup para desenvolvimento)
     @app.after_request
     def after_request(response):
-        response.headers.add('Access-Control-Allow-Origin', '*')  # Permissivo para dev
+        response.headers.add('X-Content-Type-Options', 'nosniff') #precisa ser configurado no postman
+        response.headers.add('X-Frame-Options', 'DENY') #postman tbm
+        response.headers.add('X-XSS-Protection', '1; mode=block') # postman tbm
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept-Encoding,X-Client-Version')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
+        if app.config['DEBUG']:
+            response.headers.add('Access-Control-Allow-Origin', '*')  # Só em desenvolvimento
         return response
     
     # Inicializa MongoDB
@@ -144,11 +148,11 @@ def create_app():
             'message': 'Luxus Brechó API está funcionando!',
             'version': '1.0.0',
             'status': 'online',
-            'database': 'connected' if app.db else 'disconnected',
+            'database': 'connected' if app.db is not None else 'disconnected',
+
             'endpoints': {
                 'health': '/api/health',
                 'products': '/api/products',
-                'categories': '/api/categories',
                 'images': '/api/images',
                 'users': '/api/users'
             }
@@ -157,10 +161,10 @@ def create_app():
     # Registra os blueprints (rotas) - com tratamento de erro
     blueprints_to_register = [
         ('app.routes.health_routes', 'health_bp', '/api'),
-        ('app.routes.products_routes', 'products_bp', '/api'),
-        ('app.routes.categories_routes', 'categories_bp', '/api'),
-        ('app.routes.images_routes', 'images_bp', '/api'),
-        ('app.routes.users_routes', 'users_bp', '/api')
+        ('app.routes.products_routes', 'products_bp', '/api/products'),
+        ('app.routes.categories_routes', 'categories_bp', '/api/categories'),
+        ('app.routes.images_routes', 'images_bp', '/api/images'),
+        ('app.routes.users_routes', 'users_bp', '/api/users')
     ]
     
     for module_path, blueprint_name, url_prefix in blueprints_to_register:

@@ -1,0 +1,115 @@
+name: 🛡️ Security Tests
+
+on:
+  push:
+    branches: [ main, dev, mobile ]
+  pull_request:
+    branches: [ main, dev ]
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: 📥 Checkout código
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    
+    - name: 📦 Instalar dependências
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install requests
+    
+    - name: 🚀 Iniciar backend Flask
+      run: |
+        cd backend
+        python run.py &
+        echo $! > backend.pid
+        
+        echo "⏳ Aguardando backend..."
+        for i in {1..30}; do
+          if curl -f http://localhost:5000/api/health >/dev/null 2>&1; then
+            echo "✅ Backend iniciado!"
+            break
+          fi
+          if [ $i -eq 30 ]; then
+            echo "❌ Timeout: Backend não inicializou"
+            exit 1
+          fi
+          sleep 2
+        done
+      env:
+        FLASK_ENV: testing
+        MONGODB_URI: mongodb://localhost:27017/luxus_test
+    
+    - name: 🛡️ Executar análise de segurança
+      run: |
+        python security-tests/security-analyzer.py
+      continue-on-error: true
+    
+    - name: 📤 Upload dos relatórios
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-reports-${{ github.run_number }}
+        path: security-reports/
+        retention-days: 30
+    
+    - name: 🔍 Debug secrets de email
+      run: |
+        echo "Verificando secrets:"
+        if [ -z "${{ secrets.EMAIL_FROM }}" ]; then
+          echo "EMAIL_FROM: VAZIO"
+        else
+          echo "EMAIL_FROM: configurado"
+        fi
+        if [ -z "${{ secrets.EMAIL_TO }}" ]; then
+          echo "EMAIL_TO: VAZIO"
+        else
+          echo "EMAIL_TO: configurado"
+        fi
+    
+    - name: 📧 Enviar email com resultado
+      uses: dawidd6/action-send-mail@v3
+      if: always()
+      with:
+        server_address: ${{ secrets.SMTP_SERVER }}
+        server_port: ${{ secrets.SMTP_PORT }}
+        username: ${{ secrets.SMTP_USERNAME }}
+        password: ${{ secrets.SMTP_PASSWORD }}
+        subject: "🛡️ Relatório de Segurança - Luxus Brechó (Run #${{ github.run_number }})"
+        to: ${{ secrets.EMAIL_TO }}
+        from: ${{ secrets.EMAIL_FROM }}
+        html_body: |
+          <h2>🛡️ Relatório de Segurança - Luxus Brechó</h2>
+          <p><strong>Branch:</strong> ${{ github.ref_name }}</p>
+          <p><strong>Status:</strong> ${{ job.status }}</p>
+          <p>Relatórios disponíveis nos artefatos do workflow.</p>
+    
+    - name: 🧹 Cleanup
+      if: always()
+      run: |
+        if [ -f backend.pid ]; then
+          kill $(cat backend.pid) 2>/dev/null || true
+          rm backend.pid
+        fi

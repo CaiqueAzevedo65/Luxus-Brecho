@@ -32,5 +32,7 @@ web-build/
 
 # Logs
 *.log
-mobile/constants/config.ts
+
+# Configuração de rede (específica por máquina)
 network-config.json
+mobile/network-config.json
