@@ -83,16 +83,18 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="login-screen">
       {/* Header */}
-      <View style={styles.header}>
+      <View style={styles.header} testID="login-header">
         <TouchableOpacity 
+          testID="back-button"
+          accessibilityLabel="Voltar"
           onPress={() => router.back()}
           style={styles.backButton}
         >
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Entrar</Text>
+        <Text style={styles.headerTitle} testID="header-title">Entrar</Text>
       </View>
 
       <KeyboardAvoidingView 
@@ -104,21 +106,24 @@ export default function LoginScreen() {
           style={styles.content}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          testID="login-scroll-view"
         >
           {/* Logo */}
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>LUXUS</Text>
-            <Text style={styles.logoSubtext}>BRECHÓ</Text>
-            <Text style={styles.welcomeText}>Bem-vindo de volta!</Text>
+          <View style={styles.logoContainer} testID="logo-container">
+            <Text style={styles.logoText} testID="logo-text">LUXUS</Text>
+            <Text style={styles.logoSubtext} testID="logo-subtext">BRECHÓ</Text>
+            <Text style={styles.welcomeText} testID="welcome-text">Bem-vindo de volta!</Text>
           </View>
 
           {/* Formulário */}
-          <View style={styles.formContainer}>
+          <View style={styles.formContainer} testID="login-form">
             <View style={styles.formGroup}>
               <Text style={styles.label}>Email *</Text>
               <View style={[styles.inputContainer, errors.email && styles.inputError]}>
                 <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
                 <TextInput
+                  testID="email-input"
+                  accessibilityLabel="Campo de email"
                   style={styles.input}
                   value={formData.email}
                   onChangeText={(value) => handleInputChange('email', value)}
@@ -129,7 +134,7 @@ export default function LoginScreen() {
                 />
               </View>
               {errors.email && (
-                <Text style={styles.errorText}>{errors.email}</Text>
+                <Text style={styles.errorText} testID="email-error">{errors.email}</Text>
               )}
             </View>
 
@@ -138,6 +143,8 @@ export default function LoginScreen() {
               <View style={[styles.inputContainer, errors.senha && styles.inputError]}>
                 <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
                 <TextInput
+                  testID="password-input"
+                  accessibilityLabel="Campo de senha"
                   style={styles.input}
                   value={formData.senha}
                   onChangeText={(value) => handleInputChange('senha', value)}
@@ -147,6 +154,8 @@ export default function LoginScreen() {
                   autoCorrect={false}
                 />
                 <TouchableOpacity
+                  testID="toggle-password-button"
+                  accessibilityLabel="Mostrar ou ocultar senha"
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.passwordToggle}
                 >
@@ -158,25 +167,31 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               </View>
               {errors.senha && (
-                <Text style={styles.errorText}>{errors.senha}</Text>
+                <Text style={styles.errorText} testID="password-error">{errors.senha}</Text>
               )}
             </View>
 
             {/* Botão de Login */}
             <TouchableOpacity
+              testID="login-button"
+              accessibilityLabel="Botão de entrar"
               style={[styles.loginButton, isLoading && styles.buttonDisabled]}
               onPress={handleLogin}
               disabled={isLoading}
             >
-              <Text style={styles.loginButtonText}>
+              <Text style={styles.loginButtonText} testID="login-button-text">
                 {isLoading ? 'Entrando...' : 'Entrar'}
               </Text>
             </TouchableOpacity>
 
             {/* Link para Registro */}
-            <View style={styles.registerContainer}>
+            <View style={styles.registerContainer} testID="register-container">
               <Text style={styles.registerText}>Não tem uma conta? </Text>
-              <TouchableOpacity onPress={() => router.push('/register')}>
+              <TouchableOpacity 
+                testID="register-link"
+                accessibilityLabel="Criar nova conta"
+                onPress={() => router.push('/register')}
+              >
                 <Text style={styles.registerLink}>Criar conta</Text>
               </TouchableOpacity>
             </View>
