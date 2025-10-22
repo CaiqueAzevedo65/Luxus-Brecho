@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useCartStore } from '../../store/cartStore';
 import { FiShoppingCart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import './index_new.css';
 
@@ -9,6 +10,7 @@ const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
+  const { addToCart } = useCartStore();
 
   const banners = [
     'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800',
@@ -141,7 +143,10 @@ const Home = () => {
                   <p className="product-price">{formatPrice(product.preco)}</p>
                   <button
                     className="add-cart-btn"
-                    onClick={() => navigate(`/produtos`)}
+                    onClick={() => {
+                      addToCart(product);
+                      alert('Produto adicionado ao carrinho!');
+                    }}
                   >
                     <FiShoppingCart /> Adicionar
                   </button>
@@ -175,7 +180,7 @@ const Home = () => {
       <section className="help-section">
         <div className="help-card">
           <p className="help-text">Para tirar suas dúvidas</p>
-          <Link to="/sobre" className="help-button">Preciso de ajuda</Link>
+          <Link to="/suporte" className="help-button">Preciso de ajuda</Link>
         </div>
       </section>
     </div>
