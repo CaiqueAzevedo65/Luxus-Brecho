@@ -2,7 +2,7 @@ name: 🛡️ Security Tests
 
 on:
   push:
-    branches: [ main, dev, mobile ]
+    branches: [ main, dev, mobile, frontend ]
   pull_request:
     branches: [ main, dev ]
   schedule:
