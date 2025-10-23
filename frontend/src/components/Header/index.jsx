@@ -1,12 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiMenu, FiX, FiShoppingCart, FiUser, FiSearch, FiHome, FiTag, FiGrid, FiInfo } from 'react-icons/fi';
+import { useCartStore } from '../../store/cartStore';
 import './index.css';
 
 const Header = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const navRef = useRef(null);
   const menuButtonRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const { getTotalItems, loadCart } = useCartStore();
+
+  useEffect(() => {
+    loadCart();
+  }, []);
+
+  const cartItemCount = getTotalItems();
 
   // Handle click outside to close menu
   useEffect(() => {
@@ -31,6 +43,22 @@ const Header = () => {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+    if (!isSearchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/produtos?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setIsSearchOpen(false);
+    }
   };
 
   return (
@@ -71,26 +99,39 @@ const Header = () => {
                   <span>Categorias</span>
                 </Link>
               </li>
-              <li className="nav-item">
-                <Link to="/sobre" className="nav-link" onClick={closeMenu}>
-                  <FiInfo className="nav-icon" />
-                  <span>Sobre</span>
-                </Link>
-              </li>
             </ul>
           </nav>
 
           <div className="header-actions">
-            <button className="icon-button" aria-label="Pesquisar">
+            <div className={`search-container ${isSearchOpen ? 'active' : ''}`}>
+              <form onSubmit={handleSearch} className="search-form">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar produtos..."
+                  className="search-input"
+                />
+              </form>
+            </div>
+            
+            <button 
+              className="icon-button search-toggle" 
+              onClick={toggleSearch}
+              aria-label="Pesquisar"
+            >
               <FiSearch />
             </button>
+            
             <button className="icon-button" aria-label="Minha conta">
               <FiUser />
             </button>
-            <button className="icon-button cart-button" aria-label="Carrinho de compras">
+            
+            <Link to="/carrinho" className="icon-button cart-button" aria-label="Carrinho de compras">
               <FiShoppingCart />
-              <span className="cart-count">0</span>
-            </button>
+              {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
+            </Link>
           </div>
         </div>
       </header>
