@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiMenu, FiX, FiShoppingCart, FiUser, FiSearch, FiHome, FiTag, FiGrid, FiInfo } from 'react-icons/fi';
 import { useCartStore } from '../../store/cartStore';
+import { SearchSchema, useZodValidation } from '../../schemas/auth.schema';
 import './index.css';
 
 const Header = () => {
@@ -10,10 +11,12 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchError, setSearchError] = useState('');
   const navRef = useRef(null);
   const menuButtonRef = useRef(null);
   const searchInputRef = useRef(null);
   const { getTotalItems, loadCart } = useCartStore();
+  const { validate } = useZodValidation(SearchSchema);
 
   const isActive = (path) => {
     if (path === '/') {
@@ -62,10 +65,24 @@ const Header = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/produtos?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-      setIsSearchOpen(false);
+    
+    const result = validate({ query: searchQuery });
+    
+    if (!result.success) {
+      setSearchError(result.errors?.query || 'Digite pelo menos 2 caracteres');
+      return;
+    }
+    
+    setSearchError('');
+    navigate(`/produtos?q=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
+
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    if (searchError) {
+      setSearchError('');
     }
   };
 
@@ -113,14 +130,19 @@ const Header = () => {
           <div className="header-actions">
             <div className={`search-container ${isSearchOpen ? 'active' : ''}`}>
               <form onSubmit={handleSearch} className="search-form">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar produtos..."
-                  className="search-input"
-                />
+                <div className="search-input-wrapper">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    placeholder="Buscar produtos..."
+                    className={`search-input ${searchError ? 'search-error' : ''}`}
+                  />
+                  {searchError && (
+                    <div className="search-error-message">{searchError}</div>
+                  )}
+                </div>
               </form>
             </div>
             
@@ -132,9 +154,9 @@ const Header = () => {
               <FiSearch />
             </button>
             
-            <button className="icon-button" aria-label="Minha conta">
+            <Link to="/perfil" className="icon-button" aria-label="Minha conta">
               <FiUser />
-            </button>
+            </Link>
             
             <Link to="/carrinho" className="icon-button cart-button" aria-label="Carrinho de compras">
               <FiShoppingCart />

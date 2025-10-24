@@ -7,6 +7,9 @@ import Categorias from './pages/Categorias';
 import Suporte from './pages/Suporte';
 import Contato from './pages/Contato';
 import Carrinho from './pages/Carrinho';
+import Login from './pages/Login';
+import Registro from './pages/Registro';
+import Perfil from './pages/Perfil';
 import ProductsList from './pages/Admin/ProductsList';
 import ProductForm from './pages/Admin/ProductForm';
 
@@ -23,6 +26,9 @@ function App() {
           <Route path="suporte" element={<Suporte />} />
           <Route path="contato" element={<Contato />} />
           <Route path="carrinho" element={<Carrinho />} />
+          <Route path="login" element={<Login />} />
+          <Route path="registro" element={<Registro />} />
+          <Route path="perfil" element={<Perfil />} />
 
           {/* Rotas admin */}
           <Route path="admin/products" element={<ProductsList />} />
