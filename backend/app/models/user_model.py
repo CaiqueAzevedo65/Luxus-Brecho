@@ -353,9 +353,9 @@ def create_default_admin(db):
         
         # Cria administrador padrão
         admin_data = {
-            "nome": "Administrador",
-            "email": "admin@luxusbrecho.com",
-            "senha": "admin123",  # Senha padrão - deve ser alterada
+            "nome": "Jow",
+            "email": "contatojmfr@gmail.com",
+            "senha": "senha123",  # Senha padrão - deve ser alterada
             "tipo": "Administrador"
         }
         

@@ -266,7 +266,6 @@
 }
 
 .view-all-button:hover {
-  background: #c2185b;
   transform: translateY(-3px);
   box-shadow: 0 6px 16px rgba(233, 30, 99, 0.4);
 }

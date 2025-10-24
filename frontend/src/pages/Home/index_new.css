@@ -75,7 +75,6 @@
 }
 
 .cta-button:hover {
-  background: #c2185b;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(233, 30, 99, 0.4);
 }
@@ -316,7 +315,6 @@
 }
 
 .add-cart-btn:hover {
-  background: #c2185b;
   transform: scale(1.02);
 }
 
@@ -421,7 +419,6 @@
 }
 
 .help-button:hover {
-  background: #c2185b;
   transform: scale(1.05);
 }
 
