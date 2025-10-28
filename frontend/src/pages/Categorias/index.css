@@ -319,7 +319,6 @@
 }
 
 .retry-button:hover {
-  background: #c2185b;
   transform: translateY(-2px);
 }
 

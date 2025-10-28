@@ -169,7 +169,7 @@
 }
 
 .view-more-link:hover {
-  color: #c2185b;
+  opacity: 0.8;
 }
 
 /* Loading State */
@@ -225,7 +225,7 @@
 }
 
 .products-scroll::-webkit-scrollbar-thumb:hover {
-  background: #c2185b;
+  background: var(--pink);
 }
 
 /* Card de Produto em Destaque */

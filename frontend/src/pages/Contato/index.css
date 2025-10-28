@@ -135,7 +135,6 @@
 }
 
 .submit-button:hover:not(:disabled) {
-  background: #c2185b;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(233, 30, 99, 0.4);
 }
@@ -220,7 +219,6 @@
 }
 
 .info-card a:hover {
-  color: #c2185b;
   text-decoration: underline;
 }
 
