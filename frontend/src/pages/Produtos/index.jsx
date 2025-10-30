@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
+import { useCartStore } from '../../store/cartStore';
 import { FiSearch, FiFilter, FiShoppingCart, FiX } from 'react-icons/fi';
 import './index.css';
 
@@ -14,6 +15,7 @@ const Produtos = () => {
   const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const { addToCart } = useCartStore();
 
   useEffect(() => {
     fetchCategories();
@@ -232,6 +234,12 @@ const Produtos = () => {
                       className="add-to-cart-btn"
                       disabled={!product.disponivel}
                       title={product.disponivel ? 'Adicionar ao carrinho' : 'Produto indisponível'}
+                      onClick={() => {
+                        if (product.disponivel) {
+                          addToCart(product);
+                          alert('Produto adicionado ao carrinho!');
+                        }
+                      }}
                     >
                       <FiShoppingCart />
                       {product.disponivel ? 'Adicionar' : 'Indisponível'}
