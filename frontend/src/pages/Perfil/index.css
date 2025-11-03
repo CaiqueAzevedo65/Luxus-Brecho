@@ -218,6 +218,76 @@
   box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
 }
 
+/* Admin Section */
+.perfil-admin-section {
+  margin-top: 1.5rem;
+}
+
+.perfil-admin-section h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.admin-actions-card {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.admin-action-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.admin-action-item:hover {
+  background: #FFF0F5;
+}
+
+.admin-action-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-action-text {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.admin-action-arrow {
+  color: #999;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+
+.admin-action-item:hover .admin-action-arrow {
+  transform: translateX(4px);
+}
+
+.admin-action-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 0 1rem;
+}
+
 /* Warning */
 .perfil-warning {
   background: #fff3e0;
@@ -270,6 +340,15 @@
     height: 44px;
     font-size: 1.1rem;
   }
+
+  .admin-action-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .admin-action-item {
+    padding: 0.875rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -302,5 +381,18 @@
 
   .info-details p {
     font-size: 0.95rem;
+  }
+
+  .admin-action-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .admin-action-item {
+    padding: 0.75rem;
+  }
+
+  .admin-action-text {
+    font-size: 0.9rem;
   }
 }

@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
@@ -69,17 +69,32 @@ def create_app():
         }
     })
     
+    # Handler explícito para requisições OPTIONS (preflight CORS)
+    @app.before_request
+    def handle_preflight():
+        if request.method == 'OPTIONS':
+            response = app.make_default_options_response()
+            origin = request.headers.get('Origin')
+            if origin:
+                response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, Accept-Encoding, X-Client-Version'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Access-Control-Max-Age'] = '600'
+            return response
+    
     # Middleware CORS adicional (backup para desenvolvimento)
     @app.after_request
     def after_request(response):
+        origin = request.headers.get('Origin')
+        if origin:
+            response.headers['Access-Control-Allow-Origin'] = origin
         response.headers.add('X-Content-Type-Options', 'nosniff') #precisa ser configurado no postman
         response.headers.add('X-Frame-Options', 'DENY') #postman tbm
         response.headers.add('X-XSS-Protection', '1; mode=block') # postman tbm
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept-Encoding,X-Client-Version')
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
-        if app.config['DEBUG']:
-            response.headers.add('Access-Control-Allow-Origin', '*')  # Só em desenvolvimento
         return response
     
     # Inicializa MongoDB

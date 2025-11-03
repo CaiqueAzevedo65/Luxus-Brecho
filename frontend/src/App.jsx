@@ -12,6 +12,7 @@ import Registro from './pages/Registro';
 import Perfil from './pages/Perfil';
 import ProductsList from './pages/Admin/ProductsList';
 import ProductForm from './pages/Admin/ProductForm';
+import CriarProduto from './pages/Admin/CriarProduto';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="perfil" element={<Perfil />} />
 
           {/* Rotas admin */}
+          <Route path="admin/criar-produto" element={<CriarProduto />} />
           <Route path="admin/products" element={<ProductsList />} />
           <Route path="admin/products/new" element={<ProductForm />} />
           <Route path="admin/products/edit/:id" element={<ProductForm />} />

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiPlusCircle, FiEdit, FiChevronRight } from 'react-icons/fi';
 import './index.css';
 
 const Perfil = () => {
@@ -127,6 +127,38 @@ const Perfil = () => {
             </div>
           </div>
         </div>
+
+        {/* Painel de Administração (apenas para administradores) */}
+        {user.tipo === 'Administrador' && (
+          <div className="perfil-admin-section">
+            <h3>Administração</h3>
+            <div className="admin-actions-card">
+              <button 
+                className="admin-action-item"
+                onClick={() => navigate('/admin/criar-produto')}
+              >
+                <div className="admin-action-icon" style={{ background: 'linear-gradient(135deg, #22C55E 0%, #16A34A 100%)' }}>
+                  <FiPlusCircle size={20} color="white" />
+                </div>
+                <span className="admin-action-text">Criar Produto</span>
+                <FiChevronRight className="admin-action-arrow" size={20} />
+              </button>
+
+              <div className="admin-action-divider"></div>
+
+              <button 
+                className="admin-action-item"
+                onClick={() => navigate('/admin/products')}
+              >
+                <div className="admin-action-icon" style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}>
+                  <FiEdit size={20} color="white" />
+                </div>
+                <span className="admin-action-text">Gerenciar Produtos</span>
+                <FiChevronRight className="admin-action-arrow" size={20} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Ações */}
         <div className="perfil-actions">
