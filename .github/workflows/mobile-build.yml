@@ -18,6 +18,9 @@ on:
           - production
         default: 'preview'
 
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
 jobs:
   build:
     name: 📱 Build Android APK
@@ -31,21 +34,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: mobile/package-lock.json
 
       - name: 📦 Instalar dependências
         run: |
           cd mobile
-          npm ci
+          npm install
 
-      - name: 🔧 Setup Expo e EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-        continue-on-error: true
+      - name: 🔧 Instalar EAS CLI globalmente
+        run: |
+          npm install -g eas-cli
+          eas --version
+
+      - name: 🔐 Verificar autenticação Expo
+        run: |
+          echo "Verificando token Expo..."
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "❌ ERRO: EXPO_TOKEN não configurado!"
+            exit 1
+          fi
+          echo "✅ EXPO_TOKEN configurado"
+          eas whoami
 
       - name: 🔍 Debug configuração
         run: |
@@ -74,7 +82,8 @@ jobs:
             echo "❌ Build falhou!"
             exit 1
           fi
-        continue-on-error: true
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: 📝 Obter informações da versão
         id: version
@@ -116,13 +125,6 @@ jobs:
             
             ### 📝 Alterações:
             ${{ github.event.head_commit.message }}
-            
-            ---
-            
-            ### 📱 Instalar:
-            1. Baixe o APK
-            2. Habilite "Fontes desconhecidas"
-            3. Instale e aproveite! 🛒
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -138,11 +140,9 @@ jobs:
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_FROM }}
           html_body: |
-            <h2>🛍️ Build Concluído com Sucesso!</h2>
+            <h2>🛍️ Build Concluído!</h2>
             <p><strong>Versão:</strong> ${{ steps.version.outputs.version }}</p>
             <p><strong>Build:</strong> #${{ github.run_number }}</p>
-            <p><strong>Data:</strong> ${{ steps.version.outputs.build_date }}</p>
-            <hr>
             <p><a href="${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}-${{ github.run_number }}">📥 Download APK</a></p>
 
       - name: 📧 Enviar email - Falha
@@ -153,12 +153,11 @@ jobs:
           server_port: ${{ secrets.SMTP_PORT }}
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "❌ Build #${{ github.run_number }} Falhou - Luxus-Brecho"
+          subject: "❌ Build #${{ github.run_number }} Falhou"
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_FROM }}
           html_body: |
             <h2>❌ Build Falhou</h2>
-            <p><strong>Build:</strong> #${{ github.run_number }}</p>
             <p><a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">Ver Logs</a></p>
 
       - name: 🧹 Cleanup
