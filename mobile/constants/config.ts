@@ -1,7 +1,25 @@
-// Importa configuração de rede compartilhada
-import networkConfig from '../network-config.json';
+// Importação condicional do arquivo network-config.json apenas em desenvolvimento
+let networkConfig: any = {
+  mobile: {
+    api_urls: {
+      local: 'http://localhost:5000/api',
+      network: 'http://192.168.1.100:5000/api',
+      emulator: 'http://10.0.2.2:5000/api',
+      production: 'https://luxus-brechoapi.vercel.app/api'
+    }
+  }
+};
 
-// Função para obter valor de env com fallback (mantida para compatibilidade)
+// Em desenvolvimento, tenta carregar o arquivo gerado localmente
+if (__DEV__) {
+  try {
+    networkConfig = require('../network-config.json');
+  } catch (error) {
+    console.warn('network-config.json não encontrado, usando valores padrão');
+  }
+}
+
+// Função para obter valor de env com fallback
 const getEnvValue = (key: string, fallback: string): string => {
   return process.env[key] || fallback;
 };
@@ -19,25 +37,14 @@ const getEnvNumber = (key: string, fallback: number): number => {
   return isNaN(parsed) ? fallback : parsed;
 };
 
-// Auto-detect network IP or use environment variable
-const getNetworkUrl = (): string => {
-  // Priority: Environment variable > Auto-detected IP > Fallback
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (envUrl) return envUrl;
-  
-  // You can add auto-detection logic here if needed
-  // For now, use a common network IP as fallback
-  return 'http://192.168.1.100:5000/api'; // Update this to your actual IP
-};
-
 // Configurações da aplicação
 export const CONFIG = {
   // API Configuration
   API: {
-    TIMEOUT: getEnvNumber('EXPO_PUBLIC_API_TIMEOUT', 10000), // 10 segundos
+    TIMEOUT: getEnvNumber('EXPO_PUBLIC_API_TIMEOUT', 10000),
     MAX_RETRIES: getEnvNumber('EXPO_PUBLIC_API_MAX_RETRIES', 2),
-    RETRY_DELAY: getEnvNumber('EXPO_PUBLIC_API_RETRY_DELAY', 2000), // 2 segundos
-    INITIAL_DELAY: getEnvNumber('EXPO_PUBLIC_API_INITIAL_DELAY', 500), // 500ms
+    RETRY_DELAY: getEnvNumber('EXPO_PUBLIC_API_RETRY_DELAY', 2000),
+    INITIAL_DELAY: getEnvNumber('EXPO_PUBLIC_API_INITIAL_DELAY', 500),
     CACHE_MINUTES: {
       PRODUCTS: getEnvNumber('EXPO_PUBLIC_CACHE_PRODUCTS_MINUTES', 2),
       CATEGORIES: getEnvNumber('EXPO_PUBLIC_CACHE_CATEGORIES_MINUTES', 5),
@@ -45,12 +52,12 @@ export const CONFIG = {
     }
   },
 
-  // Network Configuration (usando network-config.json)
+  // Network Configuration
   NETWORK: {
-    LOCAL_URL: networkConfig.mobile.api_urls.local,
-    NETWORK_URL: networkConfig.mobile.api_urls.network,
-    EMULATOR_URL: networkConfig.mobile.api_urls.emulator,
-    PRODUCTION_URL: networkConfig.mobile.api_urls.production
+    LOCAL_URL: getEnvValue('EXPO_PUBLIC_LOCAL_URL', networkConfig.mobile.api_urls.local),
+    NETWORK_URL: getEnvValue('EXPO_PUBLIC_NETWORK_URL', networkConfig.mobile.api_urls.network),
+    EMULATOR_URL: getEnvValue('EXPO_PUBLIC_EMULATOR_URL', networkConfig.mobile.api_urls.emulator),
+    PRODUCTION_URL: getEnvValue('EXPO_PUBLIC_PRODUCTION_URL', networkConfig.mobile.api_urls.production)
   },
 
   // Cart Configuration
@@ -66,7 +73,7 @@ export const CONFIG = {
     DEFAULT_PAGE: getEnvNumber('EXPO_PUBLIC_DEFAULT_PAGE', 1)
   },
 
-  // Categories (could be loaded from API, but kept static for performance)
+  // Categories
   CATEGORIES: [
     { id: 1, name: 'Casual' },
     { id: 2, name: 'Social' },
@@ -93,22 +100,13 @@ export const CONFIG = {
 export const getApiUrl = (): string => {
   const { NETWORK, DEBUG } = CONFIG;
   
-  // In production, always use production URL
-  if (CONFIG.APP.BUILD_ENV === 'production') {
+  // Em produção, sempre usa a URL de produção
+  if (!__DEV__) {
     return NETWORK.PRODUCTION_URL;
   }
   
-  // In development, try network URL first, then fallback
-  try {
-    // You can add logic here to test connectivity
-    // For now, return network URL for mobile development
-    return NETWORK.NETWORK_URL;
-  } catch {
-    if (DEBUG.ENABLE_LOGS) {
-      console.warn('Network URL not reachable, falling back to localhost');
-    }
-    return NETWORK.LOCAL_URL;
-  }
+  // Em desenvolvimento, usa a URL da rede local
+  return NETWORK.NETWORK_URL;
 };
 
 // Export individual sections for easier imports

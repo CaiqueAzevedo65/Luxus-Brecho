@@ -8,7 +8,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.firmus.luxusbrecho"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -24,6 +25,12 @@
       ],
       "expo-router",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "963c2ded-09ee-48fe-9858-94f9dd2f6a08"
+      }
+    }
   }
 }
