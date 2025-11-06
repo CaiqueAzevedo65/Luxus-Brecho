@@ -17,6 +17,10 @@ on:
           - preview
           - production
         default: 'preview'
+        
+permissions:
+  contents: write
+  packages: write
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

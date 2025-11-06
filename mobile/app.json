@@ -2,6 +2,7 @@
   "expo": {
     "name": "Luxus Brechó",
     "slug": "luxus-brecho",
+    "version": "1.0.0",
     "scheme": "luxus-brecho",
     "icon": "./assets/images/icon.png",
     "android": {
@@ -9,7 +10,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.firmus.luxusbrecho"
+      "package": "com.firmus.luxusbrecho",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
