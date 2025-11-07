@@ -89,9 +89,6 @@ export default function ProductsList() {
           <FiArrowLeft />
         </button>
         <h1>Gerenciar Produtos</h1>
-        <button onClick={() => navigate('/admin/products/new')} className="add-button-products">
-          <FiPlus />
-        </button>
       </div>
 
       <div className="products-list-content">
@@ -162,13 +159,6 @@ export default function ProductsList() {
                   ) : (
                     <div className="no-image-admin">Sem Imagem</div>
                   )}
-                  <div className="product-status-badge">
-                    {product.disponivel !== false ? (
-                      <span className="status-available">Disponível</span>
-                    ) : (
-                      <span className="status-unavailable">Indisponível</span>
-                    )}
-                  </div>
                 </div>
 
                 <div className="product-info-admin">

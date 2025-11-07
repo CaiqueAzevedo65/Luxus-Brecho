@@ -1,7 +1,7 @@
 /* Products List Page */
 .products-list-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #ffffff;
 }
 
 /* Header */
@@ -23,8 +23,7 @@
   text-align: center;
 }
 
-.back-button-products,
-.add-button-products {
+.back-button-products {
   background: rgba(255,255,255,0.2);
   border: none;
   color: white;
@@ -39,8 +38,7 @@
   font-size: 1.2rem;
 }
 
-.back-button-products:hover,
-.add-button-products:hover {
+.back-button-products:hover {
   background: rgba(255,255,255,0.3);
   transform: scale(1.05);
 }
@@ -234,33 +232,6 @@
   color: #999;
   font-size: 1rem;
   font-weight: 600;
-}
-
-.product-status-badge {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-}
-
-.status-available,
-.status-unavailable {
-  display: inline-block;
-  padding: 0.375rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-available {
-  background: #22C55E;
-  color: white;
-}
-
-.status-unavailable {
-  background: #EF4444;
-  color: white;
 }
 
 /* Product Info */
