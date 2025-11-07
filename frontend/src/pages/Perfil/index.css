@@ -187,6 +187,52 @@
   margin: 0 1rem;
 }
 
+/* Admin Actions */
+.admin-action-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.admin-action-item:hover {
+  transform: translateX(4px);
+}
+
+.admin-action-item:hover .info-icon {
+  transform: scale(1.1);
+}
+
+.admin-action-item .info-details p {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 400;
+}
+
+.chevron-icon {
+  color: #999;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.admin-action-item:hover .chevron-icon {
+  color: var(--pink, #E91E63);
+  transform: translateX(4px);
+}
+
+.admin-icon-green {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.15) 100%) !important;
+  color: #22C55E !important;
+}
+
+.admin-icon-blue {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.15) 100%) !important;
+  color: #3B82F6 !important;
+}
+
 /* Actions */
 .perfil-actions {
   display: flex;
@@ -302,5 +348,9 @@
 
   .info-details p {
     font-size: 0.95rem;
+  }
+
+  .admin-action-item {
+    padding: 0.75rem 0;
   }
 }

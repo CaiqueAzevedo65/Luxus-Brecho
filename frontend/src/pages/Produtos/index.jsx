@@ -215,9 +215,6 @@ const Produtos = () => {
                       <span>Sem Imagem</span>
                     </div>
                   )}
-                  {!product.disponivel && (
-                    <div className="unavailable-badge">Indisponível</div>
-                  )}
                 </div>
                 
                 <div className="product-info">

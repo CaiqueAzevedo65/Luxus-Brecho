@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiUserPlus, FiPackage, FiEdit3, FiChevronRight } from 'react-icons/fi';
 import './index.css';
 
 const Perfil = () => {
@@ -127,6 +127,52 @@ const Perfil = () => {
             </div>
           </div>
         </div>
+
+        {/* Seção de Administração */}
+        {user.tipo === 'Administrador' && (
+          <div className="perfil-info-section">
+            <h3>Administração</h3>
+            
+            <div className="info-card">
+              <div className="admin-action-item" onClick={() => navigate('/registro')}>
+                <div className="info-icon">
+                  <FiUserPlus />
+                </div>
+                <div className="info-details">
+                  <label>Criar Administrador</label>
+                  <p>Adicionar novo usuário administrador</p>
+                </div>
+                <FiChevronRight className="chevron-icon" />
+              </div>
+
+              <div className="info-divider"></div>
+
+              <div className="admin-action-item" onClick={() => navigate('/admin/products/new')}>
+                <div className="info-icon admin-icon-green">
+                  <FiPackage />
+                </div>
+                <div className="info-details">
+                  <label>Criar Produto</label>
+                  <p>Adicionar novo produto ao catálogo</p>
+                </div>
+                <FiChevronRight className="chevron-icon" />
+              </div>
+
+              <div className="info-divider"></div>
+
+              <div className="admin-action-item" onClick={() => navigate('/admin/products')}>
+                <div className="info-icon admin-icon-blue">
+                  <FiEdit3 />
+                </div>
+                <div className="info-details">
+                  <label>Gerenciar Produtos</label>
+                  <p>Editar e excluir produtos existentes</p>
+                </div>
+                <FiChevronRight className="chevron-icon" />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Ações */}
         <div className="perfil-actions">

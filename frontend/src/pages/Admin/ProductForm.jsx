@@ -1,34 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { z } from "zod";
-import api from "../../services/api";
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { ProductSchema, PRODUCT_CATEGORIES, useProductValidation } from '../../schemas/product.schema';
+import api from '../../services/api';
+import { FiArrowLeft, FiImage, FiX, FiUpload } from 'react-icons/fi';
+import './ProductForm.css';
 
 // Schema de validação com Zod
-const productSchema = z.object({
-  titulo: z
-    .string()
-    .min(1, "Título é obrigatório")
-    .min(3, "Título deve ter pelo menos 3 caracteres")
-    .max(100, "Título não pode ter mais de 100 caracteres"),
-  preco: z
-    .string()
-    .min(1, "Preço é obrigatório")
-    .refine((val) => {
-      const num = parseFloat(val);
-      return !isNaN(num) && num > 0;
-    }, {
-      message: "Preço deve ser um número válido maior que 0"
-    }),
-  descricao: z
-    .string()
-    .min(1, "Descrição é obrigatória")
-    .min(10, "Descrição deve ter pelo menos 10 caracteres")
-    .max(500, "Descrição não pode ter mais de 500 caracteres"),
-  categoria: z
-    .string()
-    .min(1, "Categoria é obrigatória")
-    .max(50, "Categoria não pode ter mais de 50 caracteres"),
-  imagem: z.string().optional()
-});
+const productSchema = ProductSchema;
 
 export default function ProductForm({ product, onSaved }) {
   const [data, setData] = useState({

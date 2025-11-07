@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Sobre from './pages/Sobre';
@@ -11,11 +13,23 @@ import Login from './pages/Login';
 import Registro from './pages/Registro';
 import Perfil from './pages/Perfil';
 import ProductsList from './pages/Admin/ProductsList';
-import ProductForm from './pages/Admin/ProductForm';
+import ProductFormNew from './pages/Admin/ProductFormNew';
+
+// Componente para scroll to top ao navegar
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Rotas principais com layout */}
         <Route path="/" element={<Layout />}>
@@ -32,8 +46,8 @@ function App() {
 
           {/* Rotas admin */}
           <Route path="admin/products" element={<ProductsList />} />
-          <Route path="admin/products/new" element={<ProductForm />} />
-          <Route path="admin/products/edit/:id" element={<ProductForm />} />
+          <Route path="admin/products/new" element={<ProductFormNew />} />
+          <Route path="admin/products/edit/:id" element={<ProductFormNew />} />
         </Route>
       </Routes>
     </Router>
