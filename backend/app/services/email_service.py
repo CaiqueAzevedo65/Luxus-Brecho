@@ -329,7 +329,9 @@ def send_password_reset_email(to_email: str, nome: str, token: str) -> bool:
     Returns:
         True se email foi enviado com sucesso
     """
-    reset_url = f"http://localhost:5173/redefinir-senha/{token}"
+    # Usa variável de ambiente para URL do frontend
+    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+    reset_url = f"{frontend_url}/redefinir-senha/{token}"
     subject = "Recuperação de Senha - Luxus Brechó"
     
     text_content = f"""
