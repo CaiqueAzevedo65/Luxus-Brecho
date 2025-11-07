@@ -1,0 +1,298 @@
+/* Redefinir Senha Page */
+.redefinir-senha-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #E91E63 0%, #c2185b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* Content */
+.redefinir-senha-content {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* Card */
+.redefinir-senha-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+/* Icon */
+.redefinir-senha-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 2rem;
+  background: linear-gradient(135deg, var(--pink, #E91E63) 0%, #c2185b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.5rem;
+}
+
+.error-icon-redefinir {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 2rem;
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+}
+
+.success-icon-redefinir {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 2rem;
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+}
+
+/* Headings */
+.redefinir-senha-card h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 1rem 0;
+}
+
+.redefinir-senha-description,
+.error-description-redefinir,
+.success-description-redefinir {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+.error-hint-redefinir,
+.success-hint-redefinir {
+  font-size: 0.95rem;
+  color: #999;
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+/* Error Message */
+.error-message-redefinir {
+  padding: 1rem;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  color: #c62828;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.error-message-redefinir p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Form */
+.redefinir-senha-form {
+  text-align: left;
+  margin-bottom: 0;
+}
+
+.form-group-redefinir {
+  margin-bottom: 1.5rem;
+}
+
+.form-group-redefinir label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.input-container-redefinir {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 0 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-container-redefinir:focus-within {
+  border-color: var(--pink, #E91E63);
+}
+
+.input-container-redefinir.input-error {
+  border-color: #c62828;
+}
+
+.input-icon-redefinir {
+  color: #666;
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.input-container-redefinir input {
+  flex: 1;
+  padding: 0.875rem 0;
+  border: none;
+  background: #fff;
+  font-size: 1rem;
+  color: #000;
+  outline: none;
+}
+
+.input-container-redefinir input::placeholder {
+  color: #999;
+}
+
+.input-container-redefinir input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.password-toggle-redefinir {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.password-toggle-redefinir:hover {
+  color: var(--pink, #E91E63);
+}
+
+.password-toggle-redefinir:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-text-redefinir {
+  display: block;
+  color: #c62828;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+/* Buttons */
+.submit-button-redefinir,
+.back-button-redefinir,
+.login-button-redefinir,
+.login-now-button-redefinir {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-button-redefinir {
+  background: var(--pink, #E91E63);
+  color: white;
+  margin-top: 0.5rem;
+}
+
+.submit-button-redefinir:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.submit-button-redefinir:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.back-button-redefinir {
+  background: var(--pink, #E91E63);
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.back-button-redefinir:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.login-button-redefinir {
+  background: white;
+  color: var(--pink, #E91E63);
+  border: 2px solid var(--pink, #E91E63);
+}
+
+.login-button-redefinir:hover {
+  background: #fce4ec;
+}
+
+.login-now-button-redefinir {
+  background: #4caf50;
+  color: white;
+}
+
+.login-now-button-redefinir:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  background: #388e3c;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .redefinir-senha-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .redefinir-senha-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
+  }
+
+  .error-icon-redefinir,
+  .success-icon-redefinir {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+  }
+
+  .redefinir-senha-card h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .redefinir-senha-page {
+    padding: 1rem;
+  }
+
+  .redefinir-senha-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .redefinir-senha-card h2 {
+    font-size: 1.25rem;
+  }
+}

@@ -14,7 +14,13 @@ import Carrinho from './pages/Carrinho';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 import RegistroAdmin from './pages/RegistroAdmin';
+import EsqueciSenha from './pages/EsqueciSenha';
+import RedefinirSenha from './pages/RedefinirSenha';
 import Perfil from './pages/Perfil';
+import Configuracoes from './pages/Configuracoes';
+import ConfigEndereco from './pages/ConfigEndereco';
+import ConfigSenha from './pages/ConfigSenha';
+import ConfigEmail from './pages/ConfigEmail';
 import ProductsList from './pages/Admin/ProductsList';
 import ProductFormNew from './pages/Admin/ProductFormNew';
 
@@ -53,7 +59,15 @@ function App() {
           <Route path="carrinho" element={<Carrinho />} />
           <Route path="login" element={<Login />} />
           <Route path="registro" element={<Registro />} />
+          <Route path="esqueci-senha" element={<EsqueciSenha />} />
+          <Route path="redefinir-senha/:token" element={<RedefinirSenha />} />
           <Route path="perfil" element={<Perfil />} />
+          
+          {/* Rotas de configurações */}
+          <Route path="configuracoes" element={<Configuracoes />} />
+          <Route path="configuracoes/endereco" element={<ConfigEndereco />} />
+          <Route path="configuracoes/senha" element={<ConfigSenha />} />
+          <Route path="configuracoes/email" element={<ConfigEmail />} />
 
           {/* Rotas admin */}
           <Route path="admin/registro" element={<RegistroAdmin />} />

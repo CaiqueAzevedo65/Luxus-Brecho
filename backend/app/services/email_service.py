@@ -315,3 +315,76 @@ Equipe Luxus Brechó
     """
     
     return send_email(to_email, subject, html_content, text_content)
+
+
+def send_password_reset_email(to_email: str, nome: str, token: str) -> bool:
+    """
+    Envia email de recuperação de senha.
+    
+    Args:
+        to_email: Email do destinatário
+        nome: Nome do usuário
+        token: Token de recuperação
+    
+    Returns:
+        True se email foi enviado com sucesso
+    """
+    reset_url = f"http://localhost:5173/redefinir-senha/{token}"
+    subject = "Recuperação de Senha - Luxus Brechó"
+    
+    text_content = f"""
+Olá {nome}!
+
+Recebemos uma solicitação para redefinir a senha da sua conta no Luxus Brechó.
+
+Para criar uma nova senha, clique no link abaixo:
+{reset_url}
+
+Este link é válido por 1 hora.
+
+Se você não solicitou a redefinição de senha, ignore este email.
+
+Atenciosamente,
+Equipe Luxus Brechó
+    """
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td align="center" style="padding: 40px 0;">
+                    <table role="presentation" style="width: 600px; background-color: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #E91E63 0%, #c2185b 100%);">
+                                <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">LUXUS BRECHÓ</h1>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 40px 30px;">
+                                <h2 style="margin: 0 0 20px 0; color: #333333;">Recuperação de Senha</h2>
+                                <p style="margin: 0 0 20px 0; color: #666666;">Olá <strong>{nome}</strong>!</p>
+                                <p style="margin: 0 0 30px 0; color: #666666;">Para redefinir sua senha, clique no botão abaixo:</p>
+                                <table role="presentation" style="margin: 0 auto;">
+                                    <tr>
+                                        <td style="border-radius: 8px; background: #E91E63;">
+                                            <a href="{reset_url}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-weight: bold;">Redefinir Senha</a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p style="margin: 30px 0 0 0; color: #999999; font-size: 14px;">Este link é válido por 1 hora.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    return send_email(to_email, subject, html_content, text_content)

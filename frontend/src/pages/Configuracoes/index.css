@@ -1,0 +1,228 @@
+/* Configurações Page */
+.configuracoes-page {
+  min-height: 100vh;
+  background: #ffffff;
+  padding-bottom: 2rem;
+}
+
+/* Header */
+.configuracoes-header {
+  background: linear-gradient(135deg, var(--pink, #E91E63) 0%, #c2185b 100%);
+  color: white;
+  padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-button-config {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.back-button-config:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}
+
+.configuracoes-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Content */
+.configuracoes-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* User Info Card */
+.config-info-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.config-user-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.config-user-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink, #E91E63) 0%, #c2185b 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.config-user-details h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.config-user-details p {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Config Menu */
+.config-menu {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.config-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.config-menu-item:last-child {
+  border-bottom: none;
+}
+
+.config-menu-item:hover {
+  background: #f9f9f9;
+}
+
+.config-item-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.config-icon-blue {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.config-icon-green {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.config-icon-orange {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.config-icon-red {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.config-item-content {
+  flex: 1;
+}
+
+.config-item-content h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.25rem 0;
+}
+
+.config-item-content p {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+}
+
+.config-chevron {
+  font-size: 1.25rem;
+  color: #999;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .configuracoes-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .config-info-card {
+    padding: 1.5rem;
+  }
+
+  .config-user-avatar {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .config-user-details h2 {
+    font-size: 1.25rem;
+  }
+
+  .config-menu-item {
+    padding: 1.25rem;
+  }
+
+  .config-item-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .configuracoes-header {
+    padding: 1rem;
+  }
+
+  .configuracoes-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .config-user-info {
+    gap: 1rem;
+  }
+
+  .config-item-content h3 {
+    font-size: 1rem;
+  }
+
+  .config-item-content p {
+    font-size: 0.8125rem;
+  }
+}

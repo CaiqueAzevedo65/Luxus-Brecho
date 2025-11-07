@@ -132,6 +132,12 @@ const Login = () => {
             {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
 
+          <div className="forgot-password-container">
+            <Link to="/esqueci-senha" className="forgot-password-link">
+              Esqueci minha senha
+            </Link>
+          </div>
+
           <div className="register-link-container">
             <p>Não tem uma conta? </p>
             <Link to="/registro" className="register-link-login">

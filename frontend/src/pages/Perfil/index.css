@@ -233,6 +233,11 @@
   color: #3B82F6 !important;
 }
 
+.admin-icon-purple {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(147, 51, 234, 0.15) 100%) !important;
+  color: #9333EA !important;
+}
+
 /* Actions */
 .perfil-actions {
   display: flex;

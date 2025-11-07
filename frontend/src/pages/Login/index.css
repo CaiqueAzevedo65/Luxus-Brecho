@@ -211,6 +211,26 @@
   text-decoration: underline;
 }
 
+/* Forgot Password */
+.forgot-password-container {
+  text-align: center;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.forgot-password-link {
+  color: #666;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.forgot-password-link:hover {
+  color: var(--pink, #E91E63);
+  text-decoration: underline;
+}
+
 /* Remove autofill styles - Login */
 .input-container-login input:-webkit-autofill,
 .input-container-login input:-webkit-autofill:hover,

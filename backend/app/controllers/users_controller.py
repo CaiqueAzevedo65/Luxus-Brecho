@@ -3,7 +3,8 @@ from pymongo.errors import DuplicateKeyError
 from bson import ObjectId
 from typing import Any, Dict
 import time
-from datetime import datetime
+import secrets
+from datetime import datetime, timedelta
 
 from ..models.user_model import (
     get_collection,
@@ -12,9 +13,11 @@ from ..models.user_model import (
     validate_user_payload,
     normalize_user,
     verify_password,
+    hash_password,
+    validate_password,
     USER_TYPES,
 )
-from ..services.email_service import send_confirmation_email, send_welcome_email
+from ..services.email_service import send_confirmation_email, send_welcome_email, send_password_reset_email
 
 
 def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
@@ -521,4 +524,118 @@ def resend_confirmation_email():
 
     except Exception as e:
         print(f"Erro ao reenviar email de confirmação: {e}")
+        return jsonify(message="Erro interno do servidor"), 500
+
+
+def forgot_password():
+    """Envia email para recuperação de senha."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+
+    try:
+        payload = request.get_json()
+        if not payload:
+            return jsonify(message="Payload JSON é obrigatório"), 400
+
+        email = payload.get("email", "").strip().lower()
+        
+        if not email:
+            return jsonify(message="Email é obrigatório"), 400
+
+        coll = get_collection(db)
+
+        # Busca usuário pelo email
+        user = coll.find_one({"email": email, "ativo": True})
+        
+        # Por segurança, sempre retorna sucesso mesmo se email não existir
+        if user:
+            # Gera token único de recuperação
+            reset_token = secrets.token_urlsafe(32)
+            reset_expiration = datetime.utcnow() + timedelta(hours=1)  # Expira em 1 hora
+            
+            # Salva token no banco
+            coll.update_one(
+                {"id": user["id"]},
+                {"$set": {
+                    "reset_token": reset_token,
+                    "reset_token_expiracao": reset_expiration,
+                    "data_atualizacao": datetime.utcnow()
+                }}
+            )
+            
+            # Envia email com link de recuperação
+            send_password_reset_email(user["email"], user["nome"], reset_token)
+            
+            print(f"✅ Email de recuperação enviado para {email}")
+        else:
+            print(f"⚠️  Email {email} não encontrado, mas retornando sucesso por segurança")
+
+        # Sempre retorna sucesso para não revelar se email existe
+        return jsonify(message="Se o email estiver cadastrado, você receberá um link para redefinir sua senha"), 200
+
+    except Exception as e:
+        print(f"Erro ao processar recuperação de senha: {e}")
+        return jsonify(message="Erro interno do servidor"), 500
+
+
+def reset_password():
+    """Redefine senha usando token de recuperação."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+
+    try:
+        payload = request.get_json()
+        if not payload:
+            return jsonify(message="Payload JSON é obrigatório"), 400
+
+        token = payload.get("token")
+        nova_senha = payload.get("nova_senha")
+
+        if not token or not nova_senha:
+            return jsonify(message="Token e nova senha são obrigatórios"), 400
+
+        coll = get_collection(db)
+
+        # Busca usuário pelo token
+        user = coll.find_one({
+            "reset_token": token,
+            "ativo": True
+        })
+
+        if not user:
+            return jsonify(message="Token inválido ou expirado"), 400
+
+        # Verifica se token expirou
+        if user.get("reset_token_expiracao") and user["reset_token_expiracao"] < datetime.utcnow():
+            return jsonify(message="Token expirado. Solicite um novo link de recuperação."), 400
+
+        # Valida nova senha
+        is_valid, error_msg = validate_password(nova_senha)
+        if not is_valid:
+            return jsonify(message=error_msg), 400
+
+        # Atualiza senha e remove token
+        result = coll.update_one(
+            {"id": user["id"]},
+            {"$set": {
+                "senha_hash": hash_password(nova_senha),
+                "data_atualizacao": datetime.utcnow()
+            },
+            "$unset": {
+                "reset_token": "",
+                "reset_token_expiracao": ""
+            }}
+        )
+
+        if result.matched_count == 0:
+            return jsonify(message="Erro ao redefinir senha"), 500
+
+        print(f"✅ Senha redefinida com sucesso para usuário ID {user['id']}")
+        
+        return jsonify(message="Senha redefinida com sucesso")
+
+    except Exception as e:
+        print(f"Erro ao redefinir senha: {e}")
         return jsonify(message="Erro interno do servidor"), 500

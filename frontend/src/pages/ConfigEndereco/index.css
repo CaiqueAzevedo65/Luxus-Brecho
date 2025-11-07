@@ -1,0 +1,294 @@
+/* Config Endereço Page */
+.config-endereco-page {
+  min-height: 100vh;
+  background: #ffffff;
+  padding-bottom: 2rem;
+}
+
+/* Header */
+.config-endereco-header {
+  background: linear-gradient(135deg, var(--pink, #E91E63) 0%, #c2185b 100%);
+  color: white;
+  padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.back-button-endereco {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.back-button-endereco:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}
+
+.config-endereco-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Content */
+.config-endereco-content {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* Card */
+.endereco-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  padding: 2rem;
+}
+
+.endereco-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.endereco-icon {
+  font-size: 2.5rem;
+  color: var(--pink, #E91E63);
+  flex-shrink: 0;
+}
+
+.endereco-card-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.endereco-card-header p {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Messages */
+.success-message-endereco,
+.error-message-endereco {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.success-message-endereco {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.error-message-endereco {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.success-message-endereco p,
+.error-message-endereco p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Form */
+.endereco-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group-endereco {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.form-group-endereco label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.input-container-endereco {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 0 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-container-endereco:focus-within {
+  border-color: var(--pink, #E91E63);
+}
+
+.input-container-endereco.input-error {
+  border-color: var(--pink, #E91E63);
+}
+
+.input-icon-endereco {
+  color: #666;
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.input-container-endereco input {
+  flex: 1;
+  padding: 0.875rem 0;
+  border: none;
+  background: #fff;
+  font-size: 1rem;
+  color: #000;
+  outline: none;
+}
+
+.input-container-endereco input::placeholder {
+  color: #999;
+}
+
+.input-container-endereco input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-cep {
+  font-size: 0.875rem;
+  color: var(--pink, #E91E63);
+  font-weight: 600;
+  margin-left: 0.5rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.error-text-endereco {
+  color: var(--pink, #E91E63);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.field-hint {
+  font-size: 0.8125rem;
+  color: #999;
+  font-style: italic;
+}
+
+/* Form Row */
+.form-row-endereco {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-group-large {
+  flex: 2;
+}
+
+.form-group-small {
+  flex: 1;
+  min-width: 100px;
+}
+
+/* Submit Button */
+.submit-button-endereco {
+  width: 100%;
+  padding: 1rem;
+  background: var(--pink, #E91E63);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.submit-button-endereco:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.submit-button-endereco:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .config-endereco-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .endereco-card {
+    padding: 1.5rem;
+  }
+
+  .endereco-card-header {
+    gap: 0.75rem;
+  }
+
+  .endereco-icon {
+    font-size: 2rem;
+  }
+
+  .endereco-card-header h2 {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .config-endereco-header {
+    padding: 1rem;
+  }
+
+  .config-endereco-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .endereco-card {
+    padding: 1.25rem;
+  }
+
+  .form-row-endereco {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .form-group-large,
+  .form-group-small {
+    flex: 1;
+    width: 100%;
+  }
+}

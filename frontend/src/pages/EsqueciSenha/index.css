@@ -1,0 +1,363 @@
+/* Esqueci Senha Page */
+.esqueci-senha-page {
+  min-height: 100vh;
+  background: #ffffff;
+  padding-bottom: 2rem;
+}
+
+/* Header */
+.esqueci-senha-header {
+  background: linear-gradient(135deg, var(--pink, #E91E63) 0%, #c2185b 100%);
+  color: white;
+  padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.back-button-esqueci {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.back-button-esqueci:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}
+
+.esqueci-senha-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Content */
+.esqueci-senha-content {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* Card */
+.esqueci-senha-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.esqueci-senha-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 2rem;
+  background: linear-gradient(135deg, var(--pink, #E91E63) 0%, #c2185b 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.5rem;
+}
+
+.esqueci-senha-card h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 1rem 0;
+}
+
+.esqueci-senha-description {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+/* Error Message */
+.error-message-esqueci {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  color: #c62828;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.error-message-esqueci svg {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Form */
+.esqueci-senha-form {
+  margin-bottom: 2rem;
+}
+
+.form-group-esqueci {
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.form-group-esqueci label {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.input-container-esqueci {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 0 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-container-esqueci:focus-within {
+  border-color: var(--pink, #E91E63);
+}
+
+.input-container-esqueci.input-error {
+  border-color: #c62828;
+}
+
+.input-icon-esqueci {
+  color: #666;
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.input-container-esqueci input {
+  flex: 1;
+  padding: 0.875rem 0;
+  border: none;
+  background: #fff;
+  font-size: 1rem;
+  color: #000;
+  outline: none;
+}
+
+.input-container-esqueci input::placeholder {
+  color: #999;
+}
+
+.input-container-esqueci input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Submit Button */
+.submit-button-esqueci {
+  width: 100%;
+  padding: 1rem;
+  background: var(--pink, #E91E63);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-button-esqueci:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.submit-button-esqueci:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Footer */
+.esqueci-senha-footer {
+  padding-top: 1.5rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.esqueci-senha-footer p {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0 0 0.5rem 0;
+}
+
+.link-button-esqueci {
+  background: none;
+  border: none;
+  color: var(--pink, #E91E63);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.link-button-esqueci:hover {
+  text-decoration: underline;
+}
+
+/* Success Container */
+.success-container-esqueci {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.success-icon-esqueci {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 2rem;
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+}
+
+.success-description-esqueci {
+  font-size: 1.05rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 2rem 0;
+}
+
+/* Info Box */
+.info-box-esqueci {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  color: #1565c0;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.info-box-esqueci svg {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.info-box-esqueci strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.info-box-esqueci ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.8;
+}
+
+.info-box-esqueci li {
+  margin-bottom: 0.25rem;
+}
+
+/* Buttons */
+.back-login-button-esqueci {
+  width: 100%;
+  padding: 1rem;
+  background: var(--pink, #E91E63);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.back-login-button-esqueci:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.resend-button-esqueci {
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  color: var(--pink, #E91E63);
+  border: 2px solid var(--pink, #E91E63);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.resend-button-esqueci:hover {
+  background: #fce4ec;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .esqueci-senha-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .esqueci-senha-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .esqueci-senha-icon {
+    width: 70px;
+    height: 70px;
+    font-size: 2rem;
+  }
+
+  .esqueci-senha-card h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .esqueci-senha-header {
+    padding: 1rem;
+  }
+
+  .esqueci-senha-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .esqueci-senha-card {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .success-icon-esqueci {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+  }
+}
