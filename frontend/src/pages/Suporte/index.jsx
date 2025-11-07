@@ -92,8 +92,8 @@ const Suporte = () => {
             <FiPhone className="option-icon" />
             <h3>Telefone</h3>
             <p>Seg-Sex, 9h às 18h</p>
-            <a href="tel:+5511999999999" className="option-button">
-              (11) 99999-9999
+            <a href="tel:+5519982251266" className="option-button">
+              (19) 98225-1266
             </a>
           </div>
         </div>

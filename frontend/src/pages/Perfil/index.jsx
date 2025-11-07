@@ -134,7 +134,7 @@ const Perfil = () => {
             <h3>Administração</h3>
             
             <div className="info-card">
-              <div className="admin-action-item" onClick={() => navigate('/registro')}>
+              <div className="admin-action-item" onClick={() => navigate('/admin/registro')}>
                 <div className="info-icon">
                   <FiUserPlus />
                 </div>

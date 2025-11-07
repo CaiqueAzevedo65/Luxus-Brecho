@@ -101,7 +101,7 @@ const Contato = () => {
                   name="telefone"
                   value={formData.telefone}
                   onChange={handleChange}
-                  placeholder="(11) 99999-9999"
+                  placeholder="(19) 98225-1266"
                 />
               </div>
               
@@ -173,14 +173,14 @@ const Contato = () => {
             <div className="info-card">
               <FiPhone className="info-icon" />
               <h3>Telefone</h3>
-              <p>(11) 99999-9999</p>
-              <a href="tel:+5511999999999">Ligar agora</a>
+              <p>(19) 98225-1266</p>
+              <a href="tel:+5519982251266">Ligar agora</a>
             </div>
 
             <div className="info-card">
               <FiMapPin className="info-icon" />
               <h3>Endereço</h3>
-              <p>São Paulo, SP<br />Brasil</p>
+              <p>Rua Barão de Parnaíba, 269, Centro, Campinas, SP 13013170<br />Brasil</p>
             </div>
 
             <div className="info-card">

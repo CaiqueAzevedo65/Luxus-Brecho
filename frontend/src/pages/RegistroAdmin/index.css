@@ -1,0 +1,305 @@
+/* Registro Admin Page */
+.registro-admin-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* Header */
+.registro-admin-header {
+  background: linear-gradient(135deg, var(--pink, #E91E63) 0%, #c2185b 100%);
+  color: white;
+  padding: 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.back-button-admin {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.back-button-admin:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}
+
+.header-content-admin {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.header-content-admin h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.admin-icon {
+  font-size: 1.75rem;
+}
+
+/* Content */
+.registro-admin-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.registro-admin-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  padding: 2rem;
+}
+
+.card-header-admin {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.shield-icon {
+  font-size: 3rem;
+  color: var(--pink, #E91E63);
+  margin-bottom: 1rem;
+}
+
+.card-header-admin h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.card-header-admin p {
+  font-size: 1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Messages */
+.success-message-admin,
+.error-message-admin {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.success-message-admin {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
+.error-message-admin {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+.success-message-admin p,
+.error-message-admin p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Form */
+.registro-admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group-admin {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group-admin label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.input-container-admin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 0 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-container-admin:focus-within {
+  border-color: var(--pink, #E91E63);
+}
+
+.input-container-admin.input-error {
+  border-color: var(--pink, #E91E63);
+}
+
+.input-icon-admin {
+  color: #666;
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.input-container-admin input {
+  flex: 1;
+  padding: 0.875rem 0;
+  border: none;
+  background: #fff;
+  font-size: 1rem;
+  color: #000;
+  outline: none;
+}
+
+.input-container-admin input::placeholder {
+  color: #999;
+}
+
+.input-container-admin input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.password-toggle-admin {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+  font-size: 1.1rem;
+}
+
+.password-toggle-admin:hover {
+  color: var(--pink, #E91E63);
+}
+
+.password-toggle-admin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-text-admin {
+  color: var(--pink, #E91E63);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Info Box */
+.info-box-admin {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f0f9ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  color: #1e40af;
+}
+
+.info-box-admin svg {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.info-box-admin p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Submit Button */
+.submit-button-admin {
+  width: 100%;
+  padding: 1rem;
+  background: var(--pink, #E91E63);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.submit-button-admin:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 30, 99, 0.3);
+}
+
+.submit-button-admin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .registro-admin-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .registro-admin-card {
+    padding: 1.5rem;
+  }
+
+  .card-header-admin h2 {
+    font-size: 1.5rem;
+  }
+
+  .shield-icon {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .registro-admin-header {
+    padding: 1rem;
+  }
+
+  .header-content-admin h1 {
+    font-size: 1.25rem;
+  }
+
+  .admin-icon {
+    font-size: 1.5rem;
+  }
+
+  .registro-admin-card {
+    padding: 1.25rem;
+  }
+
+  .card-header-admin h2 {
+    font-size: 1.25rem;
+  }
+
+  .shield-icon {
+    font-size: 2rem;
+  }
+}

@@ -28,8 +28,7 @@ export const RegisterSchema = z.object({
   senha: z
     .string()
     .min(6, 'Senha deve ter pelo menos 6 caracteres')
-    .max(100, 'Senha deve ter no máximo 100 caracteres')
-    .regex(/(?=.*[A-Za-z])(?=.*\d)/, 'Senha deve conter pelo menos uma letra e um número'),
+    .max(100, 'Senha deve ter no máximo 100 caracteres'),
   confirmarSenha: z
     .string()
     .min(1, 'Confirmação de senha é obrigatória'),
@@ -68,3 +67,6 @@ export const useZodValidation = (schema) => {
 
   return { validate };
 };
+
+// Export alternativo para compatibilidade
+export const registerSchema = RegisterSchema;

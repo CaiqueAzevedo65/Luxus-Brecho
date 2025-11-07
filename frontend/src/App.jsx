@@ -1,16 +1,19 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Sobre from './pages/Sobre';
 import Produtos from './pages/Produtos';
+import ProdutoDetalhes from './pages/ProdutoDetalhes';
 import Categorias from './pages/Categorias';
 import Suporte from './pages/Suporte';
 import Contato from './pages/Contato';
 import Carrinho from './pages/Carrinho';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
+import RegistroAdmin from './pages/RegistroAdmin';
 import Perfil from './pages/Perfil';
 import ProductsList from './pages/Admin/ProductsList';
 import ProductFormNew from './pages/Admin/ProductFormNew';
@@ -27,6 +30,13 @@ function ScrollToTop() {
 }
 
 function App() {
+  const initialize = useAuthStore((state) => state.initialize);
+
+  // Inicializar autenticação ao carregar a aplicação
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   return (
     <Router>
       <ScrollToTop />
@@ -36,6 +46,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="sobre" element={<Sobre />} />
           <Route path="produtos" element={<Produtos />} />
+          <Route path="produto/:id" element={<ProdutoDetalhes />} />
           <Route path="categorias" element={<Categorias />} />
           <Route path="suporte" element={<Suporte />} />
           <Route path="contato" element={<Contato />} />
@@ -45,6 +56,7 @@ function App() {
           <Route path="perfil" element={<Perfil />} />
 
           {/* Rotas admin */}
+          <Route path="admin/registro" element={<RegistroAdmin />} />
           <Route path="admin/products" element={<ProductsList />} />
           <Route path="admin/products/new" element={<ProductFormNew />} />
           <Route path="admin/products/edit/:id" element={<ProductFormNew />} />

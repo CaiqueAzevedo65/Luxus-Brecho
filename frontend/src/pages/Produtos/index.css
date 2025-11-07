@@ -149,6 +149,14 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
+.product-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .product-image-container {
   position: relative;
   width: 100%;

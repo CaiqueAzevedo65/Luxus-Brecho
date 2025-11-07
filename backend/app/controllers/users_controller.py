@@ -134,14 +134,19 @@ def create_user():
         # Busca usuário criado
         created_user = coll.find_one({"_id": result.inserted_id})
         
-        # Envia email de confirmação se for Cliente
-        if user_data["tipo"] == "Cliente" and user_data["token_confirmacao"]:
+        # Envia email de confirmação
+        if user_data["token_confirmacao"]:
+            is_admin = user_data["tipo"] == "Administrador"
             send_confirmation_email(
                 user_data["email"],
                 user_data["nome"],
-                user_data["token_confirmacao"]
+                user_data["token_confirmacao"],
+                is_admin=is_admin
             )
-            message = "Usuário criado com sucesso. Verifique seu email para confirmar a conta."
+            if is_admin:
+                message = "Administrador criado com sucesso. Email de confirmação enviado."
+            else:
+                message = "Usuário criado com sucesso. Verifique seu email para confirmar a conta."
         else:
             message = "Usuário criado com sucesso"
         

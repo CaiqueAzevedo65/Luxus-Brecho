@@ -58,11 +58,11 @@ const Footer = () => (
             </div>
             <div className="contact-item">
               <FiPhone />
-              <span>(11) 99999-9999</span>
+              <span>(19) 98225-1266</span>
             </div>
             <div className="contact-item">
               <FiMapPin />
-              <span>São Paulo, SP</span>
+              <span>Campinas, SP</span>
             </div>
           </div>
           

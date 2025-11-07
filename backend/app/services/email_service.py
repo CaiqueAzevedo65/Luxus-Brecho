@@ -105,7 +105,7 @@ def send_email(to_email: str, subject: str, html_content: str, text_content: Opt
         return False
 
 
-def send_confirmation_email(to_email: str, nome: str, token: str) -> bool:
+def send_confirmation_email(to_email: str, nome: str, token: str, is_admin: bool = False) -> bool:
     """
     Envia email de confirmação de cadastro.
     
@@ -113,19 +113,29 @@ def send_confirmation_email(to_email: str, nome: str, token: str) -> bool:
         to_email: Email do destinatário
         nome: Nome do usuário
         token: Token de confirmação
+        is_admin: Se True, envia email específico para administrador
     
     Returns:
         True se email foi enviado com sucesso
     """
     confirmation_url = f"{APP_URL}/api/users/confirm-email/{token}"
     
-    subject = "Confirme seu email - Luxus Brechó"
+    if is_admin:
+        subject = "Confirmação de Conta Administrador - Luxus Brechó"
+        welcome_text = "Você foi adicionado como administrador do Luxus Brechó!"
+        role_text = "Como administrador, você terá acesso total ao sistema de gerenciamento."
+    else:
+        subject = "Confirme seu email - Luxus Brechó"
+        welcome_text = "Bem-vindo(a) ao Luxus Brechó!"
+        role_text = "Estamos felizes em tê-lo(a) conosco!"
     
     # Conteúdo em texto puro
     text_content = f"""
 Olá {nome}!
 
-Bem-vindo(a) ao Luxus Brechó!
+{welcome_text}
+
+{role_text}
 
 Para ativar sua conta, por favor confirme seu email clicando no link abaixo:
 
@@ -167,7 +177,11 @@ Equipe Luxus Brechó
                                 <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 24px;">Olá {nome}!</h2>
                                 
                                 <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
-                                    Bem-vindo(a) ao <strong>Luxus Brechó</strong>!
+                                    {welcome_text}
+                                </p>
+                                
+                                <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                    {role_text}
                                 </p>
                                 
                                 <p style="margin: 0 0 30px 0; color: #666666; font-size: 16px; line-height: 1.6;">
