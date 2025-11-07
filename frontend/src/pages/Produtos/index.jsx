@@ -126,6 +126,7 @@ const Produtos = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="search-input"
+                maxLength={50}
               />
               {searchQuery && (
                 <button
@@ -199,53 +200,37 @@ const Produtos = () => {
         <>
           <div className="produtos-grid">
             {products.map((product) => (
-              <div key={product.id} className="product-card">
-                <Link to={`/produto/${product.id}`} className="product-card-link">
-                  <div className="product-image-container">
+              <div key={product.id} className="product-card-featured">
+                <Link to={`/produto/${product.id}`} className="product-link">
+                  <div className="product-image-wrapper">
                     {product.imagem ? (
                       <img
                         src={product.imagem}
                         alt={product.titulo}
-                        className="product-image"
                         onError={(e) => {
                           e.target.src = 'https://via.placeholder.com/300x400?text=Sem+Imagem';
                         }}
                       />
                     ) : (
-                      <div className="product-placeholder">
-                        <span>Sem Imagem</span>
-                      </div>
+                      <div className="no-image">Sem Imagem</div>
                     )}
                   </div>
-                  
-                  <div className="product-info">
-                    <span className="product-category">{product.categoria}</span>
-                    <h3 className="product-title">{product.titulo}</h3>
-                    <p className="product-description">
-                      {product.descricao?.length > 80
-                        ? `${product.descricao.substring(0, 80)}...`
-                        : product.descricao}
-                    </p>
-                    <div className="product-footer">
-                      <span className="product-price">{formatPrice(product.preco)}</span>
-                      <button
-                        className="add-to-cart-btn"
-                        disabled={!product.disponivel}
-                        title={product.disponivel ? 'Comprar' : 'Produto indisponível'}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          if (product.disponivel) {
-                            addToCart(product);
-                            alert('Produto adicionado ao carrinho!');
-                          }
-                        }}
-                      >
-                        <FiShoppingCart />
-                        {product.disponivel ? 'Comprar' : 'Indisponível'}
-                      </button>
-                    </div>
-                  </div>
                 </Link>
+                <div className="product-info-featured">
+                  <Link to={`/produto/${product.id}`} className="product-link">
+                    <h3>{product.titulo}</h3>
+                  </Link>
+                  <p className="product-price">{formatPrice(product.preco)}</p>
+                  <button
+                    className="add-cart-btn"
+                    onClick={() => {
+                      addToCart(product);
+                      alert('Produto adicionado ao carrinho!');
+                    }}
+                  >
+                    <FiShoppingCart /> Adicionar
+                  </button>
+                </div>
               </div>
             ))}
           </div>

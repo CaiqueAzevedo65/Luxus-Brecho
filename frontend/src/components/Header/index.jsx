@@ -138,6 +138,7 @@ const Header = () => {
                     onChange={(e) => handleSearchChange(e.target.value)}
                     placeholder="Buscar produtos..."
                     className={`search-input ${searchError ? 'search-error' : ''}`}
+                    maxLength={50}
                   />
                   {searchError && (
                     <div className="search-error-message">{searchError}</div>
