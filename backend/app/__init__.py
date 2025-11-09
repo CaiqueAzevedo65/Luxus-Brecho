@@ -41,45 +41,48 @@ def create_app():
         allowed_origins = [o.strip() for o in allowed_origins_env.split(",")]
     else:
         allowed_origins = [
-            'http://localhost:5173',     # Vite dev server
-            'http://127.0.0.1:5173',     # Vite dev server (IP)
-            'http://localhost:19000',    # Expo DevTools
-            'http://localhost:8081',     # Expo Metro
-            'http://10.0.2.2:*',        # Android Emulator
-            'exp://*:*',                # Expo Go na rede local
-            'http://*:*',               # Desenvolvimento local
-            'https://*:*'               # HTTPS local
+            'http://localhost:5173',                          # Vite dev server
+            'http://127.0.0.1:5173',                          # Vite dev server (IP)
+            'http://localhost:19000',                         # Expo DevTools
+            'http://localhost:8081',                          # Expo Metro
+            'https://luxus-brechofrontend.vercel.app',       # Frontend Vercel
+            'https://luxus-brecho-frontend.vercel.app',      # Frontend Vercel (alternativo)
         ]
     
-    print(f"Origens CORS permitidas: {allowed_origins}")
+    print(f"🌐 Origens CORS permitidas: {allowed_origins}")
     
     CORS(app, resources={
-        r"/api/*": {
+        r"/*": {
             "origins": allowed_origins,
             "methods": ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
             "allow_headers": [
                 'Content-Type', 
                 'Authorization',
+                'Accept',
                 'Accept-Encoding',
-                'X-Client-Version'
+                'X-Client-Version',
+                'X-Requested-With'
             ],
             "expose_headers": ['Content-Length', 'Content-Encoding'],
-            "max_age": 600,  # Cache preflight por 10 minutos
-            "supports_credentials": True
+            "max_age": 3600,  # Cache preflight por 1 hora
+            "supports_credentials": False  # Vercel não precisa de credentials
         }
     })
     
-    # Middleware CORS adicional (backup para desenvolvimento)
+    # Middleware de segurança (sem CORS - já configurado acima)
     @app.after_request
     def after_request(response):
-        response.headers.add('X-Content-Type-Options', 'nosniff') #precisa ser configurado no postman
-        response.headers.add('X-Frame-Options', 'DENY') #postman tbm
-        response.headers.add('X-XSS-Protection', '1; mode=block') # postman tbm
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept-Encoding,X-Client-Version')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        # Headers de segurança
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        
+        # CORS apenas em desenvolvimento local
         if app.config['DEBUG']:
-            response.headers.add('Access-Control-Allow-Origin', '*')  # Só em desenvolvimento
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        
         return response
     
     # Inicializa MongoDB
