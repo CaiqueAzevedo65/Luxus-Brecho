@@ -96,11 +96,6 @@
   align-items: center;
 }
 
-.filter-icon {
-  color: var(--pink);
-  font-size: 1.2rem;
-}
-
 .category-filter-btn {
   padding: 0.6rem 1.5rem;
   border: 2px solid #e0e0e0;

@@ -29,6 +29,10 @@ const Suporte = () => {
     {
       question: 'Os produtos são novos ou usados?',
       answer: 'Somos um brechó, então nossos produtos são de segunda mão, mas todos passam por rigorosa seleção e são cuidadosamente higienizados e revisados antes de serem listados.'
+    },
+    {
+      question: 'As peças são únicas?',
+      answer: 'Sim! Todas as peças do Luxus Brechó são únicas. Por isso, cada produto só pode ser adicionado uma vez ao carrinho e não há controle de quantidade. Quando você encontrar uma peça especial, garanta logo, pois ela pode não estar disponível depois!'
     }
   ];
 

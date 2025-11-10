@@ -149,7 +149,6 @@ const Produtos = () => {
         {/* Filtros de Categoria */}
         {categories.length > 0 && (
           <div className="category-filters">
-            <FiFilter className="filter-icon" />
             <button
               className={`category-filter-btn ${!selectedCategory ? 'active' : ''}`}
               onClick={() => handleCategoryFilter('')}
