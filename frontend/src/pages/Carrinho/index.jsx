@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
-import { FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiArrowLeft } from 'react-icons/fi';
+import { useToastContext } from '../../contexts/ToastContext';
+import { FiTrash2, FiShoppingBag, FiArrowLeft } from 'react-icons/fi';
 import './index.css';
 
 const Carrinho = () => {
@@ -13,11 +14,11 @@ const Carrinho = () => {
     getSubtotal,
     getShippingCost,
     getTotal,
-    updateQuantity,
     removeFromCart,
     clearCart,
     loadCart
   } = useCartStore();
+  const { success } = useToastContext();
 
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
@@ -25,11 +26,6 @@ const Carrinho = () => {
   useEffect(() => {
     loadCart();
   }, []);
-
-  const handleQuantityChange = (productId, currentQuantity, increment) => {
-    const newQuantity = increment ? currentQuantity + 1 : currentQuantity - 1;
-    updateQuantity(productId, newQuantity);
-  };
 
   const handleRemoveItem = (productId) => {
     removeFromCart(productId);
@@ -42,7 +38,7 @@ const Carrinho = () => {
   };
 
   const handleCheckout = () => {
-    alert(`Pedido confirmado!\nTotal: ${formatPrice(getTotal())}\n\nObrigado pela compra!`);
+    success(`Pedido confirmado! 🎉\nTotal: ${formatPrice(getTotal())}\n\nObrigado pela compra!`);
     clearCart();
     navigate('/');
   };
@@ -115,37 +111,18 @@ const Carrinho = () => {
                     <div className="item-details">
                       <h3>{item.titulo}</h3>
                       <p className="item-price">{formatPrice(item.preco)}</p>
-                      <p className="item-subtotal">
-                        Subtotal: {formatPrice(item.preco * item.quantity)}
-                      </p>
+                      <p className="item-category">{item.categoria}</p>
+                      <span className="unique-piece-badge">Peça Única</span>
                     </div>
                     
                     <div className="item-actions">
-                      <div className="quantity-controls">
-                        <button
-                          onClick={() => handleQuantityChange(item.id, item.quantity, true)}
-                          disabled={loading}
-                          className="qty-btn"
-                        >
-                          <FiPlus />
-                        </button>
-                        <span className="quantity">{item.quantity}</span>
-                        <button
-                          onClick={() => handleQuantityChange(item.id, item.quantity, false)}
-                          disabled={loading}
-                          className="qty-btn"
-                        >
-                          <FiMinus />
-                        </button>
-                      </div>
-                      
                       <button
                         onClick={() => setItemToRemove(item.id)}
                         disabled={loading}
                         className="remove-btn"
                         title="Remover item"
                       >
-                        <FiTrash2 />
+                        <FiTrash2 /> Remover
                       </button>
                     </div>
                   </div>

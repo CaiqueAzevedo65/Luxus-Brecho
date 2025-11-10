@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { FiShoppingCart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import './index_new.css';
+import './index.css';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
   const { addToCart } = useCartStore();
+  const { success, info, error: showError } = useToastContext();
 
   const banners = [
     'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800',
@@ -18,6 +20,7 @@ const Home = () => {
     'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800'
   ];
 
+  // URLs das imagens de categoria do Supabase (mesmas do mobile)
   const categories = [
     {
       name: 'Casual',
@@ -123,34 +126,43 @@ const Home = () => {
           </div>
         ) : (
           <div className="products-scroll">
-            {featuredProducts.slice(0, 6).map((product) => (
+            {featuredProducts.map((product) => (
               <div key={product.id} className="product-card-featured">
-                <div className="product-image-wrapper">
-                  {product.imagem ? (
-                    <img
-                      src={product.imagem}
-                      alt={product.titulo}
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/300x400?text=Sem+Imagem';
-                      }}
-                    />
-                  ) : (
-                    <div className="no-image">Sem Imagem</div>
-                  )}
-                </div>
-                <div className="product-info-featured">
-                  <h3>{product.titulo}</h3>
-                  <p className="product-price">{formatPrice(product.preco)}</p>
-                  <button
-                    className="add-cart-btn"
-                    onClick={() => {
-                      addToCart(product);
-                      alert('Produto adicionado ao carrinho!');
-                    }}
-                  >
-                    <FiShoppingCart /> Adicionar
-                  </button>
-                </div>
+                <Link to={`/produto/${product.id}`} className="product-card-link">
+                  <div className="product-image-wrapper">
+                    {product.imagem ? (
+                      <img
+                        src={product.imagem}
+                        alt={product.titulo}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/300x400?text=Sem+Imagem';
+                        }}
+                      />
+                    ) : (
+                      <div className="no-image">Sem Imagem</div>
+                    )}
+                  </div>
+                  <div className="product-info-featured">
+                    <h3>{product.titulo}</h3>
+                    <p className="product-price">{formatPrice(product.preco)}</p>
+                    <p className="product-category">{product.categoria}</p>
+                  </div>
+                </Link>
+                <button
+                  className="add-cart-btn-home"
+                  onClick={() => {
+                    const result = addToCart(product);
+                    if (result?.alreadyInCart) {
+                      info(`${product.titulo} já está no carrinho! Esta é uma peça única.`);
+                    } else if (result?.success) {
+                      success(`${product.titulo} adicionado ao carrinho! 🛒`);
+                    } else if (result?.error) {
+                      showError('Erro ao adicionar produto ao carrinho.');
+                    }
+                  }}
+                >
+                  <FiShoppingCart /> Adicionar ao Carrinho
+                </button>
               </div>
             ))}
           </div>

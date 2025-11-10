@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { ProductSchema, PRODUCT_CATEGORIES, useProductValidation } from '../../schemas/product.schema';
 import api from '../../services/api';
 import { FiArrowLeft, FiImage, FiX, FiUpload, FiPackage } from 'react-icons/fi';
@@ -10,6 +11,7 @@ export default function ProductFormNew() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user, isAuthenticated } = useAuthStore();
+  const { success, error: showError } = useToastContext();
   const fileInputRef = useRef(null);
   const { validate, validateImage } = useProductValidation();
 
@@ -18,6 +20,7 @@ export default function ProductFormNew() {
     preco: '',
     descricao: '',
     categoria: '',
+    status: 'disponivel',
   });
   
   const [imageFile, setImageFile] = useState(null);
@@ -29,7 +32,7 @@ export default function ProductFormNew() {
   useEffect(() => {
     // Verificar autenticação
     if (!isAuthenticated || user?.tipo !== 'Administrador') {
-      alert('Acesso negado. Apenas administradores podem acessar esta página.');
+      showError('Acesso negado. Apenas administradores podem acessar esta página.');
       navigate('/');
       return;
     }
@@ -51,6 +54,7 @@ export default function ProductFormNew() {
         preco: product.preco?.toString() || '',
         descricao: product.descricao || '',
         categoria: product.categoria || '',
+        status: product.status || 'disponivel',
       });
       
       if (product.imagem) {
@@ -58,7 +62,7 @@ export default function ProductFormNew() {
       }
     } catch (error) {
       console.error('Erro ao carregar produto:', error);
-      alert('Erro ao carregar produto');
+      showError('Erro ao carregar produto');
       navigate('/admin/products');
     } finally {
       setLoading(false);
@@ -164,10 +168,10 @@ export default function ProductFormNew() {
       // Enviar para API
       if (id) {
         await api.put(`/products/${id}`, productData);
-        alert('Produto atualizado com sucesso!');
+        success('Produto atualizado com sucesso! ✅');
       } else {
         await api.post('/products', productData);
-        alert('Produto criado com sucesso!');
+        success('Produto criado com sucesso! 🎉');
       }
 
       navigate('/admin/products');
@@ -311,6 +315,27 @@ export default function ProductFormNew() {
               className={`form-textarea-form ${errors.descricao ? 'input-error-form' : ''}`}
             />
             {errors.descricao && <p className="error-text-form">{errors.descricao}</p>}
+          </div>
+
+          {/* Status */}
+          <div className="form-group-form">
+            <label htmlFor="status" className="form-label-form">Status *</label>
+            <select
+              id="status"
+              value={formData.status}
+              onChange={(e) => handleInputChange('status', e.target.value)}
+              className={`form-select-form ${errors.status ? 'input-error-form' : ''}`}
+            >
+              <option value="disponivel">Disponível</option>
+              <option value="indisponivel">Indisponível</option>
+              <option value="vendido">Vendido</option>
+            </select>
+            {errors.status && <p className="error-text-form">{errors.status}</p>}
+            <p className="form-hint">
+              {formData.status === 'disponivel' && '✓ Produto pode ser adicionado ao carrinho'}
+              {formData.status === 'indisponivel' && '⚠️ Produto não pode ser adicionado ao carrinho'}
+              {formData.status === 'vendido' && '✔️ Produto marcado como vendido'}
+            </p>
           </div>
 
           {/* Erro geral */}

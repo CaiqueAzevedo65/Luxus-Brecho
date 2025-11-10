@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { RegisterSchema, useZodValidation } from '../../schemas/auth.schema';
+import { useToastContext } from '../../contexts/ToastContext';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiUser } from 'react-icons/fi';
 import './index.css';
 
@@ -17,7 +17,8 @@ const Registro = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const { register, isLoading, clearError } = useAuthStore();
+  const { register, isLoading } = useAuthStore();
+  const { success, error: showError } = useToastContext();
   const { validate } = useZodValidation(RegisterSchema);
 
   const validateForm = () => {
@@ -49,16 +50,14 @@ const Registro = () => {
 
     if (result.success) {
       if (result.requiresEmailConfirmation) {
-        alert(
-          `Conta criada com sucesso!\n\nEnviamos um email de confirmação para ${formData.email}. Por favor, verifique sua caixa de entrada e confirme seu email para ativar sua conta.`
-        );
+        success(`Conta criada com sucesso! 🎉\n\nEnviamos um email de confirmação para ${formData.email}. Verifique sua caixa de entrada!`);
         navigate('/login');
       } else {
-        alert('Conta criada com sucesso!');
+        success('Conta criada com sucesso! 🎉');
         navigate('/login');
       }
     } else {
-      alert(result.error || 'Erro ao criar conta');
+      showError(result.error || 'Erro ao criar conta. Tente novamente.');
     }
   };
 

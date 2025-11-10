@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiShield } from 'react-icons/fi';
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { RegisterSchema } from '../../schemas/auth.schema';
 import './index.css';
 
 const RegistroAdmin = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
+  const { success, error: showError, info } = useToastContext();
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -29,13 +31,13 @@ const RegistroAdmin = () => {
     console.log('user.tipo:', user?.tipo);
     
     if (!isAuthenticated || !user) {
-      alert('Você precisa estar logado como administrador para acessar esta página.');
+      info('Você precisa estar logado como administrador para acessar esta página.');
       navigate('/login');
       return;
     }
 
     if (user.tipo !== 'Administrador') {
-      alert('Apenas administradores podem criar novos usuários administradores.');
+      showError('Apenas administradores podem criar novos usuários administradores.');
       navigate('/perfil');
       return;
     }

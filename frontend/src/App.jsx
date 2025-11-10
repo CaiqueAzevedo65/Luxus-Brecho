@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { ToastProvider } from './contexts/ToastContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Sobre from './pages/Sobre';
@@ -11,6 +12,7 @@ import Categorias from './pages/Categorias';
 import Suporte from './pages/Suporte';
 import Contato from './pages/Contato';
 import Carrinho from './pages/Carrinho';
+import Favoritos from './pages/Favoritos';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 import RegistroAdmin from './pages/RegistroAdmin';
@@ -45,8 +47,9 @@ function App() {
 
   return (
     <Router>
-      <ScrollToTop />
-      <Routes>
+      <ToastProvider>
+        <ScrollToTop />
+        <Routes>
         {/* Rotas principais com layout */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
@@ -57,6 +60,7 @@ function App() {
           <Route path="suporte" element={<Suporte />} />
           <Route path="contato" element={<Contato />} />
           <Route path="carrinho" element={<Carrinho />} />
+          <Route path="favoritos" element={<Favoritos />} />
           <Route path="login" element={<Login />} />
           <Route path="registro" element={<Registro />} />
           <Route path="esqueci-senha" element={<EsqueciSenha />} />
@@ -76,6 +80,7 @@ function App() {
           <Route path="admin/products/edit/:id" element={<ProductFormNew />} />
         </Route>
       </Routes>
+      </ToastProvider>
     </Router>
   );
 }
