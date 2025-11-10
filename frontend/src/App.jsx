@@ -12,6 +12,7 @@ import Categorias from './pages/Categorias';
 import Suporte from './pages/Suporte';
 import Contato from './pages/Contato';
 import Carrinho from './pages/Carrinho';
+import Favoritos from './pages/Favoritos';
 import Login from './pages/Login';
 import Registro from './pages/Registro';
 import RegistroAdmin from './pages/RegistroAdmin';
@@ -59,6 +60,7 @@ function App() {
           <Route path="suporte" element={<Suporte />} />
           <Route path="contato" element={<Contato />} />
           <Route path="carrinho" element={<Carrinho />} />
+          <Route path="favoritos" element={<Favoritos />} />
           <Route path="login" element={<Login />} />
           <Route path="registro" element={<Registro />} />
           <Route path="esqueci-senha" element={<EsqueciSenha />} />

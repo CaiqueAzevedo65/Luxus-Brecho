@@ -65,7 +65,12 @@
 }
 
 .action-btn-details.favorite-active {
-  background: rgba(255,255,255,0.3);
+  background: white;
+  color: var(--pink, #E91E63);
+}
+
+.action-btn-details.favorite-active svg {
+  fill: var(--pink, #E91E63);
 }
 
 /* Image Section */

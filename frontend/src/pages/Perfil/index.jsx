@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiUserPlus, FiPackage, FiEdit3, FiChevronRight, FiSettings } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiUserPlus, FiPackage, FiEdit3, FiChevronRight, FiSettings, FiHeart } from 'react-icons/fi';
 import './index.css';
 
 const Perfil = () => {
@@ -124,6 +124,19 @@ const Perfil = () => {
                 <label>Membro desde</label>
                 <p>{formatDate(user.data_criacao)}</p>
               </div>
+            </div>
+
+            <div className="info-divider"></div>
+
+            <div className="admin-action-item" onClick={() => navigate('/favoritos')}>
+              <div className="info-icon admin-icon-red">
+                <FiHeart />
+              </div>
+              <div className="info-details">
+                <label>Meus Favoritos</label>
+                <p>Ver produtos salvos como favoritos</p>
+              </div>
+              <FiChevronRight className="chevron-icon" />
             </div>
 
             <div className="info-divider"></div>

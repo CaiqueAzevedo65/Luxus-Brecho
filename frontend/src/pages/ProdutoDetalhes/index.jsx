@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
+import { useFavoritesStore } from '../../store/favoritesStore';
 import { useToastContext } from '../../contexts/ToastContext';
 import { FiArrowLeft, FiShoppingCart, FiHeart, FiShare2 } from 'react-icons/fi';
 import './index.css';
@@ -10,6 +11,7 @@ const ProdutoDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCartStore();
+  const { toggleFavorite, isFavorite: checkIsFavorite, loadFavorites } = useFavoritesStore();
   const { success, info, error: showError } = useToastContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,9 +19,15 @@ const ProdutoDetalhes = () => {
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
+    loadFavorites();
     fetchProduct();
-    checkIfFavorite();
   }, [id]);
+
+  useEffect(() => {
+    if (product) {
+      setIsFavorite(checkIsFavorite(product.id));
+    }
+  }, [product, checkIsFavorite]);
 
   const fetchProduct = async () => {
     try {
@@ -35,23 +43,23 @@ const ProdutoDetalhes = () => {
     }
   };
 
-  const checkIfFavorite = () => {
-    const favorites = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
-    setIsFavorite(favorites.includes(Number(id)));
-  };
+  const handleToggleFavorite = () => {
+    if (!product) return;
 
-  const toggleFavorite = () => {
-    const favorites = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
-    let newFavorites;
+    const result = toggleFavorite(product);
     
-    if (isFavorite) {
-      newFavorites = favorites.filter(fav => fav !== Number(id));
-    } else {
-      newFavorites = [...favorites, Number(id)];
+    if (result?.success) {
+      const newIsFavorite = checkIsFavorite(product.id);
+      setIsFavorite(newIsFavorite);
+      
+      if (newIsFavorite) {
+        success(`${product.titulo} adicionado aos favoritos! ❤️`);
+      } else {
+        info(`${product.titulo} removido dos favoritos.`);
+      }
+    } else if (result?.error) {
+      showError('Erro ao atualizar favoritos.');
     }
-    
-    localStorage.setItem('favoriteProducts', JSON.stringify(newFavorites));
-    setIsFavorite(!isFavorite);
   };
 
   const handleShare = async () => {
@@ -138,7 +146,7 @@ const ProdutoDetalhes = () => {
             <FiShare2 />
           </button>
           <button 
-            onClick={toggleFavorite} 
+            onClick={handleToggleFavorite} 
             className={`action-btn-details ${isFavorite ? 'favorite-active' : ''}`}
             title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
           >
