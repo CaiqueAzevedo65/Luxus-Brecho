@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
@@ -69,6 +69,13 @@ def create_app():
             "supports_credentials": True  # Necessário para enviar tokens
         }
     })
+    
+    # Handler global para OPTIONS (preflight)
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = app.make_default_options_response()
+            return response
     
     # Middleware de segurança
     @app.after_request
