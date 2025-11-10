@@ -54,34 +54,31 @@ def create_app():
     CORS(app, resources={
         r"/*": {
             "origins": allowed_origins,
-            "methods": ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+            "methods": ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
             "allow_headers": [
                 'Content-Type', 
                 'Authorization',
                 'Accept',
                 'Accept-Encoding',
                 'X-Client-Version',
-                'X-Requested-With'
+                'X-Requested-With',
+                'Origin'
             ],
             "expose_headers": ['Content-Length', 'Content-Encoding'],
             "max_age": 3600,  # Cache preflight por 1 hora
-            "supports_credentials": False  # Vercel não precisa de credentials
+            "supports_credentials": True  # Necessário para enviar tokens
         }
     })
     
-    # Middleware de segurança (sem CORS - já configurado acima)
+    # Middleware de segurança
     @app.after_request
     def after_request(response):
         # Headers de segurança
         response.headers['X-Content-Type-Options'] = 'nosniff'
-        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'  # Permite iframe do mesmo domínio
         response.headers['X-XSS-Protection'] = '1; mode=block'
         
-        # CORS apenas em desenvolvimento local
-        if app.config['DEBUG']:
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        # Não adicionar headers CORS aqui - já configurado pelo flask-cors
         
         return response
     

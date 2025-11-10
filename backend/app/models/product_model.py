@@ -33,7 +33,7 @@ def create_dynamic_schema(db) -> Dict[str, Any]:
     return {
         "$jsonSchema": {
             "bsonType": "object",
-            "required": ["id", "titulo", "preco", "descricao", "categoria", "imagem"],
+            "required": ["id", "titulo", "preco", "descricao", "categoria", "imagem", "status"],
             "properties": {
                 "id": {
                     "description": "Identificador numérico único do produto",
@@ -65,6 +65,11 @@ def create_dynamic_schema(db) -> Dict[str, Any]:
                     "bsonType": "string",
                     "minLength": 1,
                     "description": "URL da imagem do produto (obrigatório)"
+                },
+                "status": {
+                    "bsonType": "string",
+                    "enum": ["disponivel", "indisponivel", "vendido"],
+                    "description": "Status do produto (obrigatório)"
                 },
             },
             "additionalProperties": True,
@@ -101,7 +106,7 @@ def validate_product(payload: Dict[str, Any], db=None) -> Tuple[bool, Dict[str, 
         errors["id"] = "deve ser um número inteiro"
 
     # Campos obrigatórios - TODOS são obrigatórios conforme requisito
-    required = ["titulo", "preco", "descricao", "categoria", "imagem"]
+    required = ["titulo", "preco", "descricao", "categoria", "imagem", "status"]
     for k in required:
         if data.get(k) in (None, ""):
             errors[k] = "campo obrigatório"
@@ -142,6 +147,13 @@ def validate_product(payload: Dict[str, Any], db=None) -> Tuple[bool, Dict[str, 
         allowed_categories = get_allowed_categories(db)
         if cat not in allowed_categories:
             errors["categoria"] = f"deve ser uma das seguintes categorias: {', '.join(sorted(allowed_categories))}"
+
+    # Status permitido
+    status = data.get("status")
+    if status:
+        allowed_status = ["disponivel", "indisponivel", "vendido"]
+        if status not in allowed_status:
+            errors["status"] = f"deve ser um dos seguintes: {', '.join(allowed_status)}"
 
     return (len(errors) == 0), errors
 
@@ -256,6 +268,10 @@ def prepare_new_product(db, payload: Dict[str, Any]) -> Tuple[bool, Dict[str, st
         except Exception as e:
             errors["id"] = f"falha ao gerar id: {e}"
             return False, errors, {}
+
+    # Define status padrão se não informado
+    if "status" not in data or not data["status"]:
+        data["status"] = "disponivel"
 
     # Coerção de tipos: preço como float
     if isinstance(data.get("preco"), int):
