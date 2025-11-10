@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
 import { FiShoppingCart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import './index_new.css';
+import './index.css';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ const Home = () => {
     'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800'
   ];
 
+  // URLs das imagens de categoria do Supabase (mesmas do mobile)
   const categories = [
     {
       name: 'Casual',
