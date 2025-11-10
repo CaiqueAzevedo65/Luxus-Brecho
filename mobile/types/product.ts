@@ -1,6 +1,7 @@
 // Tipos base para categorias
 export type ProductCategory = 'Casual' | 'Social' | 'Esportivo';
 export type ProductCondition = 'novo' | 'seminovo' | 'usado';
+export type ProductStatus = 'disponivel' | 'indisponivel' | 'vendido';
 
 // Interface principal do produto (vem do backend)
 export interface Product {
@@ -11,7 +12,7 @@ export interface Product {
   preco: number;
   categoria: ProductCategory;
   imagem: string; // Obrigatório conforme requisitos
-  disponivel: boolean;
+  status: ProductStatus; // Status do produto
   created_at: string;
   updated_at: string;
   

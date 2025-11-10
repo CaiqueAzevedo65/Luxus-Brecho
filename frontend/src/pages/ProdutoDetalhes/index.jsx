@@ -84,21 +84,22 @@ const ProdutoDetalhes = () => {
   };
 
   const handleAddToCart = () => {
-    if (product && product.disponivel) {
-      const result = addToCart(product);
-      
-      if (result?.alreadyInCart) {
-        info(`${product.titulo} já está no carrinho! Esta é uma peça única. 🛍️`);
-      } else if (result?.success) {
-        success(`${product.titulo} adicionado ao carrinho! 🛒`);
-        // Opcional: navegar para o carrinho após 1.5s
-        setTimeout(() => {
-          const goToCart = window.confirm('Deseja ir para o carrinho agora?');
-          if (goToCart) navigate('/carrinho');
-        }, 1500);
-      } else if (result?.error) {
-        showError('Erro ao adicionar produto ao carrinho.');
-      }
+    if (!product) return;
+
+    // Verificar se produto está disponível
+    if (product.status !== 'disponivel') {
+      showError('Este produto não está disponível no momento.');
+      return;
+    }
+
+    const result = addToCart(product);
+    
+    if (result?.alreadyInCart) {
+      info(`${product.titulo} já está no carrinho! Esta é uma peça única. 🛍️`);
+    } else if (result?.success) {
+      success(`${product.titulo} adicionado ao carrinho! 🛒`);
+    } else if (result?.error) {
+      showError('Erro ao adicionar produto ao carrinho.');
     }
   };
 
@@ -152,13 +153,6 @@ const ProdutoDetalhes = () => {
           >
             <FiHeart />
           </button>
-          <button 
-            onClick={() => navigate('/carrinho')} 
-            className="action-btn-details"
-            title="Ver carrinho"
-          >
-            <FiShoppingCart />
-          </button>
         </div>
       </div>
 
@@ -207,10 +201,10 @@ const ProdutoDetalhes = () => {
         <button
           className="add-to-cart-btn-details"
           onClick={handleAddToCart}
-          disabled={!product.disponivel}
+          disabled={product.status !== 'disponivel'}
         >
           <FiShoppingCart />
-          {product.disponivel ? 'Adicionar ao Carrinho' : 'Produto Indisponível'}
+          {product.status === 'disponivel' ? 'Adicionar ao Carrinho' : 'Produto Indisponível'}
         </button>
       </div>
     </div>

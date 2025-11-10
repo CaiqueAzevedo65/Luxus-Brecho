@@ -112,7 +112,6 @@ const Carrinho = () => {
                       <h3>{item.titulo}</h3>
                       <p className="item-price">{formatPrice(item.preco)}</p>
                       <p className="item-category">{item.categoria}</p>
-                      <span className="unique-piece-badge">Peça Única</span>
                     </div>
                     
                     <div className="item-actions">
