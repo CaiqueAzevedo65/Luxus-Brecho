@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
@@ -51,31 +51,23 @@ def create_app():
     
     print(f"🌐 Origens CORS permitidas: {allowed_origins}")
     
-    CORS(app, resources={
-        r"/*": {
-            "origins": allowed_origins,
-            "methods": ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-            "allow_headers": [
-                'Content-Type', 
-                'Authorization',
-                'Accept',
-                'Accept-Encoding',
-                'X-Client-Version',
-                'X-Requested-With',
-                'Origin'
-            ],
-            "expose_headers": ['Content-Length', 'Content-Encoding'],
-            "max_age": 3600,  # Cache preflight por 1 hora
-            "supports_credentials": True  # Necessário para enviar tokens
-        }
-    })
-    
-    # Handler global para OPTIONS (preflight)
-    @app.before_request
-    def handle_preflight():
-        if request.method == "OPTIONS":
-            response = app.make_default_options_response()
-            return response
+    CORS(app, 
+         origins=allowed_origins,
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+         allow_headers=[
+             'Content-Type', 
+             'Authorization',
+             'Accept',
+             'Accept-Encoding',
+             'X-Client-Version',
+             'X-Requested-With',
+             'Origin'
+         ],
+         expose_headers=['Content-Length', 'Content-Encoding'],
+         max_age=3600,
+         supports_credentials=True,
+         send_wildcard=False,
+         always_send=True)
     
     # Middleware de segurança
     @app.after_request
