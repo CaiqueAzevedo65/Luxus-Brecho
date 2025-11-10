@@ -71,10 +71,6 @@ export default function ProductScreen() {
           {
             text: 'Continuar Comprando',
             style: 'cancel'
-          },
-          {
-            text: 'Ver Carrinho',
-            onPress: () => router.push('/cart')
           }
         ]
       );
@@ -109,7 +105,7 @@ export default function ProductScreen() {
             <Ionicons 
               name={isFavorite ? "heart" : "heart-outline"} 
               size={24} 
-              color="white" 
+              color="white"
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/cart')}>
@@ -175,11 +171,12 @@ export default function ProductScreen() {
       {/* Botão de Compra */}
       <View className="p-4 border-t border-gray-200">
         <TouchableOpacity
-          className="bg-pink-600 py-4 rounded-xl items-center"
+          className={`py-4 rounded-xl items-center ${product.status === 'disponivel' ? 'bg-pink-600' : 'bg-gray-400'}`}
           onPress={handleAddToCart}
+          disabled={product.status !== 'disponivel'}
         >
           <Text className="text-white font-bold text-lg">
-            Adicionar ao Carrinho
+            {product.status === 'disponivel' ? 'Adicionar ao Carrinho' : 'Produto Indisponível'}
           </Text>
         </TouchableOpacity>
       </View>

@@ -20,6 +20,7 @@ export default function ProductFormNew() {
     preco: '',
     descricao: '',
     categoria: '',
+    status: 'disponivel',
   });
   
   const [imageFile, setImageFile] = useState(null);
@@ -165,6 +166,11 @@ export default function ProductFormNew() {
         imagem: imageUrl || '',
       };
 
+      // Adicionar status ao editar produto
+      if (id && formData.status) {
+        productData.status = formData.status;
+      }
+
       // Enviar para API
       if (id) {
         await api.put(`/products/${id}`, productData);
@@ -309,6 +315,29 @@ export default function ProductFormNew() {
             </select>
             {errors.categoria && <p className="error-text-form">{errors.categoria}</p>}
           </div>
+
+          {/* Status - Apenas na edição */}
+          {id && (
+            <div className="form-group-form">
+              <label htmlFor="status" className="form-label-form">Status do Produto *</label>
+              <select
+                id="status"
+                value={formData.status}
+                onChange={(e) => handleInputChange('status', e.target.value)}
+                className={`form-select-form ${errors.status ? 'input-error-form' : ''}`}
+              >
+                <option value="disponivel">Disponível</option>
+                <option value="indisponivel">Indisponível</option>
+                <option value="vendido">Vendido</option>
+              </select>
+              <p className="form-hint">
+                <strong>Disponível:</strong> Produto pode ser comprado | 
+                <strong> Indisponível:</strong> Produto temporariamente fora de estoque | 
+                <strong> Vendido:</strong> Produto já foi vendido
+              </p>
+              {errors.status && <p className="error-text-form">{errors.status}</p>}
+            </div>
+          )}
 
           {/* Descrição */}
           <div className="form-group-form">
