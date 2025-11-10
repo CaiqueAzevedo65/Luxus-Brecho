@@ -20,7 +20,6 @@ export default function ProductFormNew() {
     preco: '',
     descricao: '',
     categoria: '',
-    status: 'disponivel',
   });
   
   const [imageFile, setImageFile] = useState(null);
@@ -315,27 +314,6 @@ export default function ProductFormNew() {
               className={`form-textarea-form ${errors.descricao ? 'input-error-form' : ''}`}
             />
             {errors.descricao && <p className="error-text-form">{errors.descricao}</p>}
-          </div>
-
-          {/* Status */}
-          <div className="form-group-form">
-            <label htmlFor="status" className="form-label-form">Status *</label>
-            <select
-              id="status"
-              value={formData.status}
-              onChange={(e) => handleInputChange('status', e.target.value)}
-              className={`form-select-form ${errors.status ? 'input-error-form' : ''}`}
-            >
-              <option value="disponivel">Disponível</option>
-              <option value="indisponivel">Indisponível</option>
-              <option value="vendido">Vendido</option>
-            </select>
-            {errors.status && <p className="error-text-form">{errors.status}</p>}
-            <p className="form-hint">
-              {formData.status === 'disponivel' && '✓ Produto pode ser adicionado ao carrinho'}
-              {formData.status === 'indisponivel' && '⚠️ Produto não pode ser adicionado ao carrinho'}
-              {formData.status === 'vendido' && '✔️ Produto marcado como vendido'}
-            </p>
           </div>
 
           {/* Erro geral */}
