@@ -66,13 +66,13 @@ export default function ManageProductsScreen() {
   };
 
   const handleEditProduct = (product: Product) => {
-    router.push(`/admin/edit-product/${product._id}`);
+    router.push(`/admin/edit-product/${product.id}`);
   };
 
   const handleDeleteProduct = (product: Product) => {
     Alert.alert(
       'Excluir Produto',
-      `Tem certeza que deseja excluir "${product.name}"?`,
+      `Tem certeza que deseja excluir "${product.titulo}"?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -126,10 +126,10 @@ export default function ManageProductsScreen() {
         <View style={styles.productStatus}>
           <View style={[
             styles.statusBadge,
-            { backgroundColor: item.disponivel !== false ? '#22C55E' : '#EF4444' }
+            { backgroundColor: item.status === 'disponivel' ? '#22C55E' : item.status === 'vendido' ? '#3B82F6' : '#999' }
           ]}>
             <Text style={styles.statusText}>
-              {item.disponivel !== false ? 'Disponível' : 'Indisponível'}
+              {item.status === 'disponivel' ? 'Disponível' : item.status === 'vendido' ? 'Vendido' : 'Indisponível'}
             </Text>
           </View>
         </View>

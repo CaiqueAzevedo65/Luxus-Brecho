@@ -2,6 +2,7 @@ import React, { useState, memo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useToast } from '../../contexts/ToastContext';
 
 const { width } = Dimensions.get('window');
 
@@ -129,84 +130,96 @@ const ProductCard = memo(function ProductCard({
 
   // Card Vertical (padrão)
   return (
-    <TouchableOpacity 
-      className="bg-white rounded-2xl shadow-sm p-3 mr-3" 
-      style={{ width: width * 0.42 }}
-      onPress={() => router.push(`/product/${id}`)}>
-      {/* Imagem com Favorito */}
-      <View className="relative mb-3">
-        <View className="w-full h-40 bg-gray-100 rounded-xl overflow-hidden">
-          {image ? (
-            <Image source={{ uri: image }} className="w-full h-full" resizeMode="cover" />
-          ) : (
-            <View className="flex-1 items-center justify-center">
-              <MaterialIcons name="checkroom" size={40} color="#E0E0E0" />
+    <View 
+      className="bg-white rounded-2xl shadow-sm mr-3" 
+      style={{ width: width * 0.42, height: 290 }}>
+      {/* Área clicável do produto */}
+      <TouchableOpacity 
+        style={{ padding: 10 }}
+        onPress={() => router.push(`/product/${id}`)}>
+        {/* Imagem com Favorito */}
+        <View className="relative mb-2">
+          <View className="w-full h-32 bg-gray-100 rounded-xl overflow-hidden">
+            {image ? (
+              <Image source={{ uri: image }} className="w-full h-full" resizeMode="cover" />
+            ) : (
+              <View className="flex-1 items-center justify-center">
+                <MaterialIcons name="checkroom" size={32} color="#E0E0E0" />
+              </View>
+            )}
+          </View>
+          
+          {/* Botão Favorito */}
+          <TouchableOpacity 
+            className="absolute top-1 right-1 bg-white/90 rounded-full p-1.5"
+            onPress={(e) => {
+              e.stopPropagation();
+              setIsFavorite(!isFavorite);
+            }}
+          >
+            <Ionicons 
+              name={isFavorite ? "heart" : "heart-outline"} 
+              size={16} 
+              color={isFavorite ? "#E91E63" : "#6B7280"}
+            />
+          </TouchableOpacity>
+
+          {/* Badges */}
+          {(isNew || isExclusive || calculateDiscount() > 0) && (
+            <View className="absolute top-1 left-1">
+              {isExclusive && (
+                <View className="bg-black px-1.5 py-0.5 rounded mb-1">
+                  <Text className="text-white text-xs font-bold">EXCLUSIVO</Text>
+                </View>
+              )}
+              {isNew && (
+                <View className="bg-pink-600 px-1.5 py-0.5 rounded mb-1">
+                  <Text className="text-white text-xs font-bold">NOVO</Text>
+                </View>
+              )}
+              {calculateDiscount() > 0 && (
+                <View className="bg-red-500 px-1.5 py-0.5 rounded">
+                  <Text className="text-white text-xs font-bold">-{calculateDiscount()}%</Text>
+                </View>
+              )}
             </View>
           )}
         </View>
         
-        {/* Botão Favorito */}
-        <TouchableOpacity 
-          className="absolute top-2 right-2 bg-white/90 rounded-full p-2"
-          onPress={() => setIsFavorite(!isFavorite)}
-        >
-          <Ionicons 
-            name={isFavorite ? "heart" : "heart-outline"} 
-            size={18} 
-            color={isFavorite ? "#E91E63" : "#6B7280"}
-          />
-        </TouchableOpacity>
-
-        {/* Badges */}
-        {(isNew || isExclusive || calculateDiscount() > 0) && (
-          <View className="absolute top-2 left-2">
-            {isExclusive && (
-              <View className="bg-black px-2 py-1 rounded mb-1">
-                <Text className="text-white text-xs font-bold">EXCLUSIVO</Text>
-              </View>
-            )}
-            {isNew && (
-              <View className="bg-pink-600 px-2 py-1 rounded mb-1">
-                <Text className="text-white text-xs font-bold">NOVO</Text>
-              </View>
-            )}
-            {calculateDiscount() > 0 && (
-              <View className="bg-red-500 px-2 py-1 rounded">
-                <Text className="text-white text-xs font-bold">-{calculateDiscount()}%</Text>
-              </View>
-            )}
-          </View>
-        )}
-      </View>
-      
-      {/* Informações do Produto */}
-      <View>
-        {brand && (
-          <Text className="text-gray-500 text-xs uppercase tracking-wider mb-1">{brand}</Text>
-        )}
-        <Text className="text-gray-800 text-sm font-semibold mb-2 leading-5" numberOfLines={2}>
-          {title}
-        </Text>
-        
-        {/* Rating */}
-        <View className="flex-row items-center mb-2">
-          {renderStars(rating)}
-          <Text className="text-gray-400 text-xs ml-1">(4.{rating})</Text>
-        </View>
-        
-        {/* Preço */}
+        {/* Informações do Produto */}
         <View>
-          <View className="flex-row items-center">
-            <Text className="text-pink-600 font-bold text-base">R$ {price}</Text>
-          </View>
-          {originalPrice && (
-            <Text className="text-gray-400 text-xs line-through">
-              R$ {originalPrice}
-            </Text>
-          )}
+          <Text className="text-gray-800 text-sm font-semibold mb-1 leading-4" numberOfLines={2} style={{ height: 32 }}>
+            {title}
+          </Text>
+          
+          {/* Preço */}
+          <Text className="text-pink-600 font-bold text-base">R$ {price}</Text>
         </View>
+      </TouchableOpacity>
+
+      {/* Botão Adicionar ao Carrinho - Posição absoluta no final */}
+      <View style={{ position: 'absolute', bottom: 10, left: 10, right: 10 }}>
+        <TouchableOpacity 
+          style={{
+            backgroundColor: '#E91E63',
+            borderRadius: 8,
+            paddingVertical: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onPress={(e) => {
+            e.stopPropagation();
+            // Adicionar ao carrinho
+          }}
+        >
+          <Ionicons name="cart-outline" size={14} color="white" />
+          <Text style={{ color: 'white', fontWeight: '600', fontSize: 11, marginLeft: 4 }}>
+            + Carrinho
+          </Text>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 });
 

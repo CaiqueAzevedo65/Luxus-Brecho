@@ -23,11 +23,6 @@ export default function CartScreen() {
     loadCart();
   }, []);
 
-  const handleQuantityChange = async (productId: number, currentQuantity: number, increment: boolean) => {
-    const newQuantity = increment ? currentQuantity + 1 : currentQuantity - 1;
-    await updateQuantity(productId, newQuantity);
-  };
-
   const handleRemoveItem = (productId: number, productName: string) => {
     Alert.alert(
       'Remover item',
@@ -56,8 +51,9 @@ export default function CartScreen() {
   const totalItems = getTotalItems();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
+    <View style={{ flex: 1, backgroundColor: '#E91E63' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+        <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
       
       {/* Header */}
       <View style={{ backgroundColor: '#E91E63', paddingHorizontal: 16, paddingVertical: 16 }}>
@@ -185,69 +181,18 @@ export default function CartScreen() {
                       }}>
                         R$ {(item.preco || 0).toFixed(2).replace('.', ',')}
                       </Text>
-                      <Text style={{ 
-                        fontSize: 12, 
-                        color: '#666',
-                        marginTop: 4
-                      }}>
-                        Subtotal: R$ {((item.preco || 0) * item.quantity).toFixed(2).replace('.', ',')}
-                      </Text>
                     </View>
                     
-                    {/* Botões de quantidade e remover */}
-                    <View style={{ alignItems: 'center' }}>
-                      <TouchableOpacity 
-                        style={{ 
-                          width: 32, 
-                          height: 32, 
-                          backgroundColor: '#E91E63', 
-                          borderRadius: 16,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          marginBottom: 8
-                        }}
-                        onPress={() => handleQuantityChange(item.id, item.quantity, true)}
-                        disabled={loading}
-                      >
-                        <Ionicons name="add" size={16} color="white" />
-                      </TouchableOpacity>
-                      
-                      <Text style={{ 
-                        fontSize: 16, 
-                        fontWeight: 'bold',
-                        marginBottom: 8,
-                        minWidth: 24,
-                        textAlign: 'center'
-                      }}>
-                        {item.quantity}
-                      </Text>
-                      
-                      <TouchableOpacity 
-                        style={{ 
-                          width: 32, 
-                          height: 32, 
-                          backgroundColor: '#E91E63', 
-                          borderRadius: 16,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          marginBottom: 8
-                        }}
-                        onPress={() => handleQuantityChange(item.id, item.quantity, false)}
-                        disabled={loading}
-                      >
-                        <Ionicons name="remove" size={16} color="white" />
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity 
-                        style={{ 
-                          padding: 4
-                        }}
-                        onPress={() => handleRemoveItem(item.id, item.titulo)}
-                        disabled={loading}
-                      >
-                        <Ionicons name="trash-outline" size={16} color="#E91E63" />
-                      </TouchableOpacity>
-                    </View>
+                    {/* Botão de remover */}
+                    <TouchableOpacity 
+                      style={{ 
+                        padding: 8
+                      }}
+                      onPress={() => handleRemoveItem(item.id, item.titulo)}
+                      disabled={loading}
+                    >
+                      <Ionicons name="trash-outline" size={24} color="#E91E63" />
+                    </TouchableOpacity>
                   </View>
                   
                   {/* Linha divisória */}
@@ -400,6 +345,7 @@ export default function CartScreen() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }

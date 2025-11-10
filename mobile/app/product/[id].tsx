@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView, Share, StatusBar, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Product } from '../../types/product';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useCartStore } from '../../store/cartStore';
 import { apiService } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function ProductScreen() {
   const { id } = useLocalSearchParams();
@@ -15,20 +16,30 @@ export default function ProductScreen() {
   const { addToCart } = useCartStore();
   const [product, setProduct] = useState<Product | null>(null);
   const [favoriteProducts, setFavoriteProducts] = useState<number[]>([]);
+  const toast = useToast();
 
   const toggleFavorite = async () => {
     if (!product) return;
     
     try {
-      const newFavorites = isFavorite
-        ? favoriteProducts.filter(id => id !== product.id)
-        : [...favoriteProducts, product.id];
+      const willBeFavorite = !isFavorite;
+      const newFavorites = willBeFavorite
+        ? [...favoriteProducts, product.id]
+        : favoriteProducts.filter(id => id !== product.id);
       
       setFavoriteProducts(newFavorites);
-      setIsFavorite(!isFavorite);
+      setIsFavorite(willBeFavorite);
       await AsyncStorage.setItem('favoriteProducts', JSON.stringify(newFavorites));
+      
+      // Mostrar toast
+      if (willBeFavorite) {
+        toast.success('Adicionado aos favoritos! ❤️');
+      } else {
+        toast.info('Removido dos favoritos');
+      }
     } catch (error) {
       console.error('Erro ao salvar favorito:', error);
+      toast.error('Erro ao atualizar favoritos');
     }
   };
   const [loading, setLoading] = useState(true);
@@ -38,6 +49,14 @@ export default function ProductScreen() {
       try {
         const data = await apiService.getProductById(Number(id));
         setProduct(data);
+        
+        // Carregar favoritos
+        const savedFavorites = await AsyncStorage.getItem('favoriteProducts');
+        if (savedFavorites && data) {
+          const favorites = JSON.parse(savedFavorites);
+          setFavoriteProducts(favorites);
+          setIsFavorite(favorites.includes(data.id));
+        }
       } catch (error) {
         console.error('Erro ao carregar produto:', error);
       } finally {
@@ -63,17 +82,12 @@ export default function ProductScreen() {
 
   const handleAddToCart = () => {
     if (product) {
+      if (product.status !== 'disponivel') {
+        toast.error('Este produto não está disponível no momento.');
+        return;
+      }
       addToCart(product);
-      Alert.alert(
-        'Produto Adicionado',
-        'O produto foi adicionado ao carrinho!',
-        [
-          {
-            text: 'Continuar Comprando',
-            style: 'cancel'
-          }
-        ]
-      );
+      toast.success(`${product.titulo} adicionado ao carrinho! 🛒`);
     }
   };
 
@@ -101,15 +115,12 @@ export default function ProductScreen() {
           <TouchableOpacity onPress={handleShare}>
             <Ionicons name="share-outline" size={24} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setIsFavorite(!isFavorite)}>
+          <TouchableOpacity onPress={toggleFavorite}>
             <Ionicons 
               name={isFavorite ? "heart" : "heart-outline"} 
               size={24} 
               color="white"
             />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/cart')}>
-            <Ionicons name="cart-outline" size={24} color="white" />
           </TouchableOpacity>
         </View>
       </View>

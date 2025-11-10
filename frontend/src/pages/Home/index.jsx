@@ -53,7 +53,11 @@ const Home = () => {
       const response = await api.get('/products', {
         params: { page: 1, page_size: 8 }
       });
-      setFeaturedProducts(response.data.items || []);
+      // Filtrar apenas produtos disponíveis
+      const availableProducts = (response.data.items || []).filter(
+        product => product.status === 'disponivel'
+      );
+      setFeaturedProducts(availableProducts);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
       setFeaturedProducts([]);
