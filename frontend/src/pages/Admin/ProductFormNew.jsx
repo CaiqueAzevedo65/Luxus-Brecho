@@ -143,6 +143,7 @@ export default function ProductFormNew() {
       const validation = validate(formData);
       if (!validation.success) {
         setErrors(validation.errors);
+        showError('Por favor, corrija os erros no formulário.');
         return;
       }
 
@@ -176,11 +177,18 @@ export default function ProductFormNew() {
       navigate('/admin/products');
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
+      console.error('Resposta do servidor:', error.response?.data);
       
-      if (error.response?.data?.message) {
+      if (error.response?.data?.errors) {
+        // Backend retornou erros de validação específicos
+        setErrors(error.response.data.errors);
+        showError('Erro de validação. Verifique os campos.');
+      } else if (error.response?.data?.message) {
         setErrors({ submit: error.response.data.message });
+        showError(error.response.data.message);
       } else {
         setErrors({ submit: 'Erro ao salvar produto. Tente novamente.' });
+        showError('Erro ao salvar produto. Tente novamente.');
       }
     } finally {
       setIsSubmitting(false);
