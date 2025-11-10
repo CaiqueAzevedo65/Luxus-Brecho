@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { FiArrowLeft, FiShoppingCart, FiHeart, FiShare2 } from 'react-icons/fi';
 import './index.css';
 
 const ProdutoDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { addToCart } = useCartStore();
+  const { success, info } = useToastContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
-  const { addToCart } = useCartStore();
 
   useEffect(() => {
     fetchProduct();
@@ -66,7 +68,7 @@ const ProdutoDetalhes = () => {
         await navigator.share(shareData);
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        alert('Link copiado para a área de transferência!');
+        info('Link copiado para a área de transferência!');
       }
     } catch (err) {
       console.error('Erro ao compartilhar:', err);

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { ToastProvider } from './contexts/ToastContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Sobre from './pages/Sobre';
@@ -45,8 +46,9 @@ function App() {
 
   return (
     <Router>
-      <ScrollToTop />
-      <Routes>
+      <ToastProvider>
+        <ScrollToTop />
+        <Routes>
         {/* Rotas principais com layout */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
@@ -76,6 +78,7 @@ function App() {
           <Route path="admin/products/edit/:id" element={<ProductFormNew />} />
         </Route>
       </Routes>
+      </ToastProvider>
     </Router>
   );
 }

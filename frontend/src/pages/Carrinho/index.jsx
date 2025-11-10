@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiArrowLeft } from 'react-icons/fi';
 import './index.css';
 
@@ -18,6 +19,7 @@ const Carrinho = () => {
     clearCart,
     loadCart
   } = useCartStore();
+  const { success } = useToastContext();
 
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [itemToRemove, setItemToRemove] = useState(null);
@@ -42,7 +44,7 @@ const Carrinho = () => {
   };
 
   const handleCheckout = () => {
-    alert(`Pedido confirmado!\nTotal: ${formatPrice(getTotal())}\n\nObrigado pela compra!`);
+    success(`Pedido confirmado! 🎉\nTotal: ${formatPrice(getTotal())}\n\nObrigado pela compra!`);
     clearCart();
     navigate('/');
   };

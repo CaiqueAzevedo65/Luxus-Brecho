@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { LoginSchema, useZodValidation } from '../../schemas/auth.schema';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi';
 import './index.css';
@@ -16,6 +17,7 @@ const Login = () => {
 
   const { login, isLoading, error, clearError } = useAuthStore();
   const { validate } = useZodValidation(LoginSchema);
+  const { success, error: showError, info } = useToastContext();
 
   const validateForm = () => {
     const result = validate(formData);
@@ -40,14 +42,12 @@ const Login = () => {
     const result = await login(formData);
 
     if (result.success) {
-      alert('Login realizado com sucesso!');
+      success('Login realizado com sucesso! 🎉');
       navigate('/');
     } else if (result.emailNotConfirmed) {
-      if (window.confirm('Sua conta ainda não foi ativada. Deseja receber um novo email de confirmação?')) {
-        navigate('/resend-confirmation', { state: { email: formData.email } });
-      }
+      info('Sua conta ainda não foi ativada. Verifique seu email para confirmar.');
     } else {
-      alert(error || 'Erro ao fazer login');
+      showError(error || 'Erro ao fazer login. Verifique suas credenciais.');
     }
   };
 

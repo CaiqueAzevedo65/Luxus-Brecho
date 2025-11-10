@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { FiShoppingCart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import './index.css';
 
@@ -11,6 +12,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [currentBanner, setCurrentBanner] = useState(0);
   const { addToCart } = useCartStore();
+  const { success } = useToastContext();
 
   const banners = [
     'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800',
@@ -146,7 +148,7 @@ const Home = () => {
                     className="add-cart-btn"
                     onClick={() => {
                       addToCart(product);
-                      alert('Produto adicionado ao carrinho!');
+                      success(`${product.titulo} adicionado ao carrinho! 🛒`);
                     }}
                   >
                     <FiShoppingCart /> Adicionar

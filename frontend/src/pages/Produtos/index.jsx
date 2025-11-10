@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import { FiSearch, FiFilter, FiShoppingCart, FiX } from 'react-icons/fi';
 import './index.css';
 
@@ -16,6 +17,7 @@ const Produtos = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const { addToCart } = useCartStore();
+  const { success } = useToastContext();
 
   useEffect(() => {
     fetchCategories();
@@ -225,7 +227,7 @@ const Produtos = () => {
                     className="add-cart-btn"
                     onClick={() => {
                       addToCart(product);
-                      alert('Produto adicionado ao carrinho!');
+                      success(`${product.titulo} adicionado ao carrinho! 🛒`);
                     }}
                   >
                     <FiShoppingCart /> Adicionar

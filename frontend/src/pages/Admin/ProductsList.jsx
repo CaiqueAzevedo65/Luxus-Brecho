@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useToastContext } from '../../contexts/ToastContext';
 import api from '../../services/api';
 import { FiArrowLeft, FiPlus, FiEdit3, FiTrash2, FiSearch, FiPackage } from 'react-icons/fi';
 import './ProductsList.css';
@@ -8,6 +9,7 @@ import './ProductsList.css';
 export default function ProductsList() {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
+  const { success, error: showError } = useToastContext();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -16,7 +18,7 @@ export default function ProductsList() {
   useEffect(() => {
     // Verificar se é administrador
     if (!isAuthenticated || user?.tipo !== 'Administrador') {
-      alert('Acesso negado. Apenas administradores podem acessar esta página.');
+      showError('Acesso negado. Apenas administradores podem acessar esta página.');
       navigate('/');
       return;
     }
@@ -47,7 +49,7 @@ export default function ProductsList() {
       setProducts(response.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
-      alert('Erro ao carregar produtos. Tente novamente.');
+      showError('Erro ao carregar produtos. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -62,11 +64,11 @@ export default function ProductsList() {
   const confirmDeleteProduct = async (product) => {
     try {
       await api.delete(`/products/${product.id}`);
-      alert('Produto excluído com sucesso!');
+      success('Produto excluído com sucesso! 🗑️');
       fetchProducts();
     } catch (error) {
       console.error('Erro ao excluir produto:', error);
-      alert('Erro ao excluir produto. Tente novamente.');
+      showError('Erro ao excluir produto. Tente novamente.');
     }
   };
 
