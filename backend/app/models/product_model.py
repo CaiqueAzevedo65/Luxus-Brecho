@@ -33,7 +33,7 @@ def create_dynamic_schema(db) -> Dict[str, Any]:
     return {
         "$jsonSchema": {
             "bsonType": "object",
-            "required": ["id", "titulo", "preco", "descricao", "categoria", "imagem", "status"],
+            "required": ["id", "titulo", "preco", "descricao", "categoria", "imagem"],
             "properties": {
                 "id": {
                     "description": "Identificador numérico único do produto",
@@ -105,8 +105,8 @@ def validate_product(payload: Dict[str, Any], db=None) -> Tuple[bool, Dict[str, 
     if "id" in data and not isinstance(data["id"], (int,)):
         errors["id"] = "deve ser um número inteiro"
 
-    # Campos obrigatórios - TODOS são obrigatórios conforme requisito
-    required = ["titulo", "preco", "descricao", "categoria", "imagem", "status"]
+    # Campos obrigatórios (status é opcional - será definido como 'disponivel' por padrão)
+    required = ["titulo", "preco", "descricao", "categoria", "imagem"]
     for k in required:
         if data.get(k) in (None, ""):
             errors[k] = "campo obrigatório"
