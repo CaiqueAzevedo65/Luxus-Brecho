@@ -17,7 +17,7 @@ const Produtos = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const { addToCart } = useCartStore();
-  const { success } = useToastContext();
+  const { success, info, error: showError } = useToastContext();
 
   useEffect(() => {
     fetchCategories();
@@ -203,7 +203,7 @@ const Produtos = () => {
           <div className="produtos-grid">
             {products.map((product) => (
               <div key={product.id} className="product-card-featured">
-                <Link to={`/produto/${product.id}`} className="product-link">
+                <Link to={`/produto/${product.id}`} className="product-card-link">
                   <div className="product-image-wrapper">
                     {product.imagem ? (
                       <img
@@ -217,22 +217,27 @@ const Produtos = () => {
                       <div className="no-image">Sem Imagem</div>
                     )}
                   </div>
-                </Link>
-                <div className="product-info-featured">
-                  <Link to={`/produto/${product.id}`} className="product-link">
+                  <div className="product-info-featured">
                     <h3>{product.titulo}</h3>
-                  </Link>
-                  <p className="product-price">{formatPrice(product.preco)}</p>
-                  <button
-                    className="add-cart-btn"
-                    onClick={() => {
-                      addToCart(product);
+                    <p className="product-price">{formatPrice(product.preco)}</p>
+                    <p className="product-category">{product.categoria}</p>
+                  </div>
+                </Link>
+                <button
+                  className="add-cart-btn-produtos"
+                  onClick={() => {
+                    const result = addToCart(product);
+                    if (result?.alreadyInCart) {
+                      info(`${product.titulo} já está no carrinho! Esta é uma peça única.`);
+                    } else if (result?.success) {
                       success(`${product.titulo} adicionado ao carrinho! 🛒`);
-                    }}
-                  >
-                    <FiShoppingCart /> Adicionar
-                  </button>
-                </div>
+                    } else if (result?.error) {
+                      showError('Erro ao adicionar produto ao carrinho.');
+                    }
+                  }}
+                >
+                  <FiShoppingCart /> Adicionar ao Carrinho
+                </button>
               </div>
             ))}
           </div>

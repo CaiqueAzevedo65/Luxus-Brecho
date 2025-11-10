@@ -10,7 +10,7 @@ const ProdutoDetalhes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCartStore();
-  const { success, info } = useToastContext();
+  const { success, info, error: showError } = useToastContext();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -77,14 +77,19 @@ const ProdutoDetalhes = () => {
 
   const handleAddToCart = () => {
     if (product && product.disponivel) {
-      addToCart(product);
+      const result = addToCart(product);
       
-      const confirmGoToCart = window.confirm(
-        'Produto adicionado ao carrinho!\n\nDeseja ir para o carrinho agora?'
-      );
-      
-      if (confirmGoToCart) {
-        navigate('/carrinho');
+      if (result?.alreadyInCart) {
+        info(`${product.titulo} já está no carrinho! Esta é uma peça única. 🛍️`);
+      } else if (result?.success) {
+        success(`${product.titulo} adicionado ao carrinho! 🛒`);
+        // Opcional: navegar para o carrinho após 1.5s
+        setTimeout(() => {
+          const goToCart = window.confirm('Deseja ir para o carrinho agora?');
+          if (goToCart) navigate('/carrinho');
+        }, 1500);
+      } else if (result?.error) {
+        showError('Erro ao adicionar produto ao carrinho.');
       }
     }
   };

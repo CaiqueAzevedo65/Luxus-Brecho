@@ -11,11 +11,11 @@ export const useCartStore = create((set, get) => ({
   
   // Getters computados
   getTotalItems: () => {
-    return get().cart.reduce((total, item) => total + item.quantity, 0);
+    return get().cart.length; // Cada item é único, então total = número de itens
   },
   
   getSubtotal: () => {
-    return get().cart.reduce((total, item) => total + (item.preco * item.quantity), 0);
+    return get().cart.reduce((total, item) => total + item.preco, 0); // Sem multiplicação por quantidade
   },
   
   getShippingCost: () => {
@@ -32,35 +32,33 @@ export const useCartStore = create((set, get) => ({
     set({ loading: true });
     try {
       const currentCart = get().cart;
-      const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
+      const existingItem = currentCart.find(item => item.id === product.id);
       
-      let updatedCart;
-      if (existingItemIndex >= 0) {
-        // Se o produto já existe, aumenta a quantidade
-        updatedCart = currentCart.map((item, index) => 
-          index === existingItemIndex 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        // Se é um produto novo, adiciona com quantidade 1
-        const cartItem = {
-          id: product.id,
-          titulo: product.titulo,
-          preco: Number(product.preco) || 0,
-          imagem: product.imagem,
-          quantity: 1,
-          categoria: product.categoria
-        };
-        updatedCart = [...currentCart, cartItem];
+      // Se o produto já existe, não adiciona novamente (peça única)
+      if (existingItem) {
+        console.log('Produto já está no carrinho (peça única)');
+        set({ loading: false });
+        return { success: false, alreadyInCart: true };
       }
       
+      // Adiciona novo produto sem quantidade (peça única)
+      const cartItem = {
+        id: product.id,
+        titulo: product.titulo,
+        preco: Number(product.preco) || 0,
+        imagem: product.imagem,
+        categoria: product.categoria
+      };
+      
+      const updatedCart = [...currentCart, cartItem];
       set({ cart: updatedCart });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCart));
+      set({ loading: false });
+      return { success: true, alreadyInCart: false };
     } catch (error) {
       console.error('Erro ao adicionar produto ao carrinho:', error);
-    } finally {
       set({ loading: false });
+      return { success: false, alreadyInCart: false, error: true };
     }
   },
   
@@ -72,28 +70,6 @@ export const useCartStore = create((set, get) => ({
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCart));
     } catch (error) {
       console.error('Erro ao remover produto do carrinho:', error);
-    } finally {
-      set({ loading: false });
-    }
-  },
-  
-  updateQuantity: (productId, quantity) => {
-    if (quantity <= 0) {
-      get().removeFromCart(productId);
-      return;
-    }
-    
-    set({ loading: true });
-    try {
-      const updatedCart = get().cart.map(item => 
-        item.id === productId 
-          ? { ...item, quantity: quantity }
-          : item
-      );
-      set({ cart: updatedCart });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCart));
-    } catch (error) {
-      console.error('Erro ao atualizar quantidade:', error);
     } finally {
       set({ loading: false });
     }
@@ -124,11 +100,6 @@ export const useCartStore = create((set, get) => ({
     } finally {
       set({ loading: false });
     }
-  },
-
-  getItemQuantity: (productId) => {
-    const item = get().cart.find(item => item.id === productId);
-    return item ? item.quantity : 0;
   },
 
   isInCart: (productId) => {
