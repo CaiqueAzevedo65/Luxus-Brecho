@@ -186,12 +186,12 @@ export default function ProfileScreen() {
 
             <TouchableOpacity 
               style={styles.actionItem}
-              onPress={() => router.push('/admin/debug')}
+              onPress={() => router.push('/register-admin')}
             >
               <View style={styles.actionIcon}>
-                <Ionicons name="bug-outline" size={20} color="#F59E0B" />
+                <Ionicons name="person-add-outline" size={20} color="#F59E0B" />
               </View>
-              <Text style={styles.actionText}>Debug</Text>
+              <Text style={styles.actionText}>Criar Administrador</Text>
               <Ionicons name="chevron-forward" size={16} color="#999" />
             </TouchableOpacity>
           </View>
@@ -201,11 +201,14 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Ações</Text>
           
-          <TouchableOpacity style={styles.actionItem}>
+          <TouchableOpacity 
+            style={styles.actionItem}
+            onPress={() => router.push('/account-settings')}
+          >
             <View style={styles.actionIcon}>
-              <Ionicons name="settings-outline" size={20} color="#666" />
+              <Ionicons name="person-circle-outline" size={20} color="#E91E63" />
             </View>
-            <Text style={styles.actionText}>Configurações</Text>
+            <Text style={styles.actionText}>Configurações da Conta</Text>
             <Ionicons name="chevron-forward" size={16} color="#999" />
           </TouchableOpacity>
 

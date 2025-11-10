@@ -29,6 +29,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="products"
+        options={{
+          title: 'Produtos',
+          tabBarIcon: ({ color }) => <MaterialIcons name="checkroom" size={24} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="cart"
         options={{
           title: 'Carrinho',

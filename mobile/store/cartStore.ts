@@ -60,14 +60,12 @@ export const useCartStore = create<CartState>((set, get) => ({
       
       let updatedCart;
       if (existingItemIndex >= 0) {
-        // Se o produto já existe, aumenta a quantidade
-        updatedCart = currentCart.map((item, index) => 
-          index === existingItemIndex 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        // Produto já existe no carrinho - não faz nada (peças únicas)
+        console.log('Produto já está no carrinho. Cada peça é única.');
+        set({ loading: false });
+        return;
       } else {
-        // Se é um produto novo, adiciona com quantidade 1
+        // Se é um produto novo, adiciona com quantidade 1 (sempre 1, peças únicas)
         const cartItem = {
           id: product.id,
           titulo: product.titulo,

@@ -50,7 +50,7 @@ const Configuracoes = () => {
     {
       icon: <FiTrash2 />,
       title: 'Excluir Conta',
-      description: 'Remover permanentemente sua conta',
+      description: 'Excluir permanentemente sua conta',
       path: '/configuracoes/excluir',
       iconColor: 'config-icon-red'
     }

@@ -33,11 +33,6 @@ export default function MenuScreen() {
 
   const menuItems: MenuItem[] = [
     {
-      title: 'Categorias',
-      icon: 'grid-outline' as IoniconsName,
-      onPress: () => router.push('/categories'),
-    },
-    {
       title: 'Meus Pedidos',
       icon: 'bag-outline' as IoniconsName,
       href: '/orders',
@@ -48,19 +43,14 @@ export default function MenuScreen() {
       onPress: handleProfilePress,
     },
     {
-      title: 'Notificações',
-      icon: 'notifications-outline' as IoniconsName,
-      href: '/notifications',
-    },
-    {
-      title: 'Ajuda',
+      title: 'Suporte',
       icon: 'help-circle-outline' as IoniconsName,
-      href: '/help',
+      onPress: () => router.push('/support'),
     },
     {
-      title: 'Sobre',
-      icon: 'information-outline',
-      href: '/about',
+      title: 'Contato',
+      icon: 'mail-outline' as IoniconsName,
+      onPress: () => router.push('/contact'),
     },
   ];
 

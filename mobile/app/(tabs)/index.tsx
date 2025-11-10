@@ -5,6 +5,8 @@ import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useFeaturedProducts, useTopSellingProducts } from '../../hooks/useProducts';
 import { useCartStore } from '../../store/cartStore';
+import { useFilterStore } from '../../store/filterStore';
+import { useToast } from '../../contexts/ToastContext';
 import type { Product } from '../../types/product';
 import ConnectionStatus from '@/components/ui/ConnectionStatus';
 
@@ -22,8 +24,10 @@ const testimonials: Testimonial[] = [
 ];
 
 export default function HomeScreen() {
+  const { success, error, info, warning } = useToast();
+  const setCategory = useFilterStore((state) => state.setCategory);
   const { 
-    featuredProducts, 
+    featuredProducts: allFeaturedProducts, 
     loading: loadingFeatured, 
     error: errorFeatured 
   } = useFeaturedProducts();
@@ -34,9 +38,29 @@ export default function HomeScreen() {
     error: errorTopSelling 
   } = useTopSellingProducts();
 
+  // Filtrar apenas produtos disponíveis
+  const featuredProducts = allFeaturedProducts.filter(product => product.status === 'disponivel');
+
   const addToCart = useCartStore((state) => state.addToCart);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
   const cartItemCount = getTotalItems();
+
+  const handleCategoryPress = (category: string) => {
+    setCategory(category);
+    router.push('/(tabs)/products');
+  };
+
+  const handleAddToCart = async (product: Product) => {
+    const isAlreadyInCart = useCartStore.getState().isInCart(product.id);
+    
+    if (isAlreadyInCart) {
+      info('Este produto já está no carrinho!');
+      return;
+    }
+    
+    await addToCart(product);
+    success(`${product.titulo} adicionado ao carrinho! 🛒`);
+  };
 
   const renderFeaturedProducts = () => {
     if (loadingFeatured) {
@@ -61,21 +85,21 @@ export default function HomeScreen() {
         {featuredProducts.map((product) => (
           <TouchableOpacity
             key={product.id}
-            onPress={() => router.push(`/product/${product.id}`)}
             style={{ 
               backgroundColor: 'white', 
               borderRadius: 12, 
-              padding: 12, 
               marginRight: 12, 
               width: width * 0.42,
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
+              shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
-              shadowRadius: 2,
-              elevation: 2
+              shadowRadius: 4,
+              elevation: 3,
+              overflow: 'hidden'
             }}
+            onPress={() => router.push(`/product/${product.id}`)}
           >
-            <View style={{ width: '100%', height: 160, backgroundColor: '#f0f0f0', borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
+            <View style={{ width: '100%', height: 180, backgroundColor: '#f0f0f0' }}>
               {product.imagem ? (
                 <Image
                   source={{
@@ -85,30 +109,48 @@ export default function HomeScreen() {
                       'Cache-Control': 'max-age=31536000'
                     }
                   }}
-                  className="w-full h-full"
+                  style={{ width: '100%', height: '100%' }}
                   resizeMode="cover"
                   onError={() => console.warn('Erro ao carregar imagem:', product.imagem)}
                 />
               ) : (
-                <View className="flex-1 items-center justify-center">
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                   <MaterialIcons name="checkroom" size={40} color="#E0E0E0" />
                 </View>
               )}
             </View>
 
-            <Text style={{ color: '#333', fontSize: 14, fontWeight: '600', marginTop: 8, marginBottom: 4 }} numberOfLines={2}>
-              {product.titulo}
-            </Text>
+            <View style={{ padding: 12 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 8, minHeight: 40 }} numberOfLines={2}>
+                {product.titulo}
+              </Text>
 
-            <Text style={{ color: '#E91E63', fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
-              R$ {(product.preco || 0).toFixed(2).replace('.', ',')}
-            </Text>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#E91E63', marginBottom: 8 }}>
+                R$ {(product.preco || 0).toFixed(2).replace('.', ',')}
+              </Text>
+            </View>
 
             <TouchableOpacity
-              style={{ backgroundColor: '#E91E63', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 6, alignItems: 'center' }}
-              onPress={() => addToCart(product)}
+              style={{ 
+                backgroundColor: product.status === 'disponivel' ? '#E91E63' : '#999',
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                paddingVertical: 10,
+                gap: 6
+              }}
+              onPress={(e) => {
+                e.stopPropagation();
+                if (product.status === 'disponivel') {
+                  handleAddToCart(product);
+                }
+              }}
+              disabled={product.status !== 'disponivel'}
             >
-              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>+ Carrinho</Text>
+              <MaterialIcons name="shopping-cart" size={14} color="white" />
+              <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+                {product.status === 'disponivel' ? '+ Carrinho' : 'Indisponível'}
+              </Text>
             </TouchableOpacity>
           </TouchableOpacity>
         ))}
@@ -117,8 +159,9 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
+    <View style={{ flex: 1, backgroundColor: '#E91E63' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
+        <StatusBar barStyle="light-content" backgroundColor="#E91E63" />
       
       {/* Header */}
       <View style={{ backgroundColor: '#E91E63', paddingHorizontal: 16, paddingVertical: 12 }}>
@@ -190,7 +233,7 @@ export default function HomeScreen() {
         <View className="mb-6">
           <View className="flex-row justify-between items-center px-4 mb-3">
             <Text className="text-base font-bold text-gray-800">Produtos em Destaque</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/products')}>
               <Text className="text-pink-600 text-sm">Ver Mais</Text>
             </TouchableOpacity>
           </View>
@@ -210,7 +253,7 @@ export default function HomeScreen() {
               <TouchableOpacity 
                 style={{ width: '48%' }}
                 className="rounded-xl shadow-sm overflow-hidden aspect-square"
-                onPress={() => router.push('/category/casual')}
+                onPress={() => handleCategoryPress('Casual')}
               >
                 <Image
                   source={{
@@ -231,7 +274,7 @@ export default function HomeScreen() {
               <TouchableOpacity 
                 style={{ width: '48%' }}
                 className="rounded-xl shadow-sm overflow-hidden aspect-square"
-                onPress={() => router.push('/category/social')}
+                onPress={() => handleCategoryPress('Social')}
               >
                 <Image
                   source={{
@@ -252,7 +295,7 @@ export default function HomeScreen() {
             {/* Categoria Esportivo */}
             <TouchableOpacity 
               className="rounded-xl shadow-sm overflow-hidden aspect-[2/1] w-full"
-              onPress={() => router.push('/category/esportivo')}
+              onPress={() => handleCategoryPress('Esportivo')}
             >
               <Image
                 source={{
@@ -277,7 +320,10 @@ export default function HomeScreen() {
             Para tirar suas dúvidas
           </Text>
           <View className="flex-row justify-end">
-            <TouchableOpacity className="bg-pink-600 px-4 py-2 rounded-full">
+            <TouchableOpacity 
+              className="bg-pink-600 px-4 py-2 rounded-full"
+              onPress={() => router.push('/support')}
+            >
               <Text className="text-white text-xs">Preciso de ajuda</Text>
             </TouchableOpacity>
           </View>
@@ -290,14 +336,18 @@ export default function HomeScreen() {
           </Text>
           <View className="flex-row justify-between items-center">
             <View>
-              <Text className="text-white text-xs mb-1">Suporte</Text>
-              <Text className="text-white text-xs mb-1">Contato</Text>
-              <Text className="text-white text-xs">Políticas</Text>
+              <TouchableOpacity onPress={() => router.push('/support')}>
+                <Text className="text-white text-xs mb-1">Suporte</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/contact')}>
+                <Text className="text-white text-xs mb-1">Contato</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
       </ScrollView>
       <ConnectionStatus />
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
