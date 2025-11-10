@@ -61,15 +61,16 @@ export const useProductValidation = () => {
       const result = ProductSchema.parse(data);
       return { success: true, data: result, errors: null };
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof z.ZodError && error.errors && Array.isArray(error.errors)) {
         const errors = {};
         error.errors.forEach((err) => {
-          const path = err.path.join('.');
+          const path = err.path && err.path.length > 0 ? err.path.join('.') : 'general';
           errors[path] = err.message;
         });
         return { success: false, data: null, errors };
       }
-      return { success: false, data: null, errors: { general: 'Erro de validação' } };
+      console.error('Erro de validação:', error);
+      return { success: false, data: null, errors: { general: error?.message || 'Erro de validação' } };
     }
   };
 
