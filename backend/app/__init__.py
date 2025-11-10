@@ -52,7 +52,7 @@ def create_app():
     print(f"🌐 Origens CORS permitidas: {allowed_origins}")
     
     CORS(app, 
-         origins=allowed_origins,
+         resources={r"/*": {"origins": allowed_origins}},
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
          allow_headers=[
              'Content-Type', 
@@ -65,9 +65,7 @@ def create_app():
          ],
          expose_headers=['Content-Length', 'Content-Encoding'],
          max_age=3600,
-         supports_credentials=True,
-         send_wildcard=False,
-         always_send=True)
+         supports_credentials=True)
     
     # Middleware de segurança
     @app.after_request
