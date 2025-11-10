@@ -164,6 +164,9 @@ def create_app():
         ('app.routes.users_routes', 'users_bp', '/api/users')
     ]
     
+    # Desabilitar strict slashes globalmente para evitar redirects em preflight
+    app.url_map.strict_slashes = False
+    
     for module_path, blueprint_name, url_prefix in blueprints_to_register:
         try:
             module = __import__(module_path, fromlist=[blueprint_name])
