@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useToastContext } from '../../contexts/ToastContext';
+import { RegisterSchema, useZodValidation } from '../../schemas/auth.schema';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft, FiUser } from 'react-icons/fi';
 import './index.css';
 
@@ -17,7 +18,7 @@ const Registro = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
-  const { register, isLoading } = useAuthStore();
+  const { register, isLoading, clearError } = useAuthStore();
   const { success, error: showError } = useToastContext();
   const { validate } = useZodValidation(RegisterSchema);
 

@@ -43,10 +43,10 @@ const ProdutoDetalhes = () => {
     }
   };
 
-  const handleToggleFavorite = () => {
+  const handleToggleFavorite = async () => {
     if (!product) return;
 
-    const result = toggleFavorite(product);
+    const result = await toggleFavorite(product);
     
     if (result?.success) {
       const newIsFavorite = checkIsFavorite(product.id);

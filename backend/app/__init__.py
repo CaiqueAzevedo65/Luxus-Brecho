@@ -61,6 +61,7 @@ def create_app():
              'Accept-Encoding',
              'X-Client-Version',
              'X-Requested-With',
+             'X-User-Id',
              'Origin'
          ],
          expose_headers=['Content-Length', 'Content-Encoding'],
@@ -122,10 +123,12 @@ def create_app():
                 from .models.category_model import ensure_categories_collection
                 from .models.product_model import ensure_products_collection
                 from .models.user_model import ensure_users_collection
+                from .models.favorite_model import ensure_indexes as ensure_favorites_indexes
                 
                 ensure_categories_collection(app.db)
                 ensure_products_collection(app.db)
                 ensure_users_collection(app.db)
+                ensure_favorites_indexes(app.db)
                 print("✅ Coleções e índices verificados")
             except ImportError as e:
                 print(f"⚠️  Alguns modelos não foram encontrados: {e}")
@@ -151,7 +154,8 @@ def create_app():
                 'health': '/api/health',
                 'products': '/api/products',
                 'images': '/api/images',
-                'users': '/api/users'
+                'users': '/api/users',
+                'favorites': '/api/favorites'
             }
         })
     
@@ -161,7 +165,8 @@ def create_app():
         ('app.routes.products_routes', 'products_bp', '/api/products'),
         ('app.routes.categories_routes', 'categories_bp', '/api/categories'),
         ('app.routes.images_routes', 'images_bp', '/api/images'),
-        ('app.routes.users_routes', 'users_bp', '/api/users')
+        ('app.routes.users_routes', 'users_bp', '/api/users'),
+        ('app.routes.favorites_routes', 'favorites_bp', '/api/favorites')
     ]
     
     # Desabilitar strict slashes globalmente para evitar redirects em preflight
@@ -196,7 +201,11 @@ def create_app():
                 'GET /api/categories',
                 'POST /api/categories',
                 'GET /api/users',
-                'POST /api/users'
+                'POST /api/users',
+                'GET /api/favorites',
+                'POST /api/favorites',
+                'DELETE /api/favorites/<product_id>',
+                'POST /api/favorites/toggle'
             ]
         }), 404
     

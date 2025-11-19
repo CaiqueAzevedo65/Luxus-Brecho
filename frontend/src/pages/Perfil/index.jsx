@@ -1,12 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiUserPlus, FiPackage, FiEdit3, FiChevronRight, FiSettings, FiHeart } from 'react-icons/fi';
+import LogoutModal from '../../components/LogoutModal';
 import './index.css';
 
 const Perfil = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, initialize } = useAuthStore();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     initialize();
@@ -19,10 +21,17 @@ const Perfil = () => {
   }, [isAuthenticated, navigate]);
 
   const handleLogout = () => {
-    if (window.confirm('Tem certeza que deseja sair?')) {
-      logout();
-      navigate('/');
-    }
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    navigate('/');
+    setShowLogoutModal(false);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   const formatDate = (dateString) => {
@@ -217,6 +226,12 @@ const Perfil = () => {
           </div>
         )}
       </div>
+
+      <LogoutModal 
+        isOpen={showLogoutModal}
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+      />
     </div>
   );
 };

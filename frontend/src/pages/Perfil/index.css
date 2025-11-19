@@ -152,7 +152,7 @@
 .info-icon {
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(194, 24, 91, 0.1) 100%);
+  background: white;
   border-radius: 12px;
   display: flex;
   align-items: center;

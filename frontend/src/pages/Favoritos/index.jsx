@@ -22,8 +22,8 @@ const Favoritos = () => {
     loadFavorites();
   }, []);
 
-  const handleRemoveFavorite = (product) => {
-    const result = removeFromFavorites(product.id);
+  const handleRemoveFavorite = async (product) => {
+    const result = await removeFromFavorites(product.id);
     if (result?.success) {
       info(`${product.titulo} removido dos favoritos.`);
     } else {
