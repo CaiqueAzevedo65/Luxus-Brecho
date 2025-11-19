@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { authService, User, LoginCredentials, RegisterData } from '../services/auth';
+import { useFavoritesStore } from './favoritesStore';
 
 interface AuthState {
   // Estado
@@ -39,6 +40,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
           error: null,
         });
+        // Carregar favoritos do usuário logado
+        useFavoritesStore.getState().loadFavorites();
         return { success: true };
       } else {
         set({
@@ -128,6 +131,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       await authService.logout();
+      // Limpar favoritos ao fazer logout
+      useFavoritesStore.getState().clearFavorites();
       set({
         user: null,
         isAuthenticated: false,
@@ -156,6 +161,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
           error: null,
         });
+        // Carregar favoritos do usuário ao inicializar
+        useFavoritesStore.getState().loadFavorites();
       } else {
         set({
           user: null,

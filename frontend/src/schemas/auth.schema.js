@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { useCallback } from 'react';
 
 // Schema para login
 export const LoginSchema = z.object({
@@ -48,22 +49,31 @@ export const SearchSchema = z.object({
 
 // Hook personalizado para validação com Zod
 export const useZodValidation = (schema) => {
-  const validate = (data) => {
+  const validate = useCallback((data) => {
     try {
       const result = schema.parse(data);
       return { success: true, data: result, errors: null };
     } catch (error) {
       if (error instanceof z.ZodError) {
         const errors = {};
-        error.errors.forEach((err) => {
-          const path = err.path.join('.');
-          errors[path] = err.message;
+        
+        // Usar o método issues do ZodError que é mais confiável
+        const issues = error.issues || error.errors || [];
+        
+        issues.forEach((issue) => {
+          if (issue && issue.path && Array.isArray(issue.path)) {
+            const path = issue.path.join('.');
+            errors[path] = issue.message || 'Erro de validação';
+          }
         });
+        
         return { success: false, data: null, errors };
       }
+      
+      console.error('Erro de validação:', error);
       return { success: false, data: null, errors: { general: 'Erro de validação' } };
     }
-  };
+  }, [schema]);
 
   return { validate };
 };
