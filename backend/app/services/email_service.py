@@ -23,12 +23,25 @@ def get_app_url() -> str:
     """
     Obtém a URL base da aplicação.
     Prioridade:
-    1. Lê do network-config.json (IP da rede + porta do backend)
-    2. Fallback para variável APP_URL do .env
-    3. Fallback final para localhost:5000
+    1. PRODUCTION_URL do .env (para produção - domínio real)
+    2. APP_URL do .env (para desenvolvimento - pode ser customizado)
+    3. network-config.json (IP da rede local)
+    4. Fallback final para localhost:5000
     """
+    # 1. Verifica se há URL de produção configurada
+    production_url = os.getenv('PRODUCTION_URL', '').strip()
+    if production_url:
+        print(f"📧 Email Service usando PRODUCTION_URL: {production_url}")
+        return production_url
+    
+    # 2. Verifica variável APP_URL customizada
+    app_url_env = os.getenv('APP_URL', '').strip()
+    if app_url_env:
+        print(f"📧 Email Service usando APP_URL do .env: {app_url_env}")
+        return app_url_env
+    
+    # 3. Tenta carregar do network-config.json (desenvolvimento local)
     try:
-        # Tenta carregar do network-config.json na raiz do projeto
         config_path = Path(__file__).parent.parent.parent.parent / 'network-config.json'
         
         if config_path.exists():
@@ -45,10 +58,10 @@ def get_app_url() -> str:
     except Exception as e:
         print(f"⚠️  Erro ao ler network-config.json: {e}")
     
-    # Fallback para variável de ambiente
-    app_url = os.getenv('APP_URL', 'http://localhost:5000')
-    print(f"📧 Email Service usando URL do .env: {app_url}")
-    return app_url
+    # 4. Fallback final
+    fallback_url = 'http://localhost:5000'
+    print(f"⚠️  Email Service usando fallback: {fallback_url}")
+    return fallback_url
 
 
 # URL base da aplicação (carregada dinamicamente)

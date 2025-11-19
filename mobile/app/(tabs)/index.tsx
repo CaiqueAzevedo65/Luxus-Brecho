@@ -41,6 +41,13 @@ export default function HomeScreen() {
   // Filtrar apenas produtos disponíveis
   const featuredProducts = allFeaturedProducts.filter(product => product.status === 'disponivel');
 
+  // Banners - mesmas imagens do frontend
+  const banners = [
+    'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800',
+    'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800',
+    'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800'
+  ];
+
   const addToCart = useCartStore((state) => state.addToCart);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
   const cartItemCount = getTotalItems();
@@ -195,14 +202,14 @@ export default function HomeScreen() {
               showsHorizontalScrollIndicator={false}
               className="w-full"
             >
-              {[1, 2, 3].map((_, index) => (
+              {banners.map((bannerUrl, index) => (
                 <View
                   key={index}
                   style={{ width: width - 32 }}
                   className="relative aspect-[4/3]"
                 >
                   <Image
-                    source={{ uri: `https://picsum.photos/800/600?random=${index}` }}
+                    source={{ uri: bannerUrl }}
                     className="w-full h-full"
                     resizeMode="cover"
                   />
@@ -218,7 +225,7 @@ export default function HomeScreen() {
               ))}
             </ScrollView>
             <View className="absolute bottom-4 w-full flex-row justify-center space-x-2">
-              {[0, 1, 2].map((_, index) => (
+              {banners.map((_, index) => (
                 <View
                   key={index}
                   className="w-2 h-2 rounded-full bg-white/50"
