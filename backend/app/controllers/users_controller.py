@@ -17,7 +17,8 @@ from ..models.user_model import (
     validate_password,
     USER_TYPES,
 )
-from ..services.email_service import send_confirmation_email, send_welcome_email, send_password_reset_email
+from ..services.email_service import send_confirmation_email, send_welcome_email, send_password_reset_email, send_account_deletion_code
+import random
 
 
 def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
@@ -638,4 +639,119 @@ def reset_password():
 
     except Exception as e:
         print(f"Erro ao redefinir senha: {e}")
+        return jsonify(message="Erro interno do servidor"), 500
+
+
+def request_account_deletion():
+    """Solicita exclusão de conta - envia código de 6 dígitos por email."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+
+    try:
+        payload = request.get_json()
+        if not payload:
+            return jsonify(message="Payload JSON é obrigatório"), 400
+
+        user_id = payload.get("user_id")
+        if not user_id:
+            return jsonify(message="ID do usuário é obrigatório"), 400
+
+        coll = get_collection(db)
+
+        # Busca usuário
+        user = coll.find_one({"id": int(user_id), "ativo": True})
+        if not user:
+            return jsonify(message="Usuário não encontrado"), 404
+
+        # Gera código de 6 dígitos
+        deletion_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+        
+        # Define expiração (30 minutos)
+        code_expiration = datetime.utcnow() + timedelta(minutes=30)
+
+        # Salva código no banco
+        coll.update_one(
+            {"id": int(user_id)},
+            {"$set": {
+                "deletion_code": deletion_code,
+                "deletion_code_expiration": code_expiration,
+                "data_atualizacao": datetime.utcnow()
+            }}
+        )
+
+        # Envia email com código
+        email_sent = send_account_deletion_code(user["email"], user["nome"], deletion_code)
+        
+        if not email_sent:
+            return jsonify(message="Erro ao enviar email. Tente novamente."), 500
+
+        print(f"📧 Código de exclusão enviado para {user['email']}")
+        
+        return jsonify({
+            "message": "Código de verificação enviado para seu email",
+            "email_sent": True
+        })
+
+    except Exception as e:
+        print(f"Erro ao solicitar exclusão de conta: {e}")
+        return jsonify(message="Erro interno do servidor"), 500
+
+
+def confirm_account_deletion():
+    """Confirma exclusão de conta com código de 6 dígitos."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+
+    try:
+        payload = request.get_json()
+        if not payload:
+            return jsonify(message="Payload JSON é obrigatório"), 400
+
+        user_id = payload.get("user_id")
+        code = payload.get("code")
+
+        if not user_id or not code:
+            return jsonify(message="ID do usuário e código são obrigatórios"), 400
+
+        coll = get_collection(db)
+
+        # Busca usuário
+        user = coll.find_one({"id": int(user_id), "ativo": True})
+        if not user:
+            return jsonify(message="Usuário não encontrado"), 404
+
+        # Verifica se há código de exclusão
+        if not user.get("deletion_code"):
+            return jsonify(message="Nenhuma solicitação de exclusão encontrada"), 400
+
+        # Verifica se o código expirou
+        if user.get("deletion_code_expiration") and user["deletion_code_expiration"] < datetime.utcnow():
+            # Limpa código expirado
+            coll.update_one(
+                {"id": int(user_id)},
+                {"$unset": {"deletion_code": "", "deletion_code_expiration": ""}}
+            )
+            return jsonify(message="Código expirado. Solicite um novo código."), 410
+
+        # Verifica se o código está correto
+        if user["deletion_code"] != code:
+            return jsonify(message="Código inválido"), 400
+
+        # Exclui a conta permanentemente
+        result = coll.delete_one({"id": int(user_id)})
+
+        if result.deleted_count == 0:
+            return jsonify(message="Erro ao excluir conta"), 500
+
+        print(f"🗑️ Conta do usuário ID {user_id} excluída permanentemente")
+        
+        return jsonify({
+            "message": "Conta excluída com sucesso",
+            "deleted": True
+        })
+
+    except Exception as e:
+        print(f"Erro ao confirmar exclusão de conta: {e}")
         return jsonify(message="Erro interno do servidor"), 500

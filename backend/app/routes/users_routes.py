@@ -13,6 +13,8 @@ from app.controllers.users_controller import (
     get_users_summary,
     confirm_email,
     resend_confirmation_email,
+    request_account_deletion,
+    confirm_account_deletion,
 )
 
 users_bp = Blueprint("users", __name__)
@@ -39,3 +41,7 @@ users_bp.route("/resend-confirmation", methods=["POST"])(resend_confirmation_ema
 # Rotas de informações
 users_bp.route("/types", methods=["GET"])(get_user_types)
 users_bp.route("/summary", methods=["GET"])(get_users_summary)
+
+# Rotas de exclusão de conta
+users_bp.route("/request-deletion", methods=["POST"])(request_account_deletion)
+users_bp.route("/confirm-deletion", methods=["POST"])(confirm_account_deletion)

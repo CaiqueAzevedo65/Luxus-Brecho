@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
@@ -15,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../store/authStore';
 import { LoginSchema, LoginFormData, useZodValidation } from '../schemas/auth.schema';
+import ConfirmModal from '../components/ui/ConfirmModal';
 
 export default function LoginScreen() {
   const [formData, setFormData] = useState<LoginFormData>({
@@ -23,6 +23,10 @@ export default function LoginScreen() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showEmailNotConfirmedModal, setShowEmailNotConfirmedModal] = useState(false);
 
   const { login, isLoading, error, clearError } = useAuthStore();
   const { validate } = useZodValidation(LoginSchema);
@@ -45,27 +49,22 @@ export default function LoginScreen() {
     }
 
     clearError();
-    const result = await login(formData);
+    
+    // Remove espaços da senha antes de enviar
+    const cleanedFormData = {
+      ...formData,
+      senha: formData.senha.trim(),
+    };
+    
+    const result = await login(cleanedFormData);
 
     if (result.success) {
-      Alert.alert('Sucesso', 'Login realizado com sucesso!', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      setShowSuccessModal(true);
     } else if (result.emailNotConfirmed) {
-      // Email não confirmado - oferece opção de reenviar
-      Alert.alert(
-        'Email não confirmado',
-        'Sua conta ainda não foi ativada. Verifique sua caixa de entrada ou solicite um novo email de confirmação.',
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          { 
-            text: 'Reenviar Email', 
-            onPress: () => router.push('/resend-confirmation')
-          }
-        ]
-      );
+      setShowEmailNotConfirmedModal(true);
     } else {
-      Alert.alert('Erro', error || 'Erro ao fazer login');
+      setErrorMessage(error || 'Credenciais inválidas');
+      setShowErrorModal(true);
     }
   };
 
@@ -198,6 +197,54 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Modal de Erro - Credenciais Inválidas */}
+      <ConfirmModal
+        visible={showErrorModal}
+        title="Erro"
+        message={errorMessage}
+        confirmText="OK"
+        cancelText=""
+        icon="close-circle"
+        iconColor="#EF4444"
+        onConfirm={() => setShowErrorModal(false)}
+        onCancel={() => setShowErrorModal(false)}
+      />
+
+      {/* Modal de Sucesso */}
+      <ConfirmModal
+        visible={showSuccessModal}
+        title="Sucesso"
+        message="Login realizado com sucesso!"
+        confirmText="OK"
+        cancelText=""
+        icon="checkmark-circle"
+        iconColor="#22C55E"
+        onConfirm={() => {
+          setShowSuccessModal(false);
+          router.back();
+        }}
+        onCancel={() => {
+          setShowSuccessModal(false);
+          router.back();
+        }}
+      />
+
+      {/* Modal de Email Não Confirmado */}
+      <ConfirmModal
+        visible={showEmailNotConfirmedModal}
+        title="Email não confirmado"
+        message="Sua conta ainda não foi ativada. Verifique sua caixa de entrada ou solicite um novo email de confirmação."
+        confirmText="Reenviar Email"
+        cancelText="Cancelar"
+        icon="mail-unread"
+        iconColor="#F59E0B"
+        onConfirm={() => {
+          setShowEmailNotConfirmedModal(false);
+          router.push('/resend-confirmation');
+        }}
+        onCancel={() => setShowEmailNotConfirmedModal(false)}
+      />
     </SafeAreaView>
   );
 }

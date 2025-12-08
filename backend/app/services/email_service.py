@@ -403,3 +403,99 @@ Equipe Luxus Brechó
     """
     
     return send_email(to_email, subject, html_content, text_content)
+
+
+def send_account_deletion_code(to_email: str, nome: str, code: str) -> bool:
+    """
+    Envia email com código de 6 dígitos para exclusão de conta.
+    
+    Args:
+        to_email: Email do destinatário
+        nome: Nome do usuário
+        code: Código de 6 dígitos
+    
+    Returns:
+        True se email foi enviado com sucesso
+    """
+    subject = "Código de Exclusão de Conta - Luxus Brechó"
+    
+    text_content = f"""
+Olá {nome}!
+
+Você solicitou a exclusão da sua conta no Luxus Brechó.
+
+Seu código de confirmação é: {code}
+
+⚠️ Este código é válido por 30 minutos.
+
+Se você não solicitou a exclusão da sua conta, ignore este email e sua conta permanecerá segura.
+
+Atenciosamente,
+Equipe Luxus Brechó
+    """
+    
+    html_content = f"""
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Código de Exclusão</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td align="center" style="padding: 40px 0;">
+                    <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <tr>
+                            <td style="padding: 40px 40px 20px 40px; text-align: center; background-color: #EF4444; border-radius: 8px 8px 0 0;">
+                                <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold; letter-spacing: 2px;">LUXUS</h1>
+                                <p style="margin: 5px 0 0 0; color: #ffffff; font-size: 14px; letter-spacing: 4px;">BRECHÓ</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 40px;">
+                                <h2 style="margin: 0 0 20px 0; color: #333333; font-size: 24px;">⚠️ Exclusão de Conta</h2>
+                                <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                    Olá <strong>{nome}</strong>!
+                                </p>
+                                <p style="margin: 0 0 20px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                    Você solicitou a exclusão da sua conta no Luxus Brechó.
+                                </p>
+                                <p style="margin: 0 0 10px 0; color: #666666; font-size: 16px; line-height: 1.6;">
+                                    Seu código de confirmação é:
+                                </p>
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td align="center" style="padding: 20px 0 30px 0;">
+                                            <div style="display: inline-block; padding: 20px 40px; background-color: #FEE2E2; border: 2px dashed #EF4444; border-radius: 8px;">
+                                                <span style="font-size: 36px; font-weight: bold; color: #EF4444; letter-spacing: 8px;">{code}</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p style="margin: 0 0 20px 0; color: #EF4444; font-size: 14px; line-height: 1.6; font-weight: bold;">
+                                    ⏰ Este código é válido por 30 minutos.
+                                </p>
+                                <p style="margin: 0 0 10px 0; color: #999999; font-size: 14px; line-height: 1.6;">
+                                    Se você não solicitou a exclusão da sua conta, ignore este email e sua conta permanecerá segura.
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
+                                <p style="margin: 0; color: #999999; font-size: 12px;">
+                                    Atenciosamente,<br>
+                                    <strong>Equipe Luxus Brechó</strong>
+                                </p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>
+    """
+    
+    return send_email(to_email, subject, html_content, text_content)
