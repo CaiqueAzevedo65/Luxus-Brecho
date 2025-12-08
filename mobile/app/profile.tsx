@@ -1,12 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from 'react-native';
+import ConfirmModal from '../components/ui/ConfirmModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -14,6 +14,7 @@ import { useAuthStore } from '../store/authStore';
 
 export default function ProfileScreen() {
   const { user, isAuthenticated, logout, initialize } = useAuthStore();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   useEffect(() => {
     // Inicializar dados de autenticação ao carregar a tela
@@ -28,21 +29,13 @@ export default function ProfileScreen() {
   }, [isAuthenticated, user]);
 
   const handleLogout = () => {
-    Alert.alert(
-      'Sair',
-      'Tem certeza que deseja sair da sua conta?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Sair',
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/login');
-          },
-        },
-      ]
-    );
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutModal(false);
+    await logout();
+    router.replace('/login');
   };
 
   const formatDate = (dateString: string) => {
@@ -133,7 +126,7 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Membro desde</Text>
-              <Text style={styles.infoValue}>{formatDate(user.created_at)}</Text>
+              <Text style={styles.infoValue}>{formatDate(user.data_criacao)}</Text>
             </View>
           </View>
 
@@ -235,6 +228,20 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>Sair da Conta</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Modal de Confirmação de Logout */}
+      <ConfirmModal
+        visible={showLogoutModal}
+        title="Sair da Conta"
+        message="Tem certeza que deseja sair da sua conta?"
+        confirmText="Sair"
+        cancelText="Cancelar"
+        icon="log-out-outline"
+        iconColor="#EF4444"
+        isDestructive
+        onConfirm={confirmLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
     </SafeAreaView>
   );
 }

@@ -49,7 +49,11 @@ export default function ProductsScreen() {
       }
 
       const response = await apiService.getProducts(page, 12, filters);
-      setProducts(response.items || []);
+      // Filtrar apenas produtos disponíveis para exibição pública
+      const availableProducts = (response.items || []).filter(
+        (product: Product) => product.status === 'disponivel'
+      );
+      setProducts(availableProducts);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
       setProducts([]);
@@ -108,22 +112,14 @@ export default function ProductsScreen() {
       </View>
 
       <TouchableOpacity
-        style={[
-          styles.addButton,
-          item.status !== 'disponivel' && styles.addButtonDisabled
-        ]}
+        style={styles.addButton}
         onPress={(e) => {
           e.stopPropagation();
-          if (item.status === 'disponivel') {
-            handleAddToCart(item);
-          }
+          handleAddToCart(item);
         }}
-        disabled={item.status !== 'disponivel'}
       >
         <MaterialIcons name="shopping-cart" size={14} color="white" />
-        <Text style={styles.addButtonText}>
-          {item.status === 'disponivel' ? '+ Carrinho' : 'Indisponível'}
-        </Text>
+        <Text style={styles.addButtonText}>+ Carrinho</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
@@ -364,9 +360,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 10,
     gap: 6,
-  },
-  addButtonDisabled: {
-    backgroundColor: '#999',
   },
   addButtonText: {
     color: 'white',
