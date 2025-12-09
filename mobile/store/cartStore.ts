@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CONFIG } from '../constants/config';
 import { Product } from '../types/product';
+import { getApiUrl } from '../utils/networkUtils';
 
 export interface CartItem {
   id: number;
@@ -19,13 +20,15 @@ export interface CartState {
   getSubtotal: () => number;
   getShippingCost: () => number;
   getTotal: () => number;
-  addToCart: (product: Product) => Promise<void>;
-  removeFromCart: (productId: number) => Promise<void>;
+  addToCart: (product: Product, userId?: number) => Promise<void>;
+  removeFromCart: (productId: number, userId?: number) => Promise<void>;
   updateQuantity: (productId: number, quantity: number) => Promise<void>;
   loadCart: () => Promise<void>;
   clearCart: () => Promise<void>;
   getItemQuantity: (productId: number) => number;
   isInCart: (productId: number) => boolean;
+  syncWithServer: (userId: number) => Promise<void>;
+  loadFromServer: (userId: number) => Promise<void>;
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
@@ -52,7 +55,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
   
   // Ações
-  addToCart: async (product: Product) => {
+  addToCart: async (product: Product, userId?: number) => {
     set({ loading: true });
     try {
       const currentCart = get().cart;
@@ -78,6 +81,19 @@ export const useCartStore = create<CartState>((set, get) => ({
       
       set({ cart: updatedCart });
       await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(updatedCart));
+      
+      // Sincroniza com o servidor se usuário estiver logado
+      if (userId) {
+        try {
+          await fetch(`${getApiUrl()}/cart/${userId}/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id: product.id, quantity: 1 }),
+          });
+        } catch (e) {
+          console.log('Erro ao sincronizar com servidor:', e);
+        }
+      }
     } catch (error) {
       console.error('Erro ao adicionar produto ao carrinho:', error);
     } finally {
@@ -85,12 +101,25 @@ export const useCartStore = create<CartState>((set, get) => ({
     }
   },
   
-  removeFromCart: async (productId: number) => {
+  removeFromCart: async (productId: number, userId?: number) => {
     set({ loading: true });
     try {
       const updatedCart = get().cart.filter(item => item.id !== productId);
       set({ cart: updatedCart });
       await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(updatedCart));
+      
+      // Sincroniza com o servidor se usuário estiver logado
+      if (userId) {
+        try {
+          await fetch(`${getApiUrl()}/cart/${userId}/remove`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id: productId }),
+          });
+        } catch (e) {
+          console.log('Erro ao sincronizar com servidor:', e);
+        }
+      }
     } catch (error) {
       console.error('Erro ao remover produto do carrinho:', error);
     } finally {
@@ -154,5 +183,49 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   isInCart: (productId: number) => {
     return get().cart.some(item => item.id === productId);
+  },
+
+  syncWithServer: async (userId: number) => {
+    try {
+      const currentCart = get().cart;
+      const items = currentCart.map(item => ({
+        product_id: item.id,
+        quantity: item.quantity,
+      }));
+      
+      await fetch(`${getApiUrl()}/cart/${userId}/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items }),
+      });
+    } catch (error) {
+      console.error('Erro ao sincronizar carrinho:', error);
+    }
+  },
+
+  loadFromServer: async (userId: number) => {
+    set({ loading: true });
+    try {
+      const response = await fetch(`${getApiUrl()}/cart/${userId}`);
+      const data = await response.json();
+      
+      if (response.ok && data.items) {
+        const cartItems: CartItem[] = data.items.map((item: any) => ({
+          id: item.product_id,
+          titulo: item.product?.titulo || 'Produto',
+          preco: item.product?.preco || 0,
+          imagem: item.product?.imagem_url,
+          quantity: item.quantity,
+          categoria: item.product?.categoria,
+        }));
+        
+        set({ cart: cartItems });
+        await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(cartItems));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar carrinho do servidor:', error);
+    } finally {
+      set({ loading: false });
+    }
   },
 }));

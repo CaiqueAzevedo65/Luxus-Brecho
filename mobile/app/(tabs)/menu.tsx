@@ -35,7 +35,7 @@ export default function MenuScreen() {
     {
       title: 'Meus Pedidos',
       icon: 'bag-outline' as IoniconsName,
-      href: '/orders',
+      href: '/order-history',
     },
     {
       title: 'Meu Perfil',

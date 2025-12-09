@@ -155,7 +155,9 @@ def create_app():
                 'products': '/api/products',
                 'images': '/api/images',
                 'users': '/api/users',
-                'favorites': '/api/favorites'
+                'favorites': '/api/favorites',
+                'cart': '/api/cart',
+                'orders': '/api/orders'
             }
         })
     
@@ -166,7 +168,9 @@ def create_app():
         ('app.routes.categories_routes', 'categories_bp', '/api/categories'),
         ('app.routes.images_routes', 'images_bp', '/api/images'),
         ('app.routes.users_routes', 'users_bp', '/api/users'),
-        ('app.routes.favorites_routes', 'favorites_bp', '/api/favorites')
+        ('app.routes.favorites_routes', 'favorites_bp', '/api/favorites'),
+        ('app.routes.cart_routes', 'cart_bp', '/api/cart'),
+        ('app.routes.order_routes', 'order_bp', '/api/orders')
     ]
     
     # Desabilitar strict slashes globalmente para evitar redirects em preflight

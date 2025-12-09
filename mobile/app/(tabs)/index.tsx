@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StatusBar, Image, ActivityIndicator, Dimensions } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { ScrollView, View, Text, TouchableOpacity, StatusBar, Image, ActivityIndicator, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -26,6 +26,8 @@ const testimonials: Testimonial[] = [
 export default function HomeScreen() {
   const { success, error, info, warning } = useToast();
   const setCategory = useFilterStore((state) => state.setCategory);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const bannerScrollRef = useRef<ScrollView>(null);
   const { 
     featuredProducts: allFeaturedProducts, 
     loading: loadingFeatured, 
@@ -67,6 +69,15 @@ export default function HomeScreen() {
     
     await addToCart(product);
     success(`${product.titulo} adicionado ao carrinho! 🛒`);
+  };
+
+  const handleBannerScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const bannerWidth = width - 32; // width - padding
+    const index = Math.round(contentOffsetX / bannerWidth);
+    if (index !== currentBannerIndex && index >= 0 && index < banners.length) {
+      setCurrentBannerIndex(index);
+    }
   };
 
   const renderFeaturedProducts = () => {
@@ -197,9 +208,12 @@ export default function HomeScreen() {
         <View className="px-4 mb-6">
           <View className="relative rounded-xl overflow-hidden">
             <ScrollView
+              ref={bannerScrollRef}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
+              onScroll={handleBannerScroll}
+              scrollEventThrottle={16}
               className="w-full"
             >
               {banners.map((bannerUrl, index) => (
@@ -228,8 +242,13 @@ export default function HomeScreen() {
               {banners.map((_, index) => (
                 <View
                   key={index}
-                  className="w-2 h-2 rounded-full bg-white/50"
-                  style={index === 0 ? { backgroundColor: 'white' } : {}}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: index === currentBannerIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                    marginHorizontal: 4,
+                  }}
                 />
               ))}
             </View>
