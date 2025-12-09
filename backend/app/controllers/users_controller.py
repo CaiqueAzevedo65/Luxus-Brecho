@@ -18,6 +18,7 @@ from ..models.user_model import (
     USER_TYPES,
 )
 from ..services.email_service import send_confirmation_email, send_welcome_email, send_password_reset_email, send_account_deletion_code
+from ..services.jwt_service import create_access_token, create_refresh_token, refresh_access_token, JWT_ACCESS_TOKEN_EXPIRES
 import random
 
 
@@ -310,13 +311,52 @@ def authenticate_user():
         if not user.get("ativo", False):
             return jsonify(message="Conta desativada. Entre em contato com o suporte."), 403
 
+        # Gera tokens JWT
+        access_token = create_access_token(
+            user_id=user['id'],
+            user_type=user['tipo'],
+            email=user['email']
+        )
+        refresh_token = create_refresh_token(user_id=user['id'])
+
         return jsonify({
             "message": "Autenticação realizada com sucesso",
-            "user": _serialize(user)
+            "user": _serialize(user),
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_type": "Bearer",
+            "expires_in": int(JWT_ACCESS_TOKEN_EXPIRES.total_seconds())
         })
 
     except Exception as e:
         current_app.logger.error(f"Erro na autenticação: {e}")
+        return jsonify(message="Erro interno do servidor"), 500
+
+
+def refresh_token_endpoint():
+    """Renova o access token usando um refresh token válido."""
+    db = current_app.db
+    if db is None:
+        return jsonify(message="banco de dados indisponível"), 503
+
+    try:
+        payload = request.get_json()
+        if not payload:
+            return jsonify(message="Payload JSON é obrigatório"), 400
+
+        token = payload.get("refresh_token")
+        if not token:
+            return jsonify(message="Refresh token é obrigatório"), 400
+
+        success, tokens, error = refresh_access_token(token, db)
+
+        if not success:
+            return jsonify(message=error), 401
+
+        return jsonify(tokens)
+
+    except Exception as e:
+        current_app.logger.error(f"Erro ao renovar token: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 

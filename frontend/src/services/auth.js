@@ -1,6 +1,108 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Chaves do localStorage
+const STORAGE_KEYS = {
+  USER: 'luxus_user',
+  AUTH: 'luxus_auth',
+  ACCESS_TOKEN: 'luxus_access_token',
+  REFRESH_TOKEN: 'luxus_refresh_token',
+  TOKEN_EXPIRES: 'luxus_token_expires',
+};
+
 export const authService = {
+  /**
+   * Obtém o token de acesso atual
+   */
+  getAccessToken() {
+    return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  },
+
+  /**
+   * Obtém o refresh token atual
+   */
+  getRefreshToken() {
+    return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+  },
+
+  /**
+   * Verifica se o token está expirado
+   */
+  isTokenExpired() {
+    const expires = localStorage.getItem(STORAGE_KEYS.TOKEN_EXPIRES);
+    if (!expires) return true;
+    return Date.now() > parseInt(expires, 10);
+  },
+
+  /**
+   * Salva os tokens no localStorage
+   */
+  saveTokens(accessToken, refreshToken, expiresIn) {
+    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    // Calcula quando o token expira (com margem de 5 minutos)
+    const expiresAt = Date.now() + (expiresIn * 1000) - (5 * 60 * 1000);
+    localStorage.setItem(STORAGE_KEYS.TOKEN_EXPIRES, expiresAt.toString());
+  },
+
+  /**
+   * Remove os tokens do localStorage
+   */
+  clearTokens() {
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRES);
+  },
+
+  /**
+   * Renova o token de acesso usando o refresh token
+   */
+  async refreshAccessToken() {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return { success: false, error: 'Refresh token não encontrado' };
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/users/refresh-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        this.clearTokens();
+        return { success: false, error: data.message || 'Erro ao renovar token' };
+      }
+
+      this.saveTokens(data.access_token, data.refresh_token, data.expires_in);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao renovar token:', error);
+      this.clearTokens();
+      return { success: false, error: 'Erro ao renovar token' };
+    }
+  },
+
+  /**
+   * Obtém um token válido (renova se necessário)
+   */
+  async getValidToken() {
+    if (!this.isTokenExpired()) {
+      return this.getAccessToken();
+    }
+
+    const result = await this.refreshAccessToken();
+    if (result.success) {
+      return this.getAccessToken();
+    }
+
+    return null;
+  },
+
   /**
    * Faz login do usuário
    */
@@ -31,8 +133,13 @@ export const authService = {
 
       if (data && data.user) {
         // Salvar dados do usuário no localStorage
-        localStorage.setItem('luxus_user', JSON.stringify(data.user));
-        localStorage.setItem('luxus_auth', 'authenticated');
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+        localStorage.setItem(STORAGE_KEYS.AUTH, 'authenticated');
+        
+        // Salvar tokens JWT
+        if (data.access_token && data.refresh_token) {
+          this.saveTokens(data.access_token, data.refresh_token, data.expires_in || 86400);
+        }
         
         return { success: true, user: data.user };
       }
@@ -126,8 +233,9 @@ export const authService = {
    */
   logout() {
     try {
-      localStorage.removeItem('luxus_auth');
-      localStorage.removeItem('luxus_user');
+      localStorage.removeItem(STORAGE_KEYS.AUTH);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      this.clearTokens();
     } catch (error) {
       console.error('Erro no logout:', error);
     }
@@ -138,8 +246,9 @@ export const authService = {
    */
   isAuthenticated() {
     try {
-      const token = localStorage.getItem('luxus_auth');
-      return token !== null;
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH);
+      const accessToken = this.getAccessToken();
+      return token !== null && accessToken !== null;
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error);
       return false;
@@ -151,7 +260,7 @@ export const authService = {
    */
   getCurrentUser() {
     try {
-      const userData = localStorage.getItem('luxus_user');
+      const userData = localStorage.getItem(STORAGE_KEYS.USER);
       if (userData) {
         return JSON.parse(userData);
       }

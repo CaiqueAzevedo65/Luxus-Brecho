@@ -4,12 +4,15 @@ from bson import ObjectId
 from typing import Any, Dict
 from marshmallow import Schema, fields, ValidationError
 import time
+from functools import wraps
+
+from ..services.jwt_service import jwt_optional, admin_required
 
 class ProductQuerySchema(Schema):
     page = fields.Integer(load_default=1, validate=lambda x: 1 <= x <= 1000)
     page_size = fields.Integer(load_default=20, validate=lambda x: 1 <= x <= 100)
     categoria = fields.String(load_default=None, allow_none=True, validate=lambda x: len(x) <= 50 if x else True)
-    q = fields.String(load_default=None, allow_none=True, validate=lambda x: len(x) <= 100 if x else True)   
+    q = fields.String(load_default=None, allow_none=True, validate=lambda x: len(x) <= 100 if x else True)
 
 from ..models.product_model import (
     get_collection,
@@ -98,8 +101,9 @@ def get_product(id: int):
     return jsonify(_serialize(doc))
 
 @products_bp.route('/', methods=['POST'])
+@admin_required
 def create_product():
-    """Create a new product"""
+    """Create a new product - Admin only"""
     db = current_app.db
     if db is None:
         return jsonify(message="banco de dados indisponível"), 503
@@ -119,8 +123,9 @@ def create_product():
     return jsonify(_serialize(doc)), 201
 
 @products_bp.route('/<int:id>', methods=['PUT'])
+@admin_required
 def update_product(id: int):
-    """Update an existing product"""
+    """Update an existing product - Admin only"""
     db = current_app.db
     if db is None:
         return jsonify(message="banco de dados indisponível"), 503
@@ -152,8 +157,9 @@ def update_product(id: int):
     return jsonify(_serialize(updated))
 
 @products_bp.route('/<int:id>', methods=['DELETE'])
+@admin_required
 def delete_product(id: int):
-    """Delete a product"""
+    """Delete a product - Admin only"""
     db = current_app.db
     if db is None:
         return jsonify(message="banco de dados indisponível"), 503
@@ -180,6 +186,7 @@ def delete_product(id: int):
     return jsonify(message="produto excluído"), 200
 
 @products_bp.route('/with-image', methods=['POST'])
+@admin_required
 def create_product_with_image():
     """
     Create product with image upload
@@ -310,9 +317,10 @@ def create_product_with_image():
         return jsonify(message="Erro interno no servidor"), 500
 
 @products_bp.route('/<int:id>/image', methods=['PUT'])
+@admin_required
 def update_product_image(id: int):
     """
-    Update only the image of a product
+    Update only the image of a product - Admin only
     PUT /api/products/<id>/image
     
     Form Data:

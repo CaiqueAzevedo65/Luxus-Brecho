@@ -6,6 +6,7 @@ import { useToastContext } from '../../contexts/ToastContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { logger } from '../../utils/logger';
 import { FiSearch, FiFilter, FiShoppingCart, FiX } from 'react-icons/fi';
+import { ProductGridSkeleton } from '../../components/Skeleton';
 import './index.css';
 
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x400?text=Sem+Imagem';
@@ -197,9 +198,8 @@ const Produtos = () => {
 
       {/* Grid de Produtos */}
       {loading ? (
-        <div className="loading-container">
-          <div className="spinner"></div>
-          <p>Carregando produtos...</p>
+        <div className="produtos-grid-container">
+          <ProductGridSkeleton count={8} />
         </div>
       ) : error ? (
         <div className="error-container">

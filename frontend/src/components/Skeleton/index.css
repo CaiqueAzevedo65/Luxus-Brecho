@@ -1,0 +1,255 @@
+/* Skeleton Base */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Variantes */
+.skeleton-text {
+  border-radius: 4px;
+}
+
+.skeleton-circular {
+  border-radius: 50%;
+}
+
+/* Product Card Skeleton */
+.skeleton-product-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.skeleton-product-card .skeleton-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.skeleton-product-card .skeleton-title {
+  margin-bottom: 0.25rem;
+}
+
+.skeleton-product-card .skeleton-button {
+  margin-top: 0.5rem;
+}
+
+/* Product Grid Skeleton */
+.skeleton-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .skeleton-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .skeleton-product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Category Card Skeleton */
+.skeleton-category-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+}
+
+.skeleton-category-card .skeleton-overlay {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+}
+
+/* Category Grid Skeleton */
+.skeleton-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+@media (max-width: 768px) {
+  .skeleton-category-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .skeleton-category-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cart Item Skeleton */
+.skeleton-cart-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.skeleton-cart-item .skeleton-cart-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Cart List Skeleton */
+.skeleton-cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Order Card Skeleton */
+.skeleton-order-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.skeleton-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.skeleton-order-items {
+  margin-bottom: 1rem;
+}
+
+.skeleton-order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Order List Skeleton */
+.skeleton-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Profile Skeleton */
+.skeleton-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.skeleton-profile .skeleton-avatar {
+  margin-bottom: 1rem;
+}
+
+.skeleton-profile-actions {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* Banner Skeleton */
+.skeleton-banner {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Product Detail Skeleton */
+.skeleton-product-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.skeleton-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-detail-info .skeleton-title {
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-detail-info .skeleton-price {
+  margin: 1rem 0;
+}
+
+.skeleton-description {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.skeleton-detail-info .skeleton-button {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .skeleton-product-detail {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #2a2a2a 25%,
+      #3a3a3a 50%,
+      #2a2a2a 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  .skeleton-product-card,
+  .skeleton-cart-item,
+  .skeleton-order-card {
+    background: #1a1a1a;
+  }
+}

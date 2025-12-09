@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiUserPlus, FiPackage, FiEdit3, FiChevronRight, FiSettings, FiHeart, FiShoppingBag } from 'react-icons/fi';
 import LogoutModal from '../../components/LogoutModal';
+import { ProfileSkeleton } from '../../components/Skeleton';
 import './index.css';
 
 const Perfil = () => {
@@ -49,9 +50,8 @@ const Perfil = () => {
 
   if (!user) {
     return (
-      <div className="perfil-loading">
-        <div className="spinner-perfil"></div>
-        <p>Carregando...</p>
+      <div className="perfil-page">
+        <ProfileSkeleton />
       </div>
     );
   }

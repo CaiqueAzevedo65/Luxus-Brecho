@@ -15,7 +15,9 @@ from app.controllers.users_controller import (
     resend_confirmation_email,
     request_account_deletion,
     confirm_account_deletion,
+    refresh_token_endpoint,
 )
+from app.services.jwt_service import jwt_required, admin_required, owner_or_admin_required
 
 users_bp = Blueprint("users", __name__)
 
@@ -39,12 +41,33 @@ def _apply_rate_limit(limit_string):
     return decorator
 
 
-# Rotas CRUD básicas
-users_bp.route("/", methods=["GET"])(list_users)
-users_bp.route("/<int:id>", methods=["GET"])(get_user)
+# Rotas CRUD básicas (protegidas por JWT)
+@users_bp.route("/", methods=["GET"])
+@admin_required
+def list_users_endpoint():
+    """Lista usuários - apenas admin."""
+    return list_users()
+
+@users_bp.route("/<int:id>", methods=["GET"])
+@owner_or_admin_required('id')
+def get_user_endpoint(id):
+    """Busca usuário - dono ou admin."""
+    return get_user(id)
+
+# Criação de usuário é pública (registro)
 users_bp.route("/", methods=["POST"])(create_user)
-users_bp.route("/<int:id>", methods=["PUT"])(update_user)
-users_bp.route("/<int:id>", methods=["DELETE"])(delete_user)
+
+@users_bp.route("/<int:id>", methods=["PUT"])
+@owner_or_admin_required('id')
+def update_user_endpoint(id):
+    """Atualiza usuário - dono ou admin."""
+    return update_user(id)
+
+@users_bp.route("/<int:id>", methods=["DELETE"])
+@admin_required
+def delete_user_endpoint(id):
+    """Exclui usuário - apenas admin."""
+    return delete_user(id)
 
 # Rotas de autenticação (com rate limiting)
 @users_bp.route("/auth", methods=["POST"])
@@ -59,7 +82,17 @@ def auth_endpoint():
         return limited_auth()
     return authenticate_user()
 
-users_bp.route("/<int:id>/change-password", methods=["PUT"])(change_password)
+@users_bp.route("/<int:id>/change-password", methods=["PUT"])
+@owner_or_admin_required('id')
+def change_password_endpoint(id):
+    """Altera senha - dono ou admin."""
+    return change_password(id)
+
+# Rota de refresh token
+@users_bp.route("/refresh-token", methods=["POST"])
+def refresh_token_route():
+    """Renova access token usando refresh token."""
+    return refresh_token_endpoint()
 
 # Rotas de recuperação de senha (com rate limiting)
 @users_bp.route("/forgot-password", methods=["POST"])

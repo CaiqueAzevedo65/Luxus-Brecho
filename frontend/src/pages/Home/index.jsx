@@ -5,6 +5,7 @@ import { useCartStore } from '../../store/cartStore';
 import { useToastContext } from '../../contexts/ToastContext';
 import { logger } from '../../utils/logger';
 import { FiShoppingCart, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { ProductCardSkeleton, CategoryCardSkeleton, BannerSkeleton } from '../../components/Skeleton';
 import './index.css';
 
 const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x400?text=Sem+Imagem';
@@ -142,9 +143,10 @@ const Home = () => {
         </div>
         
         {loading ? (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>Carregando produtos...</p>
+          <div className="products-scroll">
+            {[...Array(4)].map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
           </div>
         ) : (
           <div className="products-scroll">

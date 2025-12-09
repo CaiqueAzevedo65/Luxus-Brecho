@@ -5,6 +5,7 @@ import { useCartStore } from '../../store/cartStore';
 import { useFavoritesStore } from '../../store/favoritesStore';
 import { useToastContext } from '../../contexts/ToastContext';
 import { FiArrowLeft, FiShoppingCart, FiHeart, FiShare2 } from 'react-icons/fi';
+import { ProductDetailSkeleton } from '../../components/Skeleton';
 import './index.css';
 
 const ProdutoDetalhes = () => {
@@ -113,10 +114,7 @@ const ProdutoDetalhes = () => {
   if (loading) {
     return (
       <div className="product-details-page">
-        <div className="loading-container-details">
-          <div className="spinner-details"></div>
-          <p>Carregando produto...</p>
-        </div>
+        <ProductDetailSkeleton />
       </div>
     );
   }

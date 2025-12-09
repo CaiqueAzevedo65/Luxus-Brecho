@@ -2,17 +2,43 @@ import { create } from 'zustand';
 import { favoritesService } from '../services/favorites';
 import { logger } from '../utils/logger';
 
+// Cache para evitar requisições duplicadas
+let lastFetchTime = 0;
+let fetchPromise = null;
+const CACHE_DURATION = 30000; // 30 segundos de cache
+
 export const useFavoritesStore = create((set, get) => ({
   // Estado
   favorites: [],
   loading: false,
   error: null,
+  lastUpdated: null,
 
-  // Carregar favoritos da API
-  loadFavorites: async () => {
+  // Carregar favoritos da API (com cache e deduplicação)
+  loadFavorites: async (forceRefresh = false) => {
+    const now = Date.now();
+    const state = get();
+    
+    // Se já está carregando, retorna a promise existente
+    if (fetchPromise && !forceRefresh) {
+      return fetchPromise;
+    }
+    
+    // Se os dados ainda estão em cache e não é refresh forçado
+    if (!forceRefresh && state.lastUpdated && (now - state.lastUpdated) < CACHE_DURATION) {
+      return { success: true, favorites: state.favorites };
+    }
+    
+    // Evita múltiplas requisições simultâneas
+    if (state.loading && !forceRefresh) {
+      return { success: true, favorites: state.favorites };
+    }
+    
     try {
       set({ loading: true, error: null });
-      const result = await favoritesService.getFavorites();
+      
+      fetchPromise = favoritesService.getFavorites();
+      const result = await fetchPromise;
       
       if (result.success) {
         // Extrair apenas os produtos dos favoritos
@@ -20,13 +46,19 @@ export const useFavoritesStore = create((set, get) => ({
           .map(fav => fav.product)
           .filter(product => product !== null);
         
-        set({ favorites: products, loading: false });
+        set({ favorites: products, loading: false, lastUpdated: now });
+        lastFetchTime = now;
       } else {
         set({ favorites: [], loading: false, error: result.error });
       }
+      
+      return result;
     } catch (error) {
       logger.error('Erro ao carregar favoritos', error, 'FAVORITES');
       set({ favorites: [], loading: false, error: 'Erro ao carregar favoritos' });
+      return { success: false, error: 'Erro ao carregar favoritos' };
+    } finally {
+      fetchPromise = null;
     }
   },
 

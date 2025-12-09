@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
 import { useToastContext } from '../../contexts/ToastContext';
 import { FiTrash2, FiShoppingBag, FiArrowLeft } from 'react-icons/fi';
+import { CartListSkeleton } from '../../components/Skeleton';
 import './index.css';
 
 const Carrinho = () => {
@@ -82,10 +83,7 @@ const Carrinho = () => {
 
       <div className="carrinho-content">
         {loading ? (
-          <div className="loading-state">
-            <div className="spinner"></div>
-            <p>Carregando carrinho...</p>
-          </div>
+          <CartListSkeleton count={3} />
         ) : cart.length === 0 ? (
           <div className="empty-cart">
             <FiShoppingBag className="empty-icon" />
