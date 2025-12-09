@@ -188,4 +188,59 @@ export const authService = {
       console.error('Erro ao atualizar dados do usuário:', error);
     }
   },
+
+  /**
+   * Solicita exclusão de conta - envia código por email
+   */
+  async requestAccountDeletion(userId) {
+    try {
+      const response = await fetch(`${API_URL}/users/request-deletion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Erro ao solicitar exclusão' };
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao solicitar exclusão de conta:', error);
+      return { success: false, error: 'Erro ao solicitar exclusão. Tente novamente.' };
+    }
+  },
+
+  /**
+   * Confirma exclusão de conta com código de 6 dígitos
+   */
+  async confirmAccountDeletion(userId, code) {
+    try {
+      const response = await fetch(`${API_URL}/users/confirm-deletion`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId, code }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { success: false, error: data.message || 'Erro ao confirmar exclusão' };
+      }
+
+      // Limpa dados locais após exclusão
+      this.logout();
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao confirmar exclusão de conta:', error);
+      return { success: false, error: 'Erro ao confirmar exclusão. Tente novamente.' };
+    }
+  },
 };

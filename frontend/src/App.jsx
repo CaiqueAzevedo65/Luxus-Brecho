@@ -23,6 +23,12 @@ import Configuracoes from './pages/Configuracoes';
 import ConfigEndereco from './pages/ConfigEndereco';
 import ConfigSenha from './pages/ConfigSenha';
 import ConfigEmail from './pages/ConfigEmail';
+import ExcluirConta from './pages/ExcluirConta';
+import ExcluirContaCodigo from './pages/ExcluirContaCodigo';
+import ContaExcluida from './pages/ContaExcluida';
+import Checkout from './pages/Checkout';
+import Pedidos from './pages/Pedidos';
+import ReenviarConfirmacao from './pages/ReenviarConfirmacao';
 import ProductsList from './pages/Admin/ProductsList';
 import ProductFormNew from './pages/Admin/ProductFormNew';
 
@@ -65,13 +71,19 @@ function App() {
           <Route path="registro" element={<Registro />} />
           <Route path="esqueci-senha" element={<EsqueciSenha />} />
           <Route path="redefinir-senha/:token" element={<RedefinirSenha />} />
+          <Route path="reenviar-confirmacao" element={<ReenviarConfirmacao />} />
           <Route path="perfil" element={<Perfil />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="pedidos" element={<Pedidos />} />
           
           {/* Rotas de configurações */}
           <Route path="configuracoes" element={<Configuracoes />} />
           <Route path="configuracoes/endereco" element={<ConfigEndereco />} />
           <Route path="configuracoes/senha" element={<ConfigSenha />} />
           <Route path="configuracoes/email" element={<ConfigEmail />} />
+          <Route path="configuracoes/excluir" element={<ExcluirConta />} />
+          <Route path="configuracoes/excluir/codigo" element={<ExcluirContaCodigo />} />
+          <Route path="conta-excluida" element={<ContaExcluida />} />
 
           {/* Rotas admin */}
           <Route path="admin/registro" element={<RegistroAdmin />} />

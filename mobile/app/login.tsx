@@ -170,6 +170,16 @@ export default function LoginScreen() {
               )}
             </View>
 
+            {/* Esqueci minha senha */}
+            <TouchableOpacity
+              testID="forgot-password-link"
+              accessibilityLabel="Esqueci minha senha"
+              style={styles.forgotPasswordContainer}
+              onPress={() => router.push('/forgot-password')}
+            >
+              <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
+            </TouchableOpacity>
+
             {/* Botão de Login */}
             <TouchableOpacity
               testID="login-button"
@@ -347,6 +357,15 @@ const styles = StyleSheet.create({
     color: '#E91E63',
     fontSize: 12,
     marginTop: 4,
+  },
+  forgotPasswordContainer: {
+    alignItems: 'flex-end',
+    marginBottom: 8,
+  },
+  forgotPasswordText: {
+    color: '#E91E63',
+    fontSize: 14,
+    fontWeight: '500',
   },
   loginButton: {
     backgroundColor: '#E91E63',

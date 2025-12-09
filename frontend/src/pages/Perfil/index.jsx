@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
-import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiUserPlus, FiPackage, FiEdit3, FiChevronRight, FiSettings, FiHeart } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiShield, FiLogOut, FiArrowLeft, FiUserPlus, FiPackage, FiEdit3, FiChevronRight, FiSettings, FiHeart, FiShoppingBag } from 'react-icons/fi';
 import LogoutModal from '../../components/LogoutModal';
 import './index.css';
 
@@ -133,6 +133,19 @@ const Perfil = () => {
                 <label>Membro desde</label>
                 <p>{formatDate(user.data_criacao)}</p>
               </div>
+            </div>
+
+            <div className="info-divider"></div>
+
+            <div className="admin-action-item" onClick={() => navigate('/pedidos')}>
+              <div className="info-icon admin-icon-orange">
+                <FiShoppingBag />
+              </div>
+              <div className="info-details">
+                <label>Meus Pedidos</label>
+                <p>Ver histórico de compras</p>
+              </div>
+              <FiChevronRight className="chevron-icon" />
             </div>
 
             <div className="info-divider"></div>

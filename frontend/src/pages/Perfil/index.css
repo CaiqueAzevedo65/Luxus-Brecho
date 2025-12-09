@@ -243,6 +243,11 @@
   color: #EF4444 !important;
 }
 
+.admin-icon-orange {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(249, 115, 22, 0.15) 100%) !important;
+  color: #F97316 !important;
+}
+
 /* Actions */
 .perfil-actions {
   display: flex;

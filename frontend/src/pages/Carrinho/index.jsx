@@ -38,9 +38,13 @@ const Carrinho = () => {
   };
 
   const handleCheckout = () => {
-    success(`Pedido confirmado! 🎉\nTotal: ${formatPrice(getTotal())}\n\nObrigado pela compra!`);
-    clearCart();
-    navigate('/');
+    // Navegar para a página de checkout com os itens do carrinho
+    navigate('/checkout', { 
+      state: { 
+        items: cart, 
+        total: getTotal() 
+      } 
+    });
   };
 
   const formatPrice = (price) => {
