@@ -1,142 +1,76 @@
-# Backend - Luxus Brechó
+# Luxus Brechó — Backend
 
-Backend em Flask com MongoDB (PyMongo) e configuração via dotenv.
+API REST Flask + MongoDB com autenticação JWT e serviço de emails.
 
-## Requisitos
-- Python 3.10+
-- Pip
-- MongoDB local (opcional, se utilizar Atlas basta fornecer a URI)
+## 🚀 Início Rápido
 
-## Instalação
-```powershell
-# (Opcional) criar e ativar venv no Windows
-python -m venv venv
-venv\Scripts\Activate.ps1
-
-# Instalar dependências
+```bash
 pip install -r requirements.txt
+cp .env.example .env  # Configure as variáveis
+python run.py         # http://localhost:5000/api
 ```
 
-## Configuração (.env)
-O backend carrega variáveis de ambiente com `python-dotenv` em `app/__init__.py`.
+## ⚙️ Configuração (.env)
 
-Crie o arquivo `backend/.env` (já existe um exemplo em `.env.example`). Exemplo para ambiente local:
 ```ini
+# Database
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DATABASE=luxus_brecho_db
-FLASK_DEBUG=False
-FRONTEND_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
+
+# JWT (IMPORTANTE: mude em produção!)
+JWT_SECRET_KEY=sua-chave-secreta-32-chars-minimo
+JWT_ALGORITHM=HS256
+
+# Flask
+FLASK_DEBUG=True
+FRONTEND_ORIGIN=http://localhost:5173
+
+# Email (opcional)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=seu_email@gmail.com
+SMTP_PASSWORD=sua_senha_de_app
 ```
 
-Exemplo para MongoDB Atlas (recomendado em produção):
-```ini
-MONGODB_URI=mongodb+srv://<USUARIO>:<SENHA>@<HOST>/?retryWrites=true&w=majority&appName=Cluster0
-MONGODB_DATABASE=luxus_brecho_db
-FLASK_DEBUG=False
-FRONTEND_ORIGIN=https://www.seu-dominio.com
+## 📂 Estrutura
+
+```
+app/
+├─ routes/       # Blueprints (products, users, orders...)
+├─ controllers/  # Lógica de negócio
+├─ services/     # JWT, Email, Supabase
+└─ __init__.py   # App factory
 ```
 
-Observações:
-- A aplicação prioriza `MONGODB_URI`. Não é necessário definir `MONGODB_USERNAME`/`MONGODB_PASSWORD`/`MONGODB_HOST`.
-- `FLASK_DEBUG` controla o modo debug. O `run.py` lê esse valor via `app.config["DEBUG"]`.
-- Não versione o `.env`. O `.gitignore` já ignora esse arquivo.
+## 🔐 Autenticação JWT
 
-## Executando
-```powershell
-# a partir da pasta raiz do repositório
-python backend/run.py
-```
+Rotas protegidas usam decorators:
+- `@jwt_required` - Requer token válido
+- `@admin_required` - Requer role admin
 
-Aplicação por padrão em: `http://localhost:5000`
+Headers: `Authorization: Bearer <token>`
 
-## Healthcheck
-- `GET /api/health` — retorna status da API e do banco de dados (`UP`/`DOWN`).
+## 📌 Principais Endpoints
 
-## Postman
-- Coleção: `backend/postman/Luxus-Brecho.postman_collection.json`
-- Ambiente (local): `backend/postman/Luxus-Brecho.local.postman_environment.json`
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/api/health` | Status da API |
+| POST | `/api/users/auth` | Login (retorna tokens) |
+| POST | `/api/users` | Registro |
+| GET | `/api/products` | Listar produtos |
+| POST | `/api/products` | Criar produto (admin) |
 
-Como usar:
-1. Abra o Postman.
-2. Importe a coleção e o ambiente pelos arquivos acima.
-3. Selecione o ambiente "Luxus Brechó - Local" (baseUrl = `http://localhost:5000`).
-4. Execute a requisição "GET /api/health". A coleção inclui testes que validam:
-   - Código 200 ou 503
-   - Presença de `api_status` e `database_status`
+## 🧪 Testes
 
-Ambiente de produção (opcional):
-- Crie um novo ambiente no Postman com `baseUrl = https://api.seu-dominio.com` (ou a URL do backend).
-
-### Import rápido (Postman → Import → Raw Text)
-Cole os cURLs abaixo no Postman para criar rapidamente as requisições:
 ```bash
-# Health
-curl --request GET \
-  --url http://localhost:5000/api/health
-
-# Listar produtos (com paginação opcional)
-curl --request GET \
-  --url "http://localhost:5000/api/products?page=1&page_size=10"
-
-# Filtrar por categoria
-curl --request GET \
-  --url "http://localhost:5000/api/products?categoria=Casual"
-
-# Buscar por texto (usa índice de texto em título/descrição)
-curl --request GET \
-  --url "http://localhost:5000/api/products?q=floral"
-
-# Criar produto
-curl --request POST \
-  --url http://localhost:5000/api/products \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "titulo": "Camisa Floral Feminina",
-    "preco": 89.90,
-    "descricao": "Camisa leve com estampa floral, tamanho M.",
-    "categoria": "Casual",
-    "imagem": "https://storage.supabase.co/bucket/produtos/camisa-floral.jpg"
-  }'
-
-# Obter produto por id
-curl --request GET \
-  --url http://localhost:5000/api/products/1
-
-# Atualizar produto por id
-curl --request PUT \
-  --url http://localhost:5000/api/products/1 \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "titulo": "Camisa Floral Feminina - Nova Edição",
-    "preco": 95.90,
-    "descricao": "Camisa leve com estampa floral, tamanho M (ajustada).",
-    "categoria": "Casual",
-    "imagem": "https://storage.supabase.co/bucket/produtos/camisa-floral-v2.jpg"
-  }'
-
-# Excluir produto por id
-curl --request DELETE \
-  --url http://localhost:5000/api/products/1
+pytest
+pytest -v  # Verbose
 ```
 
-## Estrutura de pastas (resumo)
-```
-backend/
-  app/
-    __init__.py        # application factory, carrega .env e conecta ao Mongo
-    routes/
-      health_routes.py # blueprint /api/health
-    controllers/
-      health_controller.py
-  run.py               # entrada; usa app.config["DEBUG"]
-  requirements.txt
-  .env.example
-  .env                 # (não versionar)
-```
+## 📦 Dependências Principais
 
-## Notas
-- CORS: restrito às origens definidas via `flask-cors` para rotas `/api/*`.
-- Padrão: http://localhost:5173 e http://127.0.0.1:5173. Personalize com `FRONTEND_ORIGIN` (múltiplas origens separadas por vírgulas).
-- Proxy Vite: mapeado `'/api' -> 'http://localhost:5000'` em `frontend/vite.config.js`.
-- Se você acidentalmente versionou credenciais no passado, altere (rotate) as chaves/senhas no provedor.
-- Para logs de conexão com o MongoDB, veja a saída do terminal ao iniciar a aplicação.
+- **Flask** + **Flask-CORS**
+- **PyMongo** (MongoDB)
+- **PyJWT** (autenticação)
+- **python-dotenv** (configuração)
+- **pytest** (testes)

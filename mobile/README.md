@@ -1,87 +1,59 @@
-# 📱 Luxus Brechó - Mobile App
+# Luxus Brechó — Mobile
 
-Aplicativo móvel para o brechó de roupas Luxus, desenvolvido com React Native e Expo.
+App React Native + Expo com TypeScript e NativeWind.
 
 ## 🚀 Início Rápido
 
 ```bash
-# Instalar dependências
 npm install
-
-# Configurar ambiente
 cp .env.example .env
-
-# Executar aplicação
-npm start
+npx expo start --clear
 ```
 
-## 🛠️ Stack Tecnológica
+## ⚙️ Configuração (.env)
 
-- **React Native** + **Expo** (~54.0)
-- **TypeScript** (strict mode)
-- **Expo Router** (navegação file-based)
-- **Zustand** (gerenciamento de estado)
-- **Zod** (validação de dados)
-- **NativeWind** (Tailwind CSS)
-- **AsyncStorage** (persistência local)
+```env
+EXPO_PUBLIC_API_URL=http://SEU_IP:5000/api
+EXPO_PUBLIC_ENABLE_LOGS=true
+```
 
-## 📁 Estrutura do Projeto
+> Execute `npm run dev` na raiz do projeto para sincronizar IP automaticamente.
+
+## 📂 Estrutura
 
 ```
-mobile/
-├── app/                 # Screens (Expo Router)
-├── components/          # Componentes reutilizáveis
-│   ├── ecommerce/      # Componentes específicos do e-commerce
-│   ├── forms/          # Componentes de formulário
-│   └── ui/             # Componentes de UI base
-├── hooks/              # Custom hooks
-├── schemas/            # Validações Zod
-├── services/           # API e autenticação
-├── store/              # Zustand stores
-├── types/              # TypeScript types
-├── utils/              # Utilitários
-└── constants/          # Configurações
+├── app/          # Screens (Expo Router)
+├── components/   # UI, Forms, Ecommerce
+├── services/     # API, Auth
+├── store/        # Zustand (auth, cart, favorites)
+├── schemas/      # Validações Zod
+└── types/        # TypeScript types
 ```
+
+## 🔑 Funcionalidades
+
+- **Catálogo** com filtros e busca
+- **Carrinho** com persistência local
+- **Autenticação** JWT
+- **Favoritos** sincronizados
+- **Painel Admin** (role-based)
+
+## 📱 Executar
+
+| Comando | Plataforma |
+|---------|------------|
+| `npx expo start` | QR Code (Expo Go) |
+| `npm run android` | Android |
+| `npm run ios` | iOS |
+| `npm run web` | Web |
 
 ## 🧪 Testes
 
 ```bash
-npm test              # Executar testes
-npm run test:watch    # Modo watch
-npm run test:coverage # Relatório de cobertura
+npm test              # Jest
+npm run test:coverage # Cobertura
 ```
 
-## 🔍 Qualidade de Código
+## 📦 Stack
 
-```bash
-npm run lint          # Verificar ESLint
-```
-
-## 🏪 Funcionalidades
-
-- **Catálogo de produtos** com filtros e busca
-- **Carrinho de compras** com persistência
-- **Autenticação** de usuários
-- **Favoritos** de produtos
-- **Painel administrativo** para gestão
-- **Sistema de categorias** (Casual, Social, Esportivo)
-
-## ⚙️ Configuração
-
-Copie `.env.example` para `.env` e configure:
-
-```env
-EXPO_PUBLIC_API_URL=http://192.168.0.3:5000/api
-EXPO_PUBLIC_ENABLE_LOGS=true
-```
-
-## 📱 Executar no Dispositivo
-
-- **Expo Go**: Escaneie o QR code
-- **Android**: `npm run android`
-- **iOS**: `npm run ios`
-- **Web**: `npm run web`
-
----
-
-**Desenvolvido para Luxus Brechó** 👗✨
+**Expo 54** · **TypeScript** · **Expo Router** · **Zustand** · **Zod** · **NativeWind**
