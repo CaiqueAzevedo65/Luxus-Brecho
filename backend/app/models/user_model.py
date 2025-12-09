@@ -149,12 +149,12 @@ def get_next_id(db) -> int:
     """Gera próximo ID sequencial para usuário."""
     counters = db[COUNTERS_COLLECTION]
     result = counters.find_one_and_update(
-        {"_id": COUNTER_KEY_USERS},
-        {"$inc": {"sequence_value": 1}},
+        {"name": COUNTER_KEY_USERS},
+        {"$inc": {"seq": 1}},
         upsert=True,
         return_document=ReturnDocument.AFTER
     )
-    return result["sequence_value"]
+    return result["seq"]
 
 def validate_user_payload(payload: Dict[str, Any], is_update: bool = False) -> Tuple[bool, str]:
     """

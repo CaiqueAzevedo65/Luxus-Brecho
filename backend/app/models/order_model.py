@@ -53,12 +53,13 @@ def ensure_indexes(db) -> None:
 
 def get_next_id(db) -> int:
     """Gera próximo ID sequencial para pedidos."""
+    from pymongo.collection import ReturnDocument
     counters = db["counters"]
     result = counters.find_one_and_update(
-        {"_id": COUNTER_KEY},
+        {"name": COUNTER_KEY},
         {"$inc": {"seq": 1}},
         upsert=True,
-        return_document=True
+        return_document=ReturnDocument.AFTER
     )
     return result["seq"]
 
