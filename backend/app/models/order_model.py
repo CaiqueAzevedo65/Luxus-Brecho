@@ -3,6 +3,7 @@ Modelo para gerenciamento de pedidos.
 """
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
+from pymongo import ASCENDING, DESCENDING
 
 COLLECTION_NAME = "orders"
 COUNTER_KEY = "orders"
@@ -21,6 +22,33 @@ ORDER_STATUS = [
 def get_collection(db):
     """Retorna a coleção de pedidos."""
     return db[COLLECTION_NAME]
+
+
+def ensure_indexes(db) -> None:
+    """Garante que os índices necessários existam na coleção de pedidos."""
+    if db is None:
+        return
+    
+    collection = db[COLLECTION_NAME]
+    
+    # Índice único por ID do pedido
+    collection.create_index(
+        [("id", ASCENDING)],
+        unique=True,
+        name="order_id_unique"
+    )
+    
+    # Índice composto para listagem de pedidos por usuário (ordenado por data)
+    collection.create_index(
+        [("user_id", ASCENDING), ("created_at", DESCENDING)],
+        name="user_orders_by_date"
+    )
+    
+    # Índice por status (útil para filtros administrativos)
+    collection.create_index(
+        [("status", ASCENDING)],
+        name="order_status"
+    )
 
 
 def get_next_id(db) -> int:

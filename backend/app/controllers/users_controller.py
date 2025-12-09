@@ -82,7 +82,7 @@ def list_users():
     except ValueError as e:
         return jsonify(message=f"Parâmetros inválidos: {e}"), 400
     except Exception as e:
-        print(f"Erro ao listar usuários: {e}")
+        current_app.logger.error(f"Erro ao listar usuários: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -102,7 +102,7 @@ def get_user(id: int):
         return jsonify(_serialize(user))
 
     except Exception as e:
-        print(f"Erro ao buscar usuário {id}: {e}")
+        current_app.logger.error(f"Erro ao buscar usuário {id}: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -165,7 +165,7 @@ def create_user():
             return jsonify(message="Email já está em uso"), 409
         return jsonify(message="Dados duplicados"), 409
     except Exception as e:
-        print(f"Erro ao criar usuário: {e}")
+        current_app.logger.error(f"Erro ao criar usuário: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -226,7 +226,7 @@ def update_user(id: int):
             return jsonify(message="Email já está em uso"), 409
         return jsonify(message="Dados duplicados"), 409
     except Exception as e:
-        print(f"Erro ao atualizar usuário {id}: {e}")
+        current_app.logger.error(f"Erro ao atualizar usuário {id}: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -266,7 +266,7 @@ def delete_user(id: int):
         return jsonify(message="Usuário desativado com sucesso")
 
     except Exception as e:
-        print(f"Erro ao excluir usuário {id}: {e}")
+        current_app.logger.error(f"Erro ao excluir usuário {id}: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -316,7 +316,7 @@ def authenticate_user():
         })
 
     except Exception as e:
-        print(f"Erro na autenticação: {e}")
+        current_app.logger.error(f"Erro na autenticação: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -369,7 +369,7 @@ def change_password(id: int):
         return jsonify(message="Senha alterada com sucesso")
 
     except Exception as e:
-        print(f"Erro ao alterar senha do usuário {id}: {e}")
+        current_app.logger.error(f"Erro ao alterar senha do usuário {id}: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -419,7 +419,7 @@ def get_users_summary():
         })
 
     except Exception as e:
-        print(f"Erro ao obter resumo de usuários: {e}")
+        current_app.logger.error(f"Erro ao obter resumo de usuários: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -468,7 +468,7 @@ def confirm_email(token: str):
         return jsonify(message="Email confirmado com sucesso! Sua conta está ativa.")
 
     except Exception as e:
-        print(f"Erro ao confirmar email: {e}")
+        current_app.logger.error(f"Erro ao confirmar email: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -524,7 +524,7 @@ def resend_confirmation_email():
         return jsonify(message="Email de confirmação reenviado com sucesso")
 
     except Exception as e:
-        print(f"Erro ao reenviar email de confirmação: {e}")
+        current_app.logger.error(f"Erro ao reenviar email de confirmação: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -568,15 +568,15 @@ def forgot_password():
             # Envia email com link de recuperação
             send_password_reset_email(user["email"], user["nome"], reset_token)
             
-            print(f"✅ Email de recuperação enviado para {email}")
+            current_app.logger.info(f"Email de recuperação enviado para {email}")
         else:
-            print(f"⚠️  Email {email} não encontrado, mas retornando sucesso por segurança")
+            current_app.logger.warning(f"Email {email} não encontrado, mas retornando sucesso por segurança")
 
         # Sempre retorna sucesso para não revelar se email existe
         return jsonify(message="Se o email estiver cadastrado, você receberá um link para redefinir sua senha"), 200
 
     except Exception as e:
-        print(f"Erro ao processar recuperação de senha: {e}")
+        current_app.logger.error(f"Erro ao processar recuperação de senha: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -633,12 +633,12 @@ def reset_password():
         if result.matched_count == 0:
             return jsonify(message="Erro ao redefinir senha"), 500
 
-        print(f"✅ Senha redefinida com sucesso para usuário ID {user['id']}")
+        current_app.logger.info(f"Senha redefinida com sucesso para usuário ID {user['id']}")
         
         return jsonify(message="Senha redefinida com sucesso")
 
     except Exception as e:
-        print(f"Erro ao redefinir senha: {e}")
+        current_app.logger.error(f"Erro ao redefinir senha: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -686,7 +686,7 @@ def request_account_deletion():
         if not email_sent:
             return jsonify(message="Erro ao enviar email. Tente novamente."), 500
 
-        print(f"📧 Código de exclusão enviado para {user['email']}")
+        current_app.logger.info(f"Código de exclusão enviado para {user['email']}")
         
         return jsonify({
             "message": "Código de verificação enviado para seu email",
@@ -694,7 +694,7 @@ def request_account_deletion():
         })
 
     except Exception as e:
-        print(f"Erro ao solicitar exclusão de conta: {e}")
+        current_app.logger.error(f"Erro ao solicitar exclusão de conta: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -745,7 +745,7 @@ def confirm_account_deletion():
         if result.deleted_count == 0:
             return jsonify(message="Erro ao excluir conta"), 500
 
-        print(f"🗑️ Conta do usuário ID {user_id} excluída permanentemente")
+        current_app.logger.info(f"Conta do usuário ID {user_id} excluída permanentemente")
         
         return jsonify({
             "message": "Conta excluída com sucesso",
@@ -753,5 +753,5 @@ def confirm_account_deletion():
         })
 
     except Exception as e:
-        print(f"Erro ao confirmar exclusão de conta: {e}")
+        current_app.logger.error(f"Erro ao confirmar exclusão de conta: {e}")
         return jsonify(message="Erro interno do servidor"), 500

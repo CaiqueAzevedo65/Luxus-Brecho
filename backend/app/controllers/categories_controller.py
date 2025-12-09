@@ -11,6 +11,15 @@ from ..models.category_model import (
 )
 
 
+def _invalidate_categories_cache():
+    """Invalida o cache de categorias após modificações."""
+    try:
+        from ..utils.cache import invalidate_categories_cache
+        invalidate_categories_cache()
+    except ImportError:
+        pass  # Cache não disponível
+
+
 def _serialize(doc: Dict[str, Any]) -> Dict[str, Any]:
     """Remove campos internos do MongoDB do documento."""
     if not doc:
@@ -86,6 +95,7 @@ def create_category():
             return jsonify(message="category name already exists"), 409
             
         coll.insert_one(doc)
+        _invalidate_categories_cache()  # Invalida cache após criar
     except DuplicateKeyError:
         return jsonify(message="category id already exists"), 409
 
@@ -124,6 +134,7 @@ def update_category(id: int):
             return jsonify(message="category name already exists"), 409
 
     coll.update_one({"id": int(id)}, {"$set": merged})
+    _invalidate_categories_cache()  # Invalida cache após atualizar
     updated = coll.find_one({"id": int(id)})
     return jsonify(_serialize(updated))
 
@@ -159,6 +170,7 @@ def delete_category(id: int):
     # Delete permanente
     result = coll.delete_one({"id": int(id)})
     if result.deleted_count > 0:
+        _invalidate_categories_cache()  # Invalida cache após deletar
         return jsonify(message="categoria deletada com sucesso"), 200
     return jsonify(message="erro ao deletar categoria"), 500
 
@@ -178,6 +190,7 @@ def deactivate_category(id: int):
         return jsonify(message="categoria já está desativada"), 400
 
     coll.update_one({"id": int(id)}, {"$set": {"active": False}})
+    _invalidate_categories_cache()  # Invalida cache após desativar
     return jsonify(message="categoria desativada com sucesso"), 200
 
 
@@ -193,6 +206,7 @@ def activate_category(id: int):
         return jsonify(message="category not found"), 404
 
     coll.update_one({"id": int(id)}, {"$set": {"active": True}})
+    _invalidate_categories_cache()  # Invalida cache após ativar
     updated = coll.find_one({"id": int(id)})
     return jsonify(_serialize(updated))
 

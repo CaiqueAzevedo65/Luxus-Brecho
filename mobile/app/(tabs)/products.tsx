@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -7,20 +7,45 @@ import { apiService } from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
 import { useFilterStore } from '../../store/filterStore';
 import { useToast } from '../../contexts/ToastContext';
+import { logger } from '../../utils/logger';
 import type { Product } from '../../types/product';
 
 const CATEGORIES = ['Casual', 'Social', 'Esportivo'];
+const PAGE_SIZE = 12;
+
+// Hook de debounce
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export default function ProductsScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const selectedCategoryFromStore = useFilterStore((state) => state.selectedCategory);
   const clearCategory = useFilterStore((state) => state.clearCategory);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const { addToCart, isInCart } = useCartStore();
   const { success, info } = useToast();
+
+  // Debounce da busca (300ms)
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Aplicar filtro do store quando a tela é aberta
   useEffect(() => {
@@ -30,50 +55,83 @@ export default function ProductsScreen() {
     }
   }, [selectedCategoryFromStore]);
 
+  // Buscar produtos quando filtros mudam
   useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, page]);
+    setPage(1);
+    setProducts([]);
+    setHasMore(true);
+    fetchProducts(1, true);
+  }, [selectedCategory, debouncedSearchQuery]);
 
-  const fetchProducts = async () => {
-    try {
+  const fetchProducts = useCallback(async (pageNum: number = 1, reset: boolean = false) => {
+    if (reset) {
       setLoading(true);
-      
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
       const filters: any = {};
 
       if (selectedCategory) {
         filters.categoria = selectedCategory;
       }
 
-      if (searchQuery) {
-        filters.q = searchQuery;
+      if (debouncedSearchQuery) {
+        filters.q = debouncedSearchQuery;
       }
 
-      const response = await apiService.getProducts(page, 12, filters);
+      const response = await apiService.getProducts(pageNum, PAGE_SIZE, filters);
+      
       // Filtrar apenas produtos disponíveis para exibição pública
       const availableProducts = (response.items || []).filter(
         (product: Product) => product.status === 'disponivel'
       );
-      setProducts(availableProducts);
+
+      if (reset) {
+        setProducts(availableProducts);
+      } else {
+        setProducts(prev => [...prev, ...availableProducts]);
+      }
+
+      // Verificar se há mais produtos
+      const totalPages = Math.ceil((response.pagination?.total || 0) / PAGE_SIZE);
+      setHasMore(pageNum < totalPages);
+      setPage(pageNum);
+
     } catch (error) {
-      console.error('Erro ao carregar produtos:', error);
-      setProducts([]);
+      logger.error('Erro ao carregar produtos', error as Error, 'PRODUCTS');
+      if (reset) {
+        setProducts([]);
+      }
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+      setRefreshing(false);
     }
-  };
+  }, [selectedCategory, debouncedSearchQuery]);
 
-  const handleSearch = () => {
+  // Pull-to-refresh
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
     setPage(1);
-    fetchProducts();
-  };
+    setHasMore(true);
+    fetchProducts(1, true);
+  }, [fetchProducts]);
 
-  const handleCategoryFilter = (category: string) => {
+  // Carregar mais (paginação infinita)
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && hasMore && !loading) {
+      fetchProducts(page + 1, false);
+    }
+  }, [loadingMore, hasMore, loading, page, fetchProducts]);
+
+  const handleCategoryFilter = useCallback((category: string) => {
     const newCategory = category === selectedCategory ? '' : category;
     setSelectedCategory(newCategory);
-    setPage(1);
-  };
+  }, [selectedCategory]);
 
-  const handleAddToCart = async (product: Product) => {
+  const handleAddToCart = useCallback(async (product: Product) => {
     if (isInCart(product.id)) {
       info('Este produto já está no carrinho!');
       return;
@@ -81,9 +139,10 @@ export default function ProductsScreen() {
 
     await addToCart(product);
     success(`${product.titulo} adicionado ao carrinho! 🛒`);
-  };
+  }, [isInCart, addToCart, info, success]);
 
-  const renderProduct = ({ item }: { item: Product }) => (
+  // Memoizar renderProduct para evitar re-renders
+  const renderProduct = useCallback(({ item }: { item: Product }) => (
     <TouchableOpacity
       style={styles.productCard}
       onPress={() => router.push(`/product/${item.id}`)}
@@ -94,6 +153,7 @@ export default function ProductsScreen() {
             source={{ uri: item.imagem }}
             style={styles.productImage}
             resizeMode="cover"
+            defaultSource={require('../../assets/images/icon.png')}
           />
         ) : (
           <View style={styles.placeholderImage}>
@@ -122,7 +182,21 @@ export default function ProductsScreen() {
         <Text style={styles.addButtonText}>+ Carrinho</Text>
       </TouchableOpacity>
     </TouchableOpacity>
-  );
+  ), [handleAddToCart]);
+
+  // Footer para loading de paginação
+  const renderFooter = useCallback(() => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#E91E63" />
+        <Text style={styles.footerText}>Carregando mais...</Text>
+      </View>
+    );
+  }, [loadingMore]);
+
+  // Key extractor memoizado
+  const keyExtractor = useCallback((item: Product) => item.id.toString(), []);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#E91E63' }}>
@@ -141,14 +215,10 @@ export default function ProductsScreen() {
               placeholder="Buscar produtos..."
               value={searchQuery}
               onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
               returnKeyType="search"
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => {
-                setSearchQuery('');
-                fetchProducts();
-              }}>
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
                 <Ionicons name="close-circle" size={20} color="#666" />
               </TouchableOpacity>
             )}
@@ -191,7 +261,7 @@ export default function ProductsScreen() {
         </View>
 
         {/* Products Grid */}
-        {loading ? (
+        {loading && products.length === 0 ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#E91E63" />
             <Text style={styles.loadingText}>Carregando produtos...</Text>
@@ -210,10 +280,25 @@ export default function ProductsScreen() {
           <FlatList
             data={products}
             renderItem={renderProduct}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={keyExtractor}
             numColumns={2}
             contentContainerStyle={styles.productsGrid}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                colors={['#E91E63']}
+                tintColor="#E91E63"
+              />
+            }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            initialNumToRender={10}
           />
         )}
       </SafeAreaView>
@@ -393,5 +478,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
+  },
+  footerLoader: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 16,
+    gap: 8,
+  },
+  footerText: {
+    fontSize: 14,
+    color: '#666',
   },
 });

@@ -20,9 +20,9 @@ class MockCollection:
         self.data = []
         self.counter = 0
     
-    def find(self, query=None, *args, **kwargs):
+    def find(self, query=None, projection=None):
         if query is None:
-            return MockCursor(self.data)
+            return MockCursor(self.data.copy())
         
         results = []
         for doc in self.data:
@@ -36,6 +36,43 @@ class MockCollection:
                             break
                     if not or_match:
                         match = False
+                elif key == "$text":
+                    # Busca textual simplificada
+                    search_term = value.get("$search", "").lower()
+                    titulo = str(doc.get("titulo", "")).lower()
+                    descricao = str(doc.get("descricao", "")).lower()
+                    if search_term not in titulo and search_term not in descricao:
+                        match = False
+                elif isinstance(value, dict):
+                    # Suporte a operadores como $in, $ne, etc.
+                    if "$in" in value:
+                        if doc.get(key) not in value["$in"]:
+                            match = False
+                    elif "$ne" in value:
+                        if doc.get(key) == value["$ne"]:
+                            match = False
+                    elif "$gt" in value:
+                        if not (doc.get(key) is not None and doc.get(key) > value["$gt"]):
+                            match = False
+                    elif "$gte" in value:
+                        if not (doc.get(key) is not None and doc.get(key) >= value["$gte"]):
+                            match = False
+                    elif "$lt" in value:
+                        if not (doc.get(key) is not None and doc.get(key) < value["$lt"]):
+                            match = False
+                    elif "$lte" in value:
+                        if not (doc.get(key) is not None and doc.get(key) <= value["$lte"]):
+                            match = False
+                    elif "$regex" in value:
+                        import re
+                        pattern = value["$regex"]
+                        options = value.get("$options", "")
+                        flags = re.IGNORECASE if "i" in options else 0
+                        if not re.search(pattern, str(doc.get(key, "")), flags):
+                            match = False
+                    else:
+                        if doc.get(key) != value:
+                            match = False
                 elif doc.get(key) != value:
                     match = False
                     break

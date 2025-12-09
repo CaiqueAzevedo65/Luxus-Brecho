@@ -71,9 +71,6 @@ def list_user_favorites(user_id: str):
     if db is None:
         return jsonify(message="Banco de dados indisponível"), 503
     
-    # Garantir índices
-    ensure_indexes(db)
-    
     # Buscar favoritos
     success, error, favorites = get_user_favorites(db, user_id)
     
@@ -128,9 +125,6 @@ def add_to_favorites(user_id: str):
     if db is None:
         return jsonify(message="Banco de dados indisponível"), 503
     
-    # Garantir índices
-    ensure_indexes(db)
-    
     # Validar payload
     payload = request.get_json()
     if not payload:
@@ -179,9 +173,6 @@ def remove_from_favorites(user_id: str, product_id: int):
     if db is None:
         return jsonify(message="Banco de dados indisponível"), 503
     
-    # Garantir índices
-    ensure_indexes(db)
-    
     # Remover favorito
     success, error = remove_favorite(db, user_id, product_id)
     
@@ -209,9 +200,6 @@ def check_favorite(user_id: str, product_id: int):
     if db is None:
         return jsonify(message="Banco de dados indisponível"), 503
     
-    # Garantir índices
-    ensure_indexes(db)
-    
     # Verificar se está favoritado
     favorited = is_favorited(db, user_id, product_id)
     
@@ -235,9 +223,6 @@ def toggle_favorite(user_id: str):
     db = current_app.db
     if db is None:
         return jsonify(message="Banco de dados indisponível"), 503
-    
-    # Garantir índices
-    ensure_indexes(db)
     
     # Validar payload
     payload = request.get_json()

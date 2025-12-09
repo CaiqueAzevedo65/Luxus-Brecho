@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { favoritesService } from '../services/favorites';
+import { logger } from '../utils/logger';
 
 export const useFavoritesStore = create((set, get) => ({
   // Estado
@@ -24,7 +25,7 @@ export const useFavoritesStore = create((set, get) => ({
         set({ favorites: [], loading: false, error: result.error });
       }
     } catch (error) {
-      console.error('Erro ao carregar favoritos:', error);
+      logger.error('Erro ao carregar favoritos', error, 'FAVORITES');
       set({ favorites: [], loading: false, error: 'Erro ao carregar favoritos' });
     }
   },
@@ -43,7 +44,7 @@ export const useFavoritesStore = create((set, get) => ({
         return { success: false, alreadyFavorite: result.alreadyFavorite, error: result.error };
       }
     } catch (error) {
-      console.error('Erro ao adicionar aos favoritos:', error);
+      logger.error('Erro ao adicionar aos favoritos', error, 'FAVORITES');
       return { success: false, error: true };
     }
   },
@@ -62,7 +63,7 @@ export const useFavoritesStore = create((set, get) => ({
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Erro ao remover dos favoritos:', error);
+      logger.error('Erro ao remover dos favoritos', error, 'FAVORITES');
       return { success: false, error: true };
     }
   },
@@ -87,7 +88,7 @@ export const useFavoritesStore = create((set, get) => ({
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Erro ao alternar favorito:', error);
+      logger.error('Erro ao alternar favorito', error, 'FAVORITES');
       return { success: false, error: true };
     }
   },
@@ -102,7 +103,7 @@ export const useFavoritesStore = create((set, get) => ({
     try {
       set({ favorites: [], loading: false, error: null });
     } catch (error) {
-      console.error('Erro ao limpar favoritos:', error);
+      logger.error('Erro ao limpar favoritos', error, 'FAVORITES');
     }
   },
 

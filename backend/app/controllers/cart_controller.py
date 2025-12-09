@@ -32,12 +32,20 @@ def get_user_cart(user_id: int):
                 "updated_at": None,
             })
         
-        # Busca informações dos produtos
+        # Busca informações dos produtos em uma única query (evita N+1)
         products_coll = db["products"]
-        items_with_details = []
+        product_ids = [item.get("product_id") for item in cart.get("items", [])]
         
+        # Uma única query para todos os produtos
+        products = list(products_coll.find(
+            {"id": {"$in": product_ids}},
+            {"_id": 0, "id": 1, "titulo": 1, "preco": 1, "imagem": 1, "status": 1, "categoria": 1}
+        ))
+        products_dict = {p["id"]: p for p in products}
+        
+        items_with_details = []
         for item in cart.get("items", []):
-            product = products_coll.find_one({"id": item.get("product_id")})
+            product = products_dict.get(item.get("product_id"))
             if product:
                 items_with_details.append({
                     "product_id": item.get("product_id"),
@@ -47,7 +55,7 @@ def get_user_cart(user_id: int):
                         "id": product.get("id"),
                         "titulo": product.get("titulo"),
                         "preco": product.get("preco"),
-                        "imagem_url": product.get("imagem_url"),
+                        "imagem": product.get("imagem"),
                         "status": product.get("status"),
                         "categoria": product.get("categoria"),
                     }
@@ -62,7 +70,7 @@ def get_user_cart(user_id: int):
         })
 
     except Exception as e:
-        print(f"Erro ao obter carrinho: {e}")
+        current_app.logger.error(f"Erro ao obter carrinho: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -153,7 +161,7 @@ def add_to_cart(user_id: int):
         }), 201
 
     except Exception as e:
-        print(f"Erro ao adicionar ao carrinho: {e}")
+        current_app.logger.error(f"Erro ao adicionar ao carrinho: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -193,7 +201,7 @@ def remove_from_cart(user_id: int):
         })
 
     except Exception as e:
-        print(f"Erro ao remover do carrinho: {e}")
+        current_app.logger.error(f"Erro ao remover do carrinho: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -240,7 +248,7 @@ def update_cart_item(user_id: int):
         })
 
     except Exception as e:
-        print(f"Erro ao atualizar carrinho: {e}")
+        current_app.logger.error(f"Erro ao atualizar carrinho: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -267,7 +275,7 @@ def clear_cart(user_id: int):
         return jsonify({"message": "Carrinho limpo com sucesso"})
 
     except Exception as e:
-        print(f"Erro ao limpar carrinho: {e}")
+        current_app.logger.error(f"Erro ao limpar carrinho: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -288,41 +296,39 @@ def sync_cart(user_id: int):
         products_coll = db["products"]
         now = datetime.utcnow()
 
-        # Valida e filtra itens
-        valid_items = []
-        for item in items:
-            product_id = item.get("product_id")
-            quantity = item.get("quantity", 1)
-            
-            # Verifica se o produto existe e está disponível
-            product = products_coll.find_one({"id": product_id})
-            if product and product.get("status") == "disponivel":
-                valid_items.append({
-                    "product_id": product_id,
-                    "quantity": quantity,
-                    "added_at": now,
-                })
+        # Busca todos os produtos de uma vez (evita N+1)
+        product_ids = [item.get("product_id") for item in items if item.get("product_id")]
+        products = list(products_coll.find(
+            {"id": {"$in": product_ids}, "status": "disponivel"},
+            {"_id": 0, "id": 1}
+        ))
+        available_product_ids = {p["id"] for p in products}
+
+        # Filtra apenas itens com produtos disponíveis
+        valid_items = [
+            {
+                "product_id": item.get("product_id"),
+                "quantity": item.get("quantity", 1),
+                "added_at": now,
+            }
+            for item in items
+            if item.get("product_id") in available_product_ids
+        ]
 
         # Atualiza ou cria carrinho
-        cart = coll.find_one({"user_id": user_id})
-        
-        if cart:
-            coll.update_one(
-                {"user_id": user_id},
-                {
-                    "$set": {
-                        "items": valid_items,
-                        "updated_at": now,
-                    }
+        coll.update_one(
+            {"user_id": user_id},
+            {
+                "$set": {
+                    "items": valid_items,
+                    "updated_at": now,
+                },
+                "$setOnInsert": {
+                    "created_at": now,
                 }
-            )
-        else:
-            coll.insert_one({
-                "user_id": user_id,
-                "items": valid_items,
-                "created_at": now,
-                "updated_at": now,
-            })
+            },
+            upsert=True
+        )
 
         return jsonify({
             "message": "Carrinho sincronizado",
@@ -330,5 +336,5 @@ def sync_cart(user_id: int):
         })
 
     except Exception as e:
-        print(f"Erro ao sincronizar carrinho: {e}")
+        current_app.logger.error(f"Erro ao sincronizar carrinho: {e}")
         return jsonify(message="Erro interno do servidor"), 500

@@ -245,10 +245,13 @@ class ApiService {
 
   async createProduct(product: Omit<Product, 'id'>): Promise<Product | null> {
     try {
-      return await this.fetchApi<Product>('/products', {
+      const result = await this.fetchApi<Product>('/products', {
         method: 'POST',
         body: JSON.stringify(product),
       });
+      // Invalida cache de produtos após criar
+      await cacheManager.invalidateProducts();
+      return result;
     } catch (error) {
       console.error('❌ Erro ao criar produto:', error);
       return null;
@@ -257,10 +260,13 @@ class ApiService {
 
   async updateProduct(id: number, updates: Partial<Product>): Promise<Product | null> {
     try {
-      return await this.fetchApi<Product>(`/products/${id}`, {
+      const result = await this.fetchApi<Product>(`/products/${id}`, {
         method: 'PUT',
         body: JSON.stringify(updates),
       });
+      // Invalida cache de produtos após atualizar
+      await cacheManager.invalidateProducts();
+      return result;
     } catch (error) {
       console.error(`❌ Erro ao atualizar produto ${id}:`, error);
       return null;
@@ -269,9 +275,12 @@ class ApiService {
 
   async deleteProduct(id: number): Promise<{ message: string } | null> {
     try {
-      return await this.fetchApi<{ message: string }>(`/products/${id}`, {
+      const result = await this.fetchApi<{ message: string }>(`/products/${id}`, {
         method: 'DELETE',
       });
+      // Invalida cache de produtos após deletar
+      await cacheManager.invalidateProducts();
+      return result;
     } catch (error) {
       console.error(`❌ Erro ao deletar produto ${id}:`, error);
       return null;

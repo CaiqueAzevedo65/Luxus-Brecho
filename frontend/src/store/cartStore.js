@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { logger } from '../utils/logger';
 
 const STORAGE_KEY = 'luxus-cart';
 const FREE_SHIPPING_THRESHOLD = 150;
@@ -36,7 +37,7 @@ export const useCartStore = create((set, get) => ({
       
       // Se o produto já existe, não adiciona novamente (peça única)
       if (existingItem) {
-        console.log('Produto já está no carrinho (peça única)');
+        logger.info('Produto já está no carrinho (peça única)', 'CART');
         set({ loading: false });
         return { success: false, alreadyInCart: true };
       }
@@ -56,7 +57,7 @@ export const useCartStore = create((set, get) => ({
       set({ loading: false });
       return { success: true, alreadyInCart: false };
     } catch (error) {
-      console.error('Erro ao adicionar produto ao carrinho:', error);
+      logger.error('Erro ao adicionar produto ao carrinho', error, 'CART');
       set({ loading: false });
       return { success: false, alreadyInCart: false, error: true };
     }
@@ -69,7 +70,7 @@ export const useCartStore = create((set, get) => ({
       set({ cart: updatedCart });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedCart));
     } catch (error) {
-      console.error('Erro ao remover produto do carrinho:', error);
+      logger.error('Erro ao remover produto do carrinho', error, 'CART');
     } finally {
       set({ loading: false });
     }
@@ -84,7 +85,7 @@ export const useCartStore = create((set, get) => ({
         set({ cart: parsedCart });
       }
     } catch (error) {
-      console.error('Erro ao carregar carrinho:', error);
+      logger.error('Erro ao carregar carrinho', error, 'CART');
     } finally {
       set({ loading: false });
     }
@@ -96,7 +97,7 @@ export const useCartStore = create((set, get) => ({
       set({ cart: [] });
       localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
-      console.error('Erro ao limpar carrinho:', error);
+      logger.error('Erro ao limpar carrinho', error, 'CART');
     } finally {
       set({ loading: false });
     }

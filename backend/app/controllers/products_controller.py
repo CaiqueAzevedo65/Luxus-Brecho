@@ -48,16 +48,49 @@ def list_products():
     if q:
         query["$text"] = {"$search": q}
 
-    cursor = coll.find(query)
+    # Projeção para retornar apenas campos necessários
+    projection = {
+        "_id": 0,
+        "id": 1,
+        "titulo": 1,
+        "preco": 1,
+        "descricao": 1,
+        "categoria": 1,
+        "imagem": 1,
+        "status": 1,
+    }
 
-    if q:
-        cursor = cursor.sort([("score", {"$meta": "textScore"})])
-
-    total = coll.count_documents(query)
-
-    items = [
-        _serialize(doc) for doc in cursor.skip((page - 1) * page_size).limit(page_size)
+    # Usa aggregation com $facet para obter items e total em uma única query
+    skip = (page - 1) * page_size
+    
+    pipeline = [
+        {"$match": query},
     ]
+    
+    # Adiciona sort por score se for busca textual
+    if q:
+        pipeline.append({"$sort": {"score": {"$meta": "textScore"}}})
+    
+    pipeline.append({
+        "$facet": {
+            "items": [
+                {"$skip": skip},
+                {"$limit": page_size},
+                {"$project": projection}
+            ],
+            "total": [{"$count": "count"}]
+        }
+    })
+
+    result = list(coll.aggregate(pipeline))
+    
+    if result:
+        items = result[0].get("items", [])
+        total_arr = result[0].get("total", [])
+        total = total_arr[0]["count"] if total_arr else 0
+    else:
+        items = []
+        total = 0
 
     return jsonify(
         items=items,

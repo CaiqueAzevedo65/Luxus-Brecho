@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { favoritesService, FavoriteProduct } from '../services/favorites';
+import { logger } from '../utils/logger';
 
 interface FavoritesState {
   favorites: FavoriteProduct[];
@@ -36,7 +37,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
         set({ favorites: [], loading: false, error: result.error || null });
       }
     } catch (error) {
-      console.error('Erro ao carregar favoritos:', error);
+      logger.error('Erro ao carregar favoritos', error as Error, 'FAVORITES');
       set({ favorites: [], loading: false, error: 'Erro ao carregar favoritos' });
     }
   },
@@ -59,7 +60,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
         };
       }
     } catch (error) {
-      console.error('Erro ao adicionar aos favoritos:', error);
+      logger.error('Erro ao adicionar aos favoritos', error as Error, 'FAVORITES');
       return { success: false, error: 'Erro ao adicionar favorito' };
     }
   },
@@ -78,7 +79,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Erro ao remover dos favoritos:', error);
+      logger.error('Erro ao remover dos favoritos', error as Error, 'FAVORITES');
       return { success: false, error: 'Erro ao remover favorito' };
     }
   },
@@ -103,7 +104,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Erro ao alternar favorito:', error);
+      logger.error('Erro ao alternar favorito', error as Error, 'FAVORITES');
       return { success: false, error: 'Erro ao alternar favorito' };
     }
   },
@@ -118,7 +119,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
     try {
       set({ favorites: [], loading: false, error: null });
     } catch (error) {
-      console.error('Erro ao limpar favoritos:', error);
+      logger.error('Erro ao limpar favoritos', error as Error, 'FAVORITES');
     }
   },
 

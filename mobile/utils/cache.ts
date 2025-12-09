@@ -71,6 +71,51 @@ class CacheManager {
       logger.error('Erro ao limpar cache', error as Error, 'CACHE');
     }
   }
+
+  /**
+   * Invalida cache de produtos (após criar/editar/deletar)
+   */
+  async invalidateProducts(): Promise<void> {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const productCacheKeys = keys.filter(key => 
+        key.startsWith('cache_/products') || 
+        key.startsWith('cache_featured_products')
+      );
+      if (productCacheKeys.length > 0) {
+        await AsyncStorage.multiRemove(productCacheKeys);
+        logger.cache('Cache de produtos invalidado', { keys: productCacheKeys.length });
+      }
+    } catch (error) {
+      logger.error('Erro ao invalidar cache de produtos', error as Error, 'CACHE');
+    }
+  }
+
+  /**
+   * Invalida cache de categorias (após criar/editar/deletar)
+   */
+  async invalidateCategories(): Promise<void> {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const categoryCacheKeys = keys.filter(key => 
+        key.startsWith('cache_/categories')
+      );
+      if (categoryCacheKeys.length > 0) {
+        await AsyncStorage.multiRemove(categoryCacheKeys);
+        logger.cache('Cache de categorias invalidado', { keys: categoryCacheKeys.length });
+      }
+    } catch (error) {
+      logger.error('Erro ao invalidar cache de categorias', error as Error, 'CACHE');
+    }
+  }
+
+  /**
+   * Invalida todo o cache (útil após logout ou erros críticos)
+   */
+  async invalidateAll(): Promise<void> {
+    await this.clear();
+    logger.cache('Todo o cache foi invalidado');
+  }
 }
 
 export const cacheManager = new CacheManager();

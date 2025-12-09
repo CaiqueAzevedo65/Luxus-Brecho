@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../../services/api';
 import { useCartStore } from '../../store/cartStore';
 import { useToastContext } from '../../contexts/ToastContext';
+import { useDebounce } from '../../hooks/useDebounce';
+import { logger } from '../../utils/logger';
 import { FiSearch, FiFilter, FiShoppingCart, FiX } from 'react-icons/fi';
 import './index.css';
+
+const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x400?text=Sem+Imagem';
 
 const Produtos = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,6 +22,9 @@ const Produtos = () => {
   const [totalPages, setTotalPages] = useState(1);
   const { addToCart } = useCartStore();
   const { success, info, error: showError } = useToastContext();
+
+  // Debounce da busca (300ms)
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     fetchCategories();
@@ -36,20 +43,21 @@ const Produtos = () => {
     }
   }, [searchParams]);
 
+  // Buscar produtos quando filtros mudam (com debounce na busca)
   useEffect(() => {
     fetchProducts();
-  }, [page, selectedCategory, searchQuery]);
+  }, [page, selectedCategory, debouncedSearchQuery]);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await api.get('/categories/summary');
       setCategories(response.data || []);
     } catch (err) {
-      console.error('Erro ao carregar categorias:', err);
+      logger.error('Erro ao carregar categorias', err, 'PRODUCTS');
     }
-  };
+  }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -63,8 +71,8 @@ const Produtos = () => {
         params.categoria = selectedCategory;
       }
       
-      if (searchQuery) {
-        params.q = searchQuery;
+      if (debouncedSearchQuery) {
+        params.q = debouncedSearchQuery;
       }
 
       const response = await api.get('/products', { params });
@@ -72,21 +80,20 @@ const Produtos = () => {
       setProducts(response.data.items || []);
       setTotalPages(Math.ceil(response.data.pagination.total / response.data.pagination.page_size));
     } catch (err) {
-      console.error('Erro ao carregar produtos:', err);
+      logger.error('Erro ao carregar produtos', err, 'PRODUCTS');
       setError('Erro ao carregar produtos. Tente novamente.');
       setProducts([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, selectedCategory, debouncedSearchQuery]);
 
-  const handleSearch = (e) => {
+  const handleSearch = useCallback((e) => {
     e.preventDefault();
     setPage(1);
-    fetchProducts();
-  };
+  }, []);
 
-  const handleCategoryFilter = (category) => {
+  const handleCategoryFilter = useCallback((category) => {
     const newCategory = category === selectedCategory ? '' : category;
     setSelectedCategory(newCategory);
     setPage(1);
@@ -99,14 +106,37 @@ const Produtos = () => {
       params.delete('categoria');
     }
     setSearchParams(params);
-  };
+  }, [selectedCategory, searchParams, setSearchParams]);
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('pt-BR', {
+  const handleAddToCart = useCallback((product) => {
+    const result = addToCart(product);
+    if (result?.alreadyInCart) {
+      info(`${product.titulo} já está no carrinho! Esta é uma peça única.`);
+    } else if (result?.success) {
+      success(`${product.titulo} adicionado ao carrinho! 🛒`);
+    } else if (result?.error) {
+      showError('Erro ao adicionar produto ao carrinho.');
+    }
+  }, [addToCart, info, success, showError]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery('');
+    setSelectedCategory('');
+    setPage(1);
+    setSearchParams(new URLSearchParams());
+  }, [setSearchParams]);
+
+  const handleImageError = useCallback((e) => {
+    e.target.src = PLACEHOLDER_IMAGE;
+  }, []);
+
+  // Memoizar formatação de preço
+  const formatPrice = useMemo(() => {
+    return (price) => new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(price);
-  };
+  }, []);
 
   return (
     <div className="produtos-page">
@@ -134,10 +164,7 @@ const Produtos = () => {
                 <button
                   type="button"
                   className="clear-search"
-                  onClick={() => {
-                    setSearchQuery('');
-                    setPage(1);
-                  }}
+                  onClick={() => setSearchQuery('')}
                 >
                   <FiX />
                 </button>
@@ -186,11 +213,7 @@ const Produtos = () => {
           <p>Nenhum produto encontrado.</p>
           {(searchQuery || selectedCategory) && (
             <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('');
-                setPage(1);
-              }}
+              onClick={handleClearFilters}
               className="clear-filters-button"
             >
               Limpar Filtros
@@ -208,9 +231,8 @@ const Produtos = () => {
                       <img
                         src={product.imagem}
                         alt={product.titulo}
-                        onError={(e) => {
-                          e.target.src = 'https://via.placeholder.com/300x400?text=Sem+Imagem';
-                        }}
+                        onError={handleImageError}
+                        loading="lazy"
                       />
                     ) : (
                       <div className="no-image">Sem Imagem</div>
@@ -224,16 +246,7 @@ const Produtos = () => {
                 </Link>
                 <button
                   className="add-cart-btn-produtos"
-                  onClick={() => {
-                    const result = addToCart(product);
-                    if (result?.alreadyInCart) {
-                      info(`${product.titulo} já está no carrinho! Esta é uma peça única.`);
-                    } else if (result?.success) {
-                      success(`${product.titulo} adicionado ao carrinho! 🛒`);
-                    } else if (result?.error) {
-                      showError('Erro ao adicionar produto ao carrinho.');
-                    }
-                  }}
+                  onClick={() => handleAddToCart(product)}
                 >
                   <FiShoppingCart /> Adicionar ao Carrinho
                 </button>

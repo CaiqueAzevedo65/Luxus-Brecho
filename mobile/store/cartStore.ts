@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CONFIG } from '../constants/config';
 import { Product } from '../types/product';
 import { getApiUrl } from '../utils/networkUtils';
+import { logger } from '../utils/logger';
 
 export interface CartItem {
   id: number;
@@ -64,7 +65,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       let updatedCart;
       if (existingItemIndex >= 0) {
         // Produto já existe no carrinho - não faz nada (peças únicas)
-        console.log('Produto já está no carrinho. Cada peça é única.');
+        logger.info('Produto já está no carrinho. Cada peça é única.', 'CART');
         set({ loading: false });
         return;
       } else {
@@ -91,11 +92,11 @@ export const useCartStore = create<CartState>((set, get) => ({
             body: JSON.stringify({ product_id: product.id, quantity: 1 }),
           });
         } catch (e) {
-          console.log('Erro ao sincronizar com servidor:', e);
+          logger.warn('Erro ao sincronizar com servidor', 'CART', { error: e });
         }
       }
     } catch (error) {
-      console.error('Erro ao adicionar produto ao carrinho:', error);
+      logger.error('Erro ao adicionar produto ao carrinho', error as Error, 'CART');
     } finally {
       set({ loading: false });
     }
@@ -117,11 +118,11 @@ export const useCartStore = create<CartState>((set, get) => ({
             body: JSON.stringify({ product_id: productId }),
           });
         } catch (e) {
-          console.log('Erro ao sincronizar com servidor:', e);
+          logger.warn('Erro ao sincronizar com servidor', 'CART', { error: e });
         }
       }
     } catch (error) {
-      console.error('Erro ao remover produto do carrinho:', error);
+      logger.error('Erro ao remover produto do carrinho', error as Error, 'CART');
     } finally {
       set({ loading: false });
     }
@@ -143,7 +144,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ cart: updatedCart });
       await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(updatedCart));
     } catch (error) {
-      console.error('Erro ao atualizar quantidade:', error);
+      logger.error('Erro ao atualizar quantidade', error as Error, 'CART');
     } finally {
       set({ loading: false });
     }
@@ -158,7 +159,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         set({ cart: parsedCart });
       }
     } catch (error) {
-      console.error('Erro ao carregar carrinho:', error);
+      logger.error('Erro ao carregar carrinho', error as Error, 'CART');
     } finally {
       set({ loading: false });
     }
@@ -170,7 +171,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ cart: [] });
       await AsyncStorage.removeItem(CONFIG.CART.STORAGE_KEY);
     } catch (error) {
-      console.error('Erro ao limpar carrinho:', error);
+      logger.error('Erro ao limpar carrinho', error as Error, 'CART');
     } finally {
       set({ loading: false });
     }
@@ -199,7 +200,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         body: JSON.stringify({ items }),
       });
     } catch (error) {
-      console.error('Erro ao sincronizar carrinho:', error);
+      logger.error('Erro ao sincronizar carrinho', error as Error, 'CART');
     }
   },
 
@@ -214,7 +215,7 @@ export const useCartStore = create<CartState>((set, get) => ({
           id: item.product_id,
           titulo: item.product?.titulo || 'Produto',
           preco: item.product?.preco || 0,
-          imagem: item.product?.imagem_url,
+          imagem: item.product?.imagem,  // Corrigido: era imagem_url
           quantity: item.quantity,
           categoria: item.product?.categoria,
         }));
@@ -223,7 +224,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         await AsyncStorage.setItem(CONFIG.CART.STORAGE_KEY, JSON.stringify(cartItems));
       }
     } catch (error) {
-      console.error('Erro ao carregar carrinho do servidor:', error);
+      logger.error('Erro ao carregar carrinho do servidor', error as Error, 'CART');
     } finally {
       set({ loading: false });
     }

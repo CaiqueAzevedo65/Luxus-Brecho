@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { authService } from '../services/auth';
 import { useFavoritesStore } from './favoritesStore';
+import { logger } from '../utils/logger';
+import { cacheManager } from '../utils/cache';
 
 export const useAuthStore = create((set, get) => ({
   // Estado
@@ -25,6 +27,7 @@ export const useAuthStore = create((set, get) => ({
         });
         // Carregar favoritos do usuário logado
         useFavoritesStore.getState().loadFavorites();
+        logger.info('Login realizado com sucesso', 'AUTH', { userId: result.user.id });
         return { success: true };
       } else {
         set({
@@ -36,6 +39,7 @@ export const useAuthStore = create((set, get) => ({
         return { success: false, emailNotConfirmed: result.emailNotConfirmed };
       }
     } catch (error) {
+      logger.error('Erro inesperado no login', error, 'AUTH');
       set({
         user: null,
         isAuthenticated: false,
@@ -60,6 +64,7 @@ export const useAuthStore = create((set, get) => ({
           isLoading: false,
           error: null,
         });
+        logger.info('Registro realizado com sucesso', 'AUTH');
         return { 
           success: true, 
           requiresEmailConfirmation: result.requiresEmailConfirmation 
@@ -74,6 +79,7 @@ export const useAuthStore = create((set, get) => ({
         return { success: false, error: result.error || 'Erro no registro' };
       }
     } catch (error) {
+      logger.error('Erro inesperado no registro', error, 'AUTH');
       set({
         user: null,
         isAuthenticated: false,
@@ -94,12 +100,14 @@ export const useAuthStore = create((set, get) => ({
       set({ isLoading: false });
 
       if (result.success) {
+        logger.info('Email de confirmação reenviado', 'AUTH');
         return true;
       } else {
         set({ error: result.error || 'Erro ao reenviar email' });
         return false;
       }
     } catch (error) {
+      logger.error('Erro ao reenviar email', error, 'AUTH');
       set({ 
         isLoading: false,
         error: 'Erro ao reenviar email'
@@ -113,12 +121,15 @@ export const useAuthStore = create((set, get) => ({
     authService.logout();
     // Limpar favoritos ao fazer logout
     useFavoritesStore.getState().clearFavorites();
+    // Invalidar todo o cache ao fazer logout
+    cacheManager.invalidateAll();
     set({
       user: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
     });
+    logger.info('Logout realizado', 'AUTH');
   },
 
   // Inicializar estado de autenticação
@@ -137,6 +148,7 @@ export const useAuthStore = create((set, get) => ({
         });
         // Carregar favoritos do usuário ao inicializar
         useFavoritesStore.getState().loadFavorites();
+        logger.info('Sessão restaurada', 'AUTH', { userId: user.id });
       } else {
         set({
           user: null,
@@ -146,6 +158,7 @@ export const useAuthStore = create((set, get) => ({
         });
       }
     } catch (error) {
+      logger.error('Erro ao inicializar autenticação', error, 'AUTH');
       set({
         user: null,
         isAuthenticated: false,

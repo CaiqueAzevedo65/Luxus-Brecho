@@ -5,6 +5,7 @@ Cada usuário pode ter um carrinho com múltiplos itens.
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
 from bson import ObjectId
+from pymongo import ASCENDING
 
 COLLECTION_NAME = "carts"
 
@@ -12,6 +13,21 @@ COLLECTION_NAME = "carts"
 def get_collection(db):
     """Retorna a coleção de carrinhos."""
     return db[COLLECTION_NAME]
+
+
+def ensure_indexes(db) -> None:
+    """Garante que os índices necessários existam na coleção de carrinhos."""
+    if db is None:
+        return
+    
+    collection = db[COLLECTION_NAME]
+    
+    # Índice único por usuário (cada usuário tem apenas um carrinho)
+    collection.create_index(
+        [("user_id", ASCENDING)],
+        unique=True,
+        name="user_id_unique"
+    )
 
 
 def normalize_cart(cart: Dict[str, Any]) -> Dict[str, Any]:

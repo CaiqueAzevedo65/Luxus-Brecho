@@ -16,22 +16,39 @@ from ..models.cart_model import get_collection as get_cart_collection
 
 
 def get_user_orders(user_id: int):
-    """Obtém todos os pedidos do usuário."""
+    """Obtém todos os pedidos do usuário com paginação."""
     db = current_app.db
     if db is None:
         return jsonify(message="banco de dados indisponível"), 503
 
     try:
+        # Parâmetros de paginação
+        page = max(int(request.args.get("page", 1) or 1), 1)
+        page_size = min(max(int(request.args.get("page_size", 20) or 20), 1), 100)
+        
         coll = get_collection(db)
-        orders = list(coll.find({"user_id": user_id}).sort("created_at", -1))
+        
+        # Query com filtro por usuário
+        query = {"user_id": user_id}
+        
+        # Contagem total
+        total = coll.count_documents(query)
+        
+        # Busca com paginação
+        skip = (page - 1) * page_size
+        orders = list(coll.find(query).sort("created_at", -1).skip(skip).limit(page_size))
         
         return jsonify({
             "orders": [normalize_order(order) for order in orders],
-            "total": len(orders),
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total": total,
+            }
         })
 
     except Exception as e:
-        print(f"Erro ao obter pedidos: {e}")
+        current_app.logger.error(f"Erro ao obter pedidos: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -51,12 +68,12 @@ def get_order_by_id(order_id: int):
         return jsonify(normalize_order(order))
 
     except Exception as e:
-        print(f"Erro ao obter pedido: {e}")
+        current_app.logger.error(f"Erro ao obter pedido: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
 def create_order(user_id: int):
-    """Cria um novo pedido."""
+    """Cria um novo pedido com transação para garantir consistência."""
     db = current_app.db
     if db is None:
         return jsonify(message="banco de dados indisponível"), 503
@@ -77,10 +94,14 @@ def create_order(user_id: int):
         products_coll = db["products"]
         items_with_details = []
         total = 0
+        product_ids_to_update = []
         
         for item in payload.get("items", []):
             product = products_coll.find_one({"id": item.get("product_id")})
             if product:
+                if product.get("status") != "disponivel":
+                    return jsonify(message=f"Produto '{product.get('titulo')}' não está disponível"), 400
+                
                 item_total = (product.get("preco", 0)) * item.get("quantity", 1)
                 items_with_details.append({
                     "product_id": item.get("product_id"),
@@ -88,17 +109,13 @@ def create_order(user_id: int):
                     "preco_unitario": product.get("preco", 0),
                     "preco_total": item_total,
                     "titulo": product.get("titulo"),
-                    "imagem_url": product.get("imagem_url"),
+                    "imagem": product.get("imagem"),
                 })
                 total += item_total
-                
-                # Atualiza status do produto para vendido
-                products_coll.update_one(
-                    {"id": item.get("product_id")},
-                    {"$set": {"status": "vendido"}}
-                )
+                product_ids_to_update.append(item.get("product_id"))
 
         coll = get_collection(db)
+        cart_coll = get_cart_collection(db)
         now = datetime.utcnow()
         
         order_id = get_next_id(db)
@@ -114,14 +131,38 @@ def create_order(user_id: int):
             "updated_at": now,
         }
         
-        coll.insert_one(order)
-        
-        # Limpa o carrinho do usuário
-        cart_coll = get_cart_collection(db)
-        cart_coll.update_one(
-            {"user_id": user_id},
-            {"$set": {"items": [], "updated_at": now}}
-        )
+        # Tenta usar transação se disponível (MongoDB 4.0+)
+        mongo_client = current_app.mongo
+        if mongo_client and hasattr(mongo_client, 'start_session'):
+            try:
+                with mongo_client.start_session() as session:
+                    with session.start_transaction():
+                        # Insere pedido
+                        coll.insert_one(order, session=session)
+                        
+                        # Atualiza status dos produtos para vendido
+                        for product_id in product_ids_to_update:
+                            products_coll.update_one(
+                                {"id": product_id},
+                                {"$set": {"status": "vendido"}},
+                                session=session
+                            )
+                        
+                        # Limpa o carrinho do usuário
+                        cart_coll.update_one(
+                            {"user_id": user_id},
+                            {"$set": {"items": [], "updated_at": now}},
+                            session=session
+                        )
+                        
+                current_app.logger.info(f"Pedido {order_id} criado com transação")
+            except Exception as tx_error:
+                current_app.logger.warning(f"Transação não suportada, usando operações sequenciais: {tx_error}")
+                # Fallback para operações sem transação
+                _create_order_without_transaction(coll, products_coll, cart_coll, order, product_ids_to_update, user_id, now)
+        else:
+            # Sem suporte a transações
+            _create_order_without_transaction(coll, products_coll, cart_coll, order, product_ids_to_update, user_id, now)
 
         return jsonify({
             "message": "Pedido criado com sucesso",
@@ -129,8 +170,24 @@ def create_order(user_id: int):
         }), 201
 
     except Exception as e:
-        print(f"Erro ao criar pedido: {e}")
+        current_app.logger.error(f"Erro ao criar pedido: {e}")
         return jsonify(message="Erro interno do servidor"), 500
+
+
+def _create_order_without_transaction(coll, products_coll, cart_coll, order, product_ids, user_id, now):
+    """Cria pedido sem transação (fallback)."""
+    coll.insert_one(order)
+    
+    for product_id in product_ids:
+        products_coll.update_one(
+            {"id": product_id},
+            {"$set": {"status": "vendido"}}
+        )
+    
+    cart_coll.update_one(
+        {"user_id": user_id},
+        {"$set": {"items": [], "updated_at": now}}
+    )
 
 
 def update_order_status(order_id: int):
@@ -166,7 +223,7 @@ def update_order_status(order_id: int):
         })
 
     except Exception as e:
-        print(f"Erro ao atualizar status: {e}")
+        current_app.logger.error(f"Erro ao atualizar status: {e}")
         return jsonify(message="Erro interno do servidor"), 500
 
 
@@ -211,5 +268,5 @@ def cancel_order(order_id: int):
         })
 
     except Exception as e:
-        print(f"Erro ao cancelar pedido: {e}")
+        current_app.logger.error(f"Erro ao cancelar pedido: {e}")
         return jsonify(message="Erro interno do servidor"), 500

@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import Flask, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
@@ -6,6 +7,20 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, Opera
 from pymongo.server_api import ServerApi
 import certifi
 from dotenv import load_dotenv
+
+# Importações opcionais para otimização
+try:
+    from flask_compress import Compress
+    HAS_COMPRESS = True
+except ImportError:
+    HAS_COMPRESS = False
+
+try:
+    from flask_limiter import Limiter
+    from flask_limiter.util import get_remote_address
+    HAS_LIMITER = True
+except ImportError:
+    HAS_LIMITER = False
 
 def _should_use_tls(uri: str) -> bool:
     """Define se deve usar TLS/CA (Atlas / SRV / URIs com tls=true)."""
@@ -34,6 +49,34 @@ def create_app():
     app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     app.config['PROPAGATE_EXCEPTIONS'] = True  # Melhor tratamento de erros
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # Reduz tamanho do JSON
+    
+    # Configuração de logging estruturado
+    log_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    app.logger.setLevel(log_level)
+    
+    # Compressão de resposta (gzip)
+    if HAS_COMPRESS:
+        Compress(app)
+        app.logger.info("✅ Compressão de resposta habilitada")
+    
+    # Rate Limiting para endpoints sensíveis
+    limiter = None
+    if HAS_LIMITER:
+        limiter = Limiter(
+            key_func=get_remote_address,
+            app=app,
+            default_limits=["200 per day", "50 per hour"],
+            storage_uri="memory://",
+        )
+        app.limiter = limiter
+        app.logger.info("✅ Rate limiting habilitado")
+    else:
+        app.limiter = None
     
     # Configuração CORS unificada (web + mobile)
     allowed_origins_env = os.getenv("FRONTEND_ORIGIN")
@@ -124,11 +167,15 @@ def create_app():
                 from .models.product_model import ensure_products_collection
                 from .models.user_model import ensure_users_collection
                 from .models.favorite_model import ensure_indexes as ensure_favorites_indexes
+                from .models.cart_model import ensure_indexes as ensure_cart_indexes
+                from .models.order_model import ensure_indexes as ensure_order_indexes
                 
                 ensure_categories_collection(app.db)
                 ensure_products_collection(app.db)
                 ensure_users_collection(app.db)
                 ensure_favorites_indexes(app.db)
+                ensure_cart_indexes(app.db)
+                ensure_order_indexes(app.db)
                 print("✅ Coleções e índices verificados")
             except ImportError as e:
                 print(f"⚠️  Alguns modelos não foram encontrados: {e}")
