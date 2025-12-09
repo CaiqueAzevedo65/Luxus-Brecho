@@ -73,16 +73,24 @@ def main():
     print("🚀 " + "="*50)
     
     # Inicia o servidor
+    # Nota: use_reloader=False evita o erro WinError 10038 no Windows
+    # O reloader pode causar conflitos de socket no Windows com Python 3.13
     try:
         app.run(
             host=host,
             port=port,
             debug=debug,
-            use_reloader=debug,
+            use_reloader=False,  # Desabilitado para evitar WinError 10038 no Windows
             threaded=True
         )
     except KeyboardInterrupt:
         print("\n🛑 Servidor interrompido pelo usuário")
+    except OSError as e:
+        if "10038" in str(e) or "10048" in str(e):
+            print(f"❌ Erro de socket: A porta {port} pode estar em uso.")
+            print("💡 Tente: taskkill /F /IM python.exe ou mude a porta")
+        else:
+            print(f"❌ Erro de rede: {e}")
     except Exception as e:
         print(f"❌ Erro ao iniciar servidor: {e}")
 

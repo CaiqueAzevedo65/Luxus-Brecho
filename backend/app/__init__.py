@@ -1,12 +1,41 @@
 import os
 import logging
+from dotenv import load_dotenv
+
+# Carrega variáveis de ambiente ANTES de qualquer outra coisa
+load_dotenv()
+
+# Configuração de logging ANTES de importar bibliotecas que usam logging
+_debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+_log_level = logging.DEBUG if _debug_mode else logging.INFO
+
+logging.basicConfig(
+    level=_log_level,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+# Silenciar logs verbosos de bibliotecas externas ANTES de importá-las
+# PyMongo gera MUITOS logs em DEBUG (conexões, comandos, seleção de servidor)
+logging.getLogger('pymongo').setLevel(logging.WARNING)
+logging.getLogger('pymongo.command').setLevel(logging.WARNING)
+logging.getLogger('pymongo.connection').setLevel(logging.WARNING)
+logging.getLogger('pymongo.serverSelection').setLevel(logging.WARNING)
+
+# Outras bibliotecas verbosas
+logging.getLogger('httpx').setLevel(logging.WARNING)
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('hpack').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+logging.getLogger('werkzeug').setLevel(logging.INFO)
+
+# Agora importa as bibliotecas
 from flask import Flask, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError, OperationFailure
 from pymongo.server_api import ServerApi
 import certifi
-from dotenv import load_dotenv
 
 # Importações opcionais para otimização
 try:
@@ -50,14 +79,8 @@ def create_app():
     app.config['PROPAGATE_EXCEPTIONS'] = True  # Melhor tratamento de erros
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # Reduz tamanho do JSON
     
-    # Configuração de logging estruturado
-    log_level = logging.DEBUG if app.config['DEBUG'] else logging.INFO
-    logging.basicConfig(
-        level=log_level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    app.logger.setLevel(log_level)
+    # Configura o logger da aplicação (logging já configurado no topo do módulo)
+    app.logger.setLevel(_log_level)
     
     # Compressão de resposta (gzip)
     if HAS_COMPRESS:
